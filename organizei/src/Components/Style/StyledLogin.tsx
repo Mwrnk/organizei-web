@@ -52,3 +52,37 @@ export const BotaoEntrar = styled.button`
     cursor: pointer;
   }
 `;
+export const DivBotao = styled.div`
+  display: flex;
+  background-color: rgba(233, 232, 232, 1);
+  padding: 8px;
+  justify-content: center;
+  margin-bottom: 10px;
+  border-radius: 12px;
+`;
+
+export const Button = styled.button`
+  font-family: "Kodchasan", sans-serif;
+  width: 100%;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 15px 30px;
+  color: #6b7280;
+  transition: 0.2s ease;
+  background-color: transparent;
+
+  &:first-child {
+    border-radius: 12px;
+  }
+
+  &:last-child {
+    border-radius: 12px;
+  }
+
+  &:first-child[data-active="true"],
+  &:last-child[data-active="true"] {
+    background-color: white;
+    color: black;
+  }
+`;

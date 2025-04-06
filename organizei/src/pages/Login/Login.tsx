@@ -6,12 +6,16 @@ import {
   Formulario,
   InputSenha,
   InputLogin,
-  BotaoEntrar,Titulo2
+  BotaoEntrar,
+  Titulo2,
+  DivBotao,
+  Button,
 } from "../../Components/Style/StyledLogin";
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [login, setLogin] = useState(true);
 
   const onChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) =>
     setEmail(event.target.value);
@@ -23,15 +27,28 @@ export function Login() {
     console.log("Email:", email);
     console.log("Senha:", senha);
   };
+  const onClickBotaoLogin = () => {
+    setLogin(true);
+  };
+  const onClickBotaoRegistrar = () => {
+    setLogin(false);
+  };
 
   return (
     <Teste>
       <div>
         <TituloApp>Organiz.ei</TituloApp>
-        <div>
-          <Titulo2>Bem-vindo de volta!</Titulo2>
-          <button>entrar</button>
-        </div>
+
+        <Titulo2>Bem-vindo de volta!</Titulo2>
+        <DivBotao>
+          <Button data-active={login} onClick={onClickBotaoLogin}>
+            Entrar
+          </Button>
+          <Button data-active={!login} onClick={onClickBotaoRegistrar}>
+            Registrar
+          </Button>
+        </DivBotao>
+
         <FormLogin>
           <Formulario onSubmit={handleSubmit}>
             <InputLogin
