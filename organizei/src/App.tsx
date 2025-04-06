@@ -1,18 +1,21 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { Login } from "./pages/Login/Login";
 
 function App() {
+  const [paginaAtual, setPaginaAtual] = useState("");
+  const aoCLicarLogin = () => {
+    setPaginaAtual("login");
+  };
 
   return (
     <>
       <div>
-        <h1>Ribas Gay</h1>
+        <button onClick={aoCLicarLogin}>Ir para login</button>
       </div>
-      
+
+      {paginaAtual === "login" && <Login />}
     </>
-  )
+  );
 }
 
-export default App
+export default App;
