@@ -49,7 +49,7 @@ export function Login() {
         console.log("Token armazenado com sucesso:", token);
         toast.success("login feito com sucesso ")
       }
-    } catch (error: any) {
+    } catch (error:any) {
       console.error(
         "Erro ao fazer login:",
         error.response?.data || error.message,
