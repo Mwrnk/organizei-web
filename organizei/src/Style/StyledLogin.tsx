@@ -2,14 +2,15 @@ import styled from "styled-components";
 
 export const Teste = styled.div`
   display: flex;
-  height: 80vh;
   justify-content: center;
-  align-content: center;
   align-items: center;
-  text-align: center;
+  flex-direction: column;
+  height: 80vh;
   background-color: white;
   font-family: "Kodchasan", sans-serif;
+  text-align: center;
 `;
+
 export const FormLogin = styled.div`
   font-family: "Kodchasan", sans-serif;
   display: grid;
@@ -54,11 +55,14 @@ export const BotaoEntrar = styled.button`
 `;
 export const DivBotao = styled.div`
   display: flex;
+  width: 330px;
+  margin: 0;
   background-color: rgba(233, 232, 232, 1);
   padding: 8px;
   justify-content: center;
   margin-bottom: 10px;
   border-radius: 12px;
+  border: 1px solid blue;
 `;
 
 export const Button = styled.button`
@@ -71,7 +75,6 @@ export const Button = styled.button`
   color: #6b7280;
   transition: 0.2s ease;
   background-color: transparent;
-
   &:first-child {
     border-radius: 12px;
   }
