@@ -52,7 +52,7 @@ export function Login() {
     } catch (error: any) {
       console.error(
         "Erro ao fazer login:",
-        error.response?.data || error.message
+        error.response?.data || error.message,
         toast.error("login ou senha incorretos ")
       );
     }
