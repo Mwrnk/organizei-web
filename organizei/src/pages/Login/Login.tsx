@@ -12,6 +12,7 @@ import {
   DivBotao,
   Button,
 } from "../../Style/StyledLogin";
+import { toast } from "react-toastify";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -46,11 +47,13 @@ export function Login() {
         localStorage.setItem("authenticacao", token);
         localStorage.setItem("email", email);
         console.log("Token armazenado com sucesso:", token);
+        toast.success("login feito com sucesso ")
       }
     } catch (error: any) {
       console.error(
         "Erro ao fazer login:",
         error.response?.data || error.message
+        toast.error("login ou senha incorretos ")
       );
     }
   };
