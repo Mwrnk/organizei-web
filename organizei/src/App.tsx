@@ -1,24 +1,27 @@
-import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Login } from "./pages/Login/Login";
+import { Perfil } from "./pages/Perfil/Perfil";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
-  const [paginaAtual, setPaginaAtual] = useState("");
-
-  const aoCLicarLogin = () => {
-    setPaginaAtual("login");
-  };
-
   return (
-    <>
-      {paginaAtual === "login" ? (
-        <Login />
-      ) : (
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
-          <h1>Organiz.ei</h1>
-          <button onClick={aoCLicarLogin}>Ir para login</button>
-        </div>
-      )}
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/perfil" element={<Perfil />} />
+      </Routes>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        pauseOnHover
+        draggable
+      />
+    </BrowserRouter>
   );
 }
 

@@ -53,6 +53,19 @@ export const BotaoEntrar = styled.button`
     cursor: pointer;
   }
 `;
+
+export const BotaoVoltar = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  img {
+    width: 25px;
+    height: 25px;
+    display: block;
+  }
+`;
 export const DivBotao = styled.div`
   display: flex;
   width: 330px;
@@ -62,7 +75,6 @@ export const DivBotao = styled.div`
   justify-content: center;
   margin-bottom: 10px;
   border-radius: 12px;
-  border: 1px solid blue;
 `;
 
 export const Button = styled.button`
