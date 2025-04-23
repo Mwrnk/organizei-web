@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import{Usuario} from "../../Types/User"
+import { Header } from "../../Components/Header";
 
 export function Perfil() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -31,6 +32,7 @@ export function Perfil() {
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <Header/>
       <h1>Perfil de {usuario.name}</h1>
       <p>
         <strong>Código:</strong> {usuario.coduser}
