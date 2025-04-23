@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-type Usuario = {
-  _id: string;
-  coduser: string;
-  name: string;
-  dateOfBirth: string;
-  email: string;
-};
+import{Usuario} from "../../Types/User"
 
 export function Perfil() {
   const [usuario, setUsuario] = useState<Usuario | null>(null);

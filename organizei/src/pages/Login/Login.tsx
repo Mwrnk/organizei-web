@@ -139,7 +139,7 @@ export function Login() {
                 <>
                   <InputLogin
                     type="text"
-                    placeholder="Código do usuário"
+                    placeholder="Nickname"
                     value={coduser}
                     onChange={(e) => setCoduser(e.target.value)}
                     required
