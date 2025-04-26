@@ -36,13 +36,6 @@ export const NavMenu = styled.nav`
     }
   }
 `;
-export const HeaderContainer = styled.header`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: #f8f9fa;
-`;
 
 export const SecondaryNavMenu = styled.div`
   display: flex;
@@ -67,5 +60,29 @@ export const SecondaryNavMenu = styled.div`
     &:hover {
       background-color: #e0e0e0;
     }
+  }
+`;
+
+export const HeaderContainer = styled.header`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  
+  .logo {
+    flex: 1;
+  }
+  
+  ${NavMenu} {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+  }
+  
+  ${SecondaryNavMenu} {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
   }
 `;

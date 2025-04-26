@@ -1,8 +1,14 @@
-import {NavMenu} from "../Style/StyledHeader"
+import { NavMenu, HeaderContainer, SecondaryNavMenu } from "../Style/StyledHeader"
+
 export function Header (){
     return(
-        <div>
+        <HeaderContainer>
+            {/* Logo on left */}
+            <div className="logo">
+                LOGO
+            </div>
             
+            {/* Main navigation in center */}
             <NavMenu>
                 <ul>
                     <li>Escolar</li>
@@ -11,16 +17,16 @@ export function Header (){
                     <li>Planos</li>
                 </ul>
             </NavMenu>
-            <div>
+            
+            {/* Secondary navigation on right */}
+            <SecondaryNavMenu>
                 <ul>
-                <li>IA</li>
-                <li>Notificacoes</li>
-                <li>Configuracoes</li>
-                <li>Perfil</li>
+                    <li>IA</li>
+                    <li>Notificacoes</li>
+                    <li>Configuracoes</li>
+                    <li>Perfil</li>
                 </ul>
-            </div>
-        </div>
-
+            </SecondaryNavMenu>
+        </HeaderContainer>
     )
-
 }
