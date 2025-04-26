@@ -1,49 +1,44 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import{Usuario} from "../../Types/User"
 import { Header } from "../../Components/Header";
+import { useAuth } from "../../Contexts/AuthContexts";
 
 export function Perfil() {
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
-  const [carregando, setCarregando] = useState(true);
+  const { user, isLoading, logout } = useAuth();
 
-  useEffect(() => {
-    const idUsuario = localStorage.getItem("idUsuario");
+  if (isLoading) return <p>Carregando perfil...</p>;
 
-    if (idUsuario) {
-      axios
-        .get(`http://localhost:3000/users/${idUsuario}`)
-        .then((res) => {
-          setUsuario(res.data.data);
-        })
-        .catch((err) => {
-          console.error("Erro ao buscar usuário:", err);
-        })
-        .finally(() => setCarregando(false));
-    } else {
-      console.warn("ID do usuário não encontrado no localStorage");
-      setCarregando(false);
-    }
-  }, []);
-
-  if (carregando) return <p>Carregando perfil...</p>;
-
-  if (!usuario) return <p>Usuário não encontrado.</p>;
+  if (!user) return <p>Usuário não encontrado.</p>;
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <Header/>
-      <h1>Perfil de {usuario.name}</h1>
-      <p>
-        <strong>Código:</strong> {usuario.coduser}
-      </p>
-      <p>
-        <strong>Email:</strong> {usuario.email}
-      </p>
-      <p>
-        <strong>Data de nascimento:</strong>{" "}
-        {new Date(usuario.dateOfBirth).toLocaleDateString()}
-      </p>
+      <Header />
+      <h1>Perfil de {user.name}</h1>
+      <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
+        <p>
+          <strong>Código:</strong> {user.coduser}
+        </p>
+        <p>
+          <strong>Email:</strong> {user.email}
+        </p>
+        <p>
+          <strong>Data de nascimento:</strong>{" "}
+          {new Date(user.dateOfBirth).toLocaleDateString()}
+        </p>
+        
+        <button 
+          onClick={logout}
+          style={{
+            backgroundColor: "#1d1b20",
+            color: "white",
+            padding: "10px 20px",
+            border: "none",
+            borderRadius: "4px",
+            marginTop: "20px",
+            cursor: "pointer"
+          }}
+        >
+          Sair
+        </button>
+      </div>
     </div>
   );
 }

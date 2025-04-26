@@ -14,8 +14,8 @@ import {
   BotaoVoltar,
 } from "../../Style/StyledLogin";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import seta from "../../../assets/setaEsquerda.svg";
+import { useAuth } from "../../Contexts/AuthContexts";
 
 export function Login() {
   const [login, setLogin] = useState(true);
@@ -27,7 +27,7 @@ export function Login() {
   const [name, setName] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
 
-  const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const onClickBotaoLogin = () => setLogin(true);
   const onClickBotaoRegistrar = () => {
@@ -38,29 +38,11 @@ export function Login() {
   const logar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/login", {
-        email,
-        password,
-      });
-
-      const token = response.data.data.token;
-      const id = response.data.data.user.id;
-
-      if (token) {
-        localStorage.setItem("authenticacao", token);
-        localStorage.setItem("idUsuario", id);
-        localStorage.setItem("email", email);
-
-        toast.success("Login feito com sucesso!");
-        console.log("Token e ID armazenados com sucesso:", token, id);
-        navigate("/perfil");
-      }
-    } catch (error: any) {
-      console.error(
-        "Erro ao fazer login:",
-        error.response?.data || error.message
-      );
-      toast.error("Login ou senha incorretos");
+      await authLogin(email, password);
+      // O redirecionamento é feito dentro do authLogin
+    } catch (error) {
+      // Erro já é tratado dentro do authLogin
+      console.error("Falha no login");
     }
   };
 
