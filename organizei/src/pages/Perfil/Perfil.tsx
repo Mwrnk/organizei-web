@@ -9,7 +9,7 @@ export function Perfil() {
   if (!user) return <p>Usuário não encontrado.</p>;
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    <div >
       <Header />
       <h1>Perfil de {user.name}</h1>
       <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
@@ -23,8 +23,8 @@ export function Perfil() {
           <strong>Data de nascimento:</strong>{" "}
           {new Date(user.dateOfBirth).toLocaleDateString()}
         </p>
-        
-        <button 
+
+        <button
           onClick={logout}
           style={{
             backgroundColor: "#1d1b20",
@@ -33,7 +33,7 @@ export function Perfil() {
             border: "none",
             borderRadius: "4px",
             marginTop: "20px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Sair

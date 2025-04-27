@@ -39,9 +39,7 @@ export function Login() {
     e.preventDefault();
     try {
       await authLogin(email, password);
-      // O redirecionamento é feito dentro do authLogin
     } catch (error) {
-      // Erro já é tratado dentro do authLogin
       console.error("Falha no login");
     }
   };
@@ -69,14 +67,46 @@ export function Login() {
     }
   };
 
-  const proximaEtapa = () => setEtapa(etapa + 1);
-  const etapaAnterior = () => setEtapa(etapa - 1);
+  const limparCampos = () => {
+    setCoduser("");
+    setName("");
+    setEmail("");
+    setPassword("");
+    setDateOfBirth("");
+  };
+
+  const etapaAnterior = () => {
+    setEtapa(etapa - 1);
+    limparCampos();
+  };
+
+  const proximaEtapa = () => {
+    setEtapa(etapa + 1);
+    limparCampos();
+  };
 
   return (
     <div>
       <Teste>
         <TituloApp>Organiz.ei</TituloApp>
-        <Titulo2>{login ? "Bem-vindo de volta!" : "Bem-vindo novato!"}</Titulo2>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+            marginBottom: "16px",
+          }}
+        >
+          {!login && etapa > 1 && (
+            <BotaoVoltar type="button" onClick={etapaAnterior}>
+              <img src={seta} alt="Voltar" />
+            </BotaoVoltar>
+          )}
+          <Titulo2>
+            {login ? "Bem-vindo de volta!" : "Bem-vindo novato!"}
+          </Titulo2>
+        </div>
 
         <DivBotao>
           <Button data-active={login} onClick={onClickBotaoLogin}>
@@ -139,31 +169,6 @@ export function Login() {
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
-                  <BotaoVoltar type="button" onClick={etapaAnterior}>
-                    <img src={seta} alt="seta para esquerda" />
-                  </BotaoVoltar>
-                  <BotaoEntrar type="submit">Próximo</BotaoEntrar>
-                </>
-              )}
-
-              {etapa === 3 && (
-                <>
-                  <InputLogin
-                    type="date"
-                    placeholder="Data de nascimento"
-                    value={dateOfBirth}
-                    onChange={(e) => setDateOfBirth(e.target.value)}
-                    required
-                  />
-                  <BotaoVoltar type="button" onClick={etapaAnterior}>
-                    <img src={seta} alt="seta para esquerda" />
-                  </BotaoVoltar>
-                  <BotaoEntrar type="submit">Próximo</BotaoEntrar>
-                </>
-              )}
-
-              {etapa === 4 && (
-                <>
                   <InputLogin
                     type="email"
                     placeholder="Email"
@@ -178,9 +183,19 @@ export function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <BotaoVoltar type="button" onClick={etapaAnterior}>
-                    <img src={seta} alt="seta para esquerda" />
-                  </BotaoVoltar>
+                  <BotaoEntrar type="submit">Próximo</BotaoEntrar>
+                </>
+              )}
+
+              {etapa === 4 && (
+                <>
+                  <InputLogin
+                    type="date"
+                    placeholder="Data de nascimento"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    required
+                  />
                   <BotaoEntrar type="submit">Registrar</BotaoEntrar>
                 </>
               )}

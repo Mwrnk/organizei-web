@@ -57,12 +57,12 @@ export const BotaoEntrar = styled.button`
 export const BotaoVoltar = styled.button`
   background: none;
   border: none;
-  padding: 0;
+  padding: 0px 20px 0px 0px;
   cursor: pointer;
 
   img {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     display: block;
   }
 `;
