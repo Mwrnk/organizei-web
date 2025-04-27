@@ -6,7 +6,7 @@ export const Teste = styled.div`
   align-items: center;
   flex-direction: column;
   height: 80vh;
-  background-color: white;
+
   font-family: "Kodchasan", sans-serif;
   text-align: center;
 `;
@@ -16,7 +16,6 @@ export const FormLogin = styled.div`
   display: grid;
   align-items: center;
   text-align: center;
-  background-color: white;
 `;
 export const TituloApp = styled.h2``;
 export const Titulo2 = styled.h2`
