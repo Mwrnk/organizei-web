@@ -12,6 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./Contexts/AuthContexts";
 import { PrivateRoute, PublicRoute, PremiumRoute } from "./Routes/Rotas";
 import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
+import { Profissional } from "./pages/Profissional/Profissional";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/escolar" element={<Escolar />} />
+            <Route path="/profissional" element={<Profissional />} />
             <Route path="/comunidade" element={<Comunidade />} />
             <Route path="/perfilbusca/:id" element={<PerfilBusca />} />
 

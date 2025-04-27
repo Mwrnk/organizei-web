@@ -69,7 +69,7 @@ const Botoes = styled.div`
   gap: 10px;
 `;
 
-export function Escolar() {
+export function Profissional() {
   const [hoverBaixar, setHoverBaixar] = useState(false);
 
   return (
