@@ -43,6 +43,8 @@ export const SecondaryNavMenu = styled.div`
   ul {
     display: flex;
     align-items: center;
+    text-align: center;
+    justify-content: center;
     gap: 16px;
     margin: 0;
     padding: 0;
@@ -50,7 +52,6 @@ export const SecondaryNavMenu = styled.div`
   }
 
   li {
-    display: flex;
     cursor: pointer;
     color: #333333;
     border-radius: 23px;

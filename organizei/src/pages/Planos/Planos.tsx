@@ -82,7 +82,7 @@ const PlanoCard = styled.div<{ highlighted?: boolean }>`
     props.highlighted &&
     `
       margin-bottom: 20px;
-      transform: translateY(-15px); 
+      transform: translateY(-10px); 
   `}
 `;
 

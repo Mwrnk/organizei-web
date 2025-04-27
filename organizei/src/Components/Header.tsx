@@ -84,9 +84,8 @@ export function Header() {
               <Link
                 to="/ia"
                 style={{ textDecoration: "none", color: "inherit" }}
-              >
-                <img src={IconIa} />
-              </Link>
+              ></Link>
+              <img src={IconIa} />
             </li>
           )}
           <li className={location.pathname === "/notificacoes" ? "active" : ""}>
