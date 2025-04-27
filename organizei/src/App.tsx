@@ -6,10 +6,12 @@ import { Configuracoes } from "./pages/Configuracoes/Configuracoes";
 import { IA } from "./pages/IA/IA";
 import { Planos } from "./pages/Planos/Planos";
 import { Escolar } from "./pages/Escolar/Escolar";
+import { Comunidade } from "./pages/Comunidade/Comunidade";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./Contexts/AuthContexts";
 import { PrivateRoute, PublicRoute, PremiumRoute } from "./Routes/Rotas";
+import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
 
 function App() {
   return (
@@ -28,6 +30,8 @@ function App() {
             <Route path="/configuracoes" element={<Configuracoes />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/escolar" element={<Escolar />} />
+            <Route path="/comunidade" element={<Comunidade />} />
+            <Route path="/perfilbusca/:id" element={<PerfilBusca />} />
 
             {/* Rota para IA - apenas usuários premium */}
             <Route

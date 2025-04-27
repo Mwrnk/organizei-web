@@ -17,7 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => boolean;
-  setUser: React.Dispatch<React.SetStateAction<Usuario | null>>; // Adicionado o setUser
+  setUser: React.Dispatch<React.SetStateAction<Usuario | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         checkAuth,
-        setUser, // disponibilizando o setUser no context
+        setUser,
       }}
     >
       {children}
