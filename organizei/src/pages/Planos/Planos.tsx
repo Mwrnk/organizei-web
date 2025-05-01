@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import styled from "styled-components";
@@ -7,13 +8,13 @@ import { UserRole } from "../../Types/User";
 import VistoPlano from "../../../assets/contemPlanos.svg";
 import NegacaoPlano from "../../../assets/naoContemPlano.svg";
 
+// --- Styled Components (mesmos que você já usou) ---
 const PlanosContainer = styled.div`
   max-width: 1200px;
   margin: 20px auto;
   padding: 20px;
   text-align: center;
 `;
-
 const DivBotao = styled.div`
   display: flex;
   width: 250px;
@@ -22,7 +23,6 @@ const DivBotao = styled.div`
   margin: 0 auto 20px auto;
   border-radius: 12px;
 `;
-
 const Button = styled.button`
   font-family: "Kodchasan", sans-serif;
   width: 100%;
@@ -44,7 +44,6 @@ const Button = styled.button`
     color: black;
   }
 `;
-
 const TituloPagina = styled.h1`
   margin-bottom: 20px;
   color: #333;
@@ -54,7 +53,6 @@ const TituloPagina = styled.h1`
   justify-content: center;
   white-space: nowrap;
 `;
-
 const PlanosGrid = styled.div`
   display: flex;
   gap: 25px;
@@ -62,7 +60,6 @@ const PlanosGrid = styled.div`
   align-items: flex-end;
   flex-wrap: nowrap;
 `;
-
 const PlanoCard = styled.div<{ highlighted?: boolean }>`
   width: 280px;
   padding: 25px 20px;
@@ -77,20 +74,13 @@ const PlanoCard = styled.div<{ highlighted?: boolean }>`
   position: relative;
   transition: transform 0.3s;
   justify-content: space-between;
-
   ${(props) =>
-    props.highlighted &&
-    `
-      margin-bottom: 20px;
-      transform: translateY(-10px); 
-  `}
+    props.highlighted && `margin-bottom: 20px; transform: translateY(-10px);`}
 `;
-
 const PlanoTitulo = styled.h2`
   margin-bottom: 15px;
   font-size: 28px;
 `;
-
 const PlanoBeneficios = styled.ul`
   list-style: none;
   text-align: left;
@@ -98,7 +88,6 @@ const PlanoBeneficios = styled.ul`
   padding-left: 0;
   font-size: 14px;
   width: 100%;
-
   li {
     display: flex;
     align-items: center;
@@ -106,16 +95,13 @@ const PlanoBeneficios = styled.ul`
     gap: 10px;
     color: inherit;
   }
-
   img {
     width: 18px;
     height: 18px;
   }
 `;
-
 const PlanoPreco = styled.div`
   margin-bottom: 10px;
-
   .real {
     font-size: 20px;
     vertical-align: top;
@@ -130,7 +116,6 @@ const PlanoPreco = styled.div`
     color: #666;
   }
 `;
-
 const PlanoButton = styled.button<{ highlighted?: boolean }>`
   background-color: #e0e0e0;
   color: black;
@@ -144,22 +129,18 @@ const PlanoButton = styled.button<{ highlighted?: boolean }>`
   width: 100%;
   max-width: 200px;
   margin-top: 15px;
-
   &:hover {
     background-color: ${({ highlighted }) =>
       highlighted ? "transparent" : "black"};
-    color: ${({ highlighted }) => (highlighted ? "white" : "white")};
-    border: ${({ highlighted }) =>
-      highlighted ? " 1px solid white" : "white"};
+    color: white;
+    border: ${({ highlighted }) => (highlighted ? "1px solid white" : "white")};
   }
-
   &:disabled {
     background-color: #ccc;
     color: #666;
     cursor: not-allowed;
   }
 `;
-
 const ToggleContainer = styled.div<{ isOn: boolean }>`
   width: 40px;
   height: 25px;
@@ -172,7 +153,6 @@ const ToggleContainer = styled.div<{ isOn: boolean }>`
   cursor: default;
   pointer-events: none;
 `;
-
 const ToggleCircle = styled.div<{ isOn: boolean }>`
   width: 25px;
   height: 25px;
@@ -182,13 +162,41 @@ const ToggleCircle = styled.div<{ isOn: boolean }>`
   transform: ${({ isOn }) => (isOn ? "translateX(15px)" : "translateX(0)")};
 `;
 
+// --- Tipagem dos dados ---
+type Plan = {
+  _id: string;
+  name: string;
+  price: number;
+  description: string;
+  points: number;
+};
+
 export function Planos() {
   const [tempoPlanos, setTempoPlanos] = useState(true);
   const { user } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [planoSelecionado, setPlanoSelecionado] = useState<
     "free" | "premium" | "enterprise"
   >(user?.role === UserRole.PREMIUM ? "premium" : "free");
   const [isOn, setIsOn] = useState(false);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/plans");
+        console.log("📦 Planos recebidos:", response.data);
+        setPlans(response.data.data);
+      } catch (error: any) {
+        console.error(
+          "❌ Erro ao buscar planos:",
+          error.response?.data || error.message
+        );
+        toast.error("Erro ao carregar planos");
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -201,10 +209,7 @@ export function Planos() {
   const onClickBotaoAnual = () => setTempoPlanos(false);
 
   const handleAssinar = (plano: "free" | "premium" | "enterprise") => {
-    // Aqui você implementaria a integração com um gateway de pagamento
-    // para processar a assinatura do usuário
-
-    if (plano === "free" || user?.role === UserRole.PREMIUM) {
+    if (plano === "free" || user?.role?.toLowerCase() === plano) {
       toast.info("Seu plano atual já está ativo!");
       return;
     }
@@ -237,102 +242,71 @@ export function Planos() {
         </DivBotao>
 
         <PlanosGrid>
-          <PlanoCard>
-            <PlanoTitulo>Free</PlanoTitulo>
-            <PlanoBeneficios>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                Acesso básico
-              </li>
-              <li>
-                <img src={NegacaoPlano} alt="Não incluído" />
-                Suporte prioritário
-              </li>
-              <li>
-                <img src={NegacaoPlano} alt="Não incluído" />
-                Recursos premium
-              </li>
-            </PlanoBeneficios>
-            <PlanoPreco>
-              <span className="real">R$</span>
-              <span className="preco">Free</span>
-              <span className="periodo"></span>
-            </PlanoPreco>
-            <PlanoButton
-              disabled={planoSelecionado === "free"}
-              onClick={() => handleAssinar("free")}
-            >
-              {planoSelecionado === "free" ? "Você já tem" : "Assinar"}
-            </PlanoButton>
-          </PlanoCard>
+          {plans.map((plan, index) => {
+            const isCurrent =
+              user?.role?.toLowerCase() === plan.name.toLowerCase();
+            const isHighlighted = index === 1;
 
-          <PlanoCard highlighted>
-            <PlanoTitulo>Plano A</PlanoTitulo>
-            <PlanoBeneficios>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                Acesso completo
-              </li>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                Suporte 24/7
-              </li>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                3.000 pontos de bônus
-              </li>
-            </PlanoBeneficios>
-            <PlanoPreco>
-              <span className="real">R$</span>
-              <span className="preco">99</span>
-              <span className="periodo">/mês</span>
-              <span style={{ marginLeft: 10, color: "#3498db", fontSize: 14 }}>
-                3.000 pts
-              </span>
-            </PlanoPreco>
-            <PlanoButton highlighted onClick={() => handleAssinar("premium")}>
-              Assinar
-            </PlanoButton>
-            <small
-              style={{
-                marginTop: 8,
-                display: "block",
-                color: "#aaa",
-                fontSize: 12,
-              }}
-            >
-              Plano recomendado
-            </small>
-          </PlanoCard>
+            return (
+              <PlanoCard key={plan._id} highlighted={isHighlighted}>
+                <PlanoTitulo>{plan.name}</PlanoTitulo>
+                <PlanoBeneficios>
+                  <li>
+                    <img src={VistoPlano} alt="Incluído" />
+                    {plan.description}
+                  </li>
+                  {plan.name.toLowerCase() === "free" && (
+                    <>
+                      <li>
+                        <img src={NegacaoPlano} alt="Não incluído" />
+                        Suporte premium
+                      </li>
+                      <li>
+                        <img src={NegacaoPlano} alt="Não incluído" />
+                        Consultoria
+                      </li>
+                    </>
+                  )}
+                </PlanoBeneficios>
 
-          <PlanoCard>
-            <PlanoTitulo>Plano B</PlanoTitulo>
-            <PlanoBeneficios>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                Acesso avançado
-              </li>
-              <li>
-                <img src={VistoPlano} alt="Incluído" />
-                Atendimento VIP
-              </li>
-              <li>
-                <img src={NegacaoPlano} alt="Não incluído" />
-                Consultoria exclusiva
-              </li>
-            </PlanoBeneficios>
-            <PlanoPreco>
-              <span className="real">R$</span>
-              <span className="preco">69</span>
-              <span className="periodo">/mês</span>
-              <span style={{ marginLeft: 10, color: "#3498db", fontSize: 14 }}>
-                2.100 pts
-              </span>
-            </PlanoPreco>
-            <PlanoButton onClick={() => handleAssinar("enterprise")}>
-              Assinar
-            </PlanoButton>
-          </PlanoCard>
+                <PlanoPreco>
+                  <span className="real">R$</span>
+                  <span className="preco">
+                    {plan.price === 0 ? "Free" : plan.price}
+                  </span>
+                  {plan.price > 0 && <span className="periodo">/mês</span>}
+                  {plan.points > 0 && (
+                    <span
+                      style={{ marginLeft: 10, color: "#3498db", fontSize: 14 }}
+                    >
+                      {plan.points} pts
+                    </span>
+                  )}
+                </PlanoPreco>
+
+                <PlanoButton
+                  highlighted={isHighlighted}
+                  disabled={isCurrent}
+                  onClick={() => handleAssinar(plan.name.toLowerCase() as any)}
+                >
+                  {isCurrent ? "Você já tem" : "Assinar"}
+                </PlanoButton>
+
+                {isHighlighted && (
+                  <small
+                    style={{
+                      marginTop: 8,
+                      display: "block",
+                      color: "#aaa",
+                      fontSize: 12,
+                    }}
+                  >
+                    Plano recomendado
+                  </small>
+                )}
+              </PlanoCard>
+            );
+          })}
         </PlanosGrid>
       </PlanosContainer>
     </>

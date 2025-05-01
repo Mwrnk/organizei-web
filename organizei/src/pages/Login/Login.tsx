@@ -58,6 +58,7 @@ export function Login() {
       console.log("Usuário registrado com sucesso:", response.data);
       toast.success("Registro realizado com sucesso!");
       setLogin(true);
+      limparCampos(); 
     } catch (error: any) {
       console.error(
         "Erro ao registrar:",
@@ -77,12 +78,10 @@ export function Login() {
 
   const etapaAnterior = () => {
     setEtapa(etapa - 1);
-    limparCampos();
   };
 
   const proximaEtapa = () => {
     setEtapa(etapa + 1);
-    limparCampos();
   };
 
   return (
@@ -139,7 +138,7 @@ export function Login() {
           ) : (
             <Formulario
               onSubmit={
-                etapa === 4
+                etapa === 2
                   ? registrar
                   : (e) => {
                       e.preventDefault();
@@ -183,12 +182,6 @@ export function Login() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <BotaoEntrar type="submit">Próximo</BotaoEntrar>
-                </>
-              )}
-
-              {etapa === 4 && (
-                <>
                   <InputLogin
                     type="date"
                     placeholder="Data de nascimento"
