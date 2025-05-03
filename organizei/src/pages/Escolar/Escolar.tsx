@@ -45,7 +45,9 @@ const Pagination = styled.div`
   gap: 8px;
 `;
 
-const PageButton = styled.button<{ active: boolean }>`
+const PageButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== "active",
+})<{ active: boolean }>`
   padding: 6px 12px;
   border: none;
   border-radius: 6px;
@@ -148,9 +150,14 @@ const ButtonGroup = styled.div`
 // --- Types ---
 
 type List = {
-  _id: string;
+  id: string;
   name: string;
   userId: string;
+};
+
+type CardData = {
+  id: string;
+  title: string;
 };
 
 // --- Componente Escolar ---
@@ -161,8 +168,12 @@ export function Escolar() {
 
   const [listName, setListName] = useState("");
   const [lists, setLists] = useState<List[]>([]);
+  const [cards, setCards] = useState<Record<string, CardData[]>>({});
   const [showModal, setShowModal] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [showCardModal, setShowCardModal] = useState(false);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [cardTitle, setCardTitle] = useState("");
 
   const porPagina = 5;
   const totalPaginas = Math.ceil(lists.length / porPagina);
@@ -172,20 +183,38 @@ export function Escolar() {
   );
 
   useEffect(() => {
-    const fetchLists = async () => {
+    const fetchListsAndCards = async () => {
       if (!userId) return;
 
       try {
         const response = await axios.get(
           `http://localhost:3000/lists/${userId}/lists`
         );
-        setLists(response.data.data);
+        const listas = response.data.data;
+        setLists(listas);
+
+        const cardsPorLista: Record<string, CardData[]> = {};
+
+        await Promise.all(
+          listas.map(async (list: List) => {
+            try {
+              const res = await axios.get(
+                `http://localhost:3000/cards/list/${list.id}`
+              );
+              cardsPorLista[list.id] = res.data.data;
+            } catch (err) {
+              console.error(`Erro ao buscar cards da lista ${list.name}`, err);
+            }
+          })
+        );
+
+        setCards(cardsPorLista);
       } catch (error) {
         console.error("Erro ao buscar listas", error);
       }
     };
 
-    fetchLists();
+    fetchListsAndCards();
   }, [userId]);
 
   const handleCreateList = async () => {
@@ -205,6 +234,36 @@ export function Escolar() {
       setPaginaAtual(1);
     } catch (error) {
       console.error("Erro ao criar lista", error);
+    }
+  };
+
+  const openCardModal = (listId: string) => {
+    setSelectedListId(listId);
+    setShowCardModal(true);
+  };
+
+  const handleCreateCard = async () => {
+    if (!cardTitle || !selectedListId) {
+      alert("Preencha o título do card.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3000/cards", {
+        title: cardTitle,
+        listId: selectedListId,
+      });
+
+      const newCard = response.data.data;
+      setCards((prev) => ({
+        ...prev,
+        [selectedListId]: [...(prev[selectedListId] || []), newCard],
+      }));
+
+      setShowCardModal(false);
+      setCardTitle("");
+    } catch (error) {
+      console.error("Erro ao criar card", error);
     }
   };
 
@@ -236,12 +295,15 @@ export function Escolar() {
 
         <Grid>
           {listasVisiveis.map((list) => (
-            <ListColumn key={list._id}>
+            <ListColumn key={list.id}>
               <ColumnTitle>{list.name}</ColumnTitle>
               <CardArea>
-                {[...Array(5)].map((_, i) => (
-                  <Card key={i}>+</Card>
+                {(cards[list.id] || []).map((card) => (
+                  <Card key={card.id}>{card.title}</Card>
                 ))}
+                <Card onClick={() => openCardModal(list.id)}>
+                  + Adicionar Card
+                </Card>
               </CardArea>
             </ListColumn>
           ))}
@@ -263,6 +325,31 @@ export function Escolar() {
                 Criar
               </button>
               <button className="cancel" onClick={() => setShowModal(false)}>
+                Cancelar
+              </button>
+            </ButtonGroup>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {showCardModal && (
+        <ModalOverlay>
+          <ModalContent>
+            <h3>Novo Card</h3>
+            <Input
+              type="text"
+              placeholder="Título do Card"
+              value={cardTitle}
+              onChange={(e) => setCardTitle(e.target.value)}
+            />
+            <ButtonGroup>
+              <button className="confirm" onClick={handleCreateCard}>
+                Criar
+              </button>
+              <button
+                className="cancel"
+                onClick={() => setShowCardModal(false)}
+              >
                 Cancelar
               </button>
             </ButtonGroup>
