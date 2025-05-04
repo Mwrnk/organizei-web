@@ -66,10 +66,8 @@ const Grid = styled.div`
 
 const ListColumn = styled.div`
   min-width: 220px;
-  background-color: #f9f9f9;
   border-radius: 12px;
   padding: 16px;
-  border: 1px solid #ddd;
   display: flex;
   flex-direction: column;
 `;
