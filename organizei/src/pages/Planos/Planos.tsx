@@ -8,7 +8,7 @@ import { UserRole } from "../../Types/User";
 import VistoPlano from "../../../assets/contemPlanos.svg";
 import NegacaoPlano from "../../../assets/naoContemPlano.svg";
 
-// --- Styled Components (mesmos que você já usou) ---
+// --- Styled Components ---
 const PlanosContainer = styled.div`
   max-width: 1200px;
   margin: 20px auto;
@@ -168,24 +168,29 @@ type Plan = {
   name: string;
   price: number;
   description: string;
-  points: number;
+  points?: number;
 };
 
 export function Planos() {
   const [tempoPlanos, setTempoPlanos] = useState(true);
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [planoSelecionado, setPlanoSelecionado] = useState<
-    "free" | "premium" | "enterprise"
-  >(user?.role === UserRole.PREMIUM ? "premium" : "free");
+  const [planoAtualUsuario, setPlanoAtualUsuario] = useState<Plan | null>(null);
   const [isOn, setIsOn] = useState(false);
-
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         const response = await axios.get("http://localhost:3000/plans");
-        console.log("📦 Planos recebidos:", response.data);
-        setPlans(response.data.data);
+
+        const planosOrdenados = response.data.data.sort((a: Plan, b: Plan) => {
+          const order = ["free", "premium", "enterprise"];
+          return (
+            order.indexOf(a.name.toLowerCase()) -
+            order.indexOf(b.name.toLowerCase())
+          );
+        });
+
+        setPlans(planosOrdenados);
       } catch (error: any) {
         console.error(
           "❌ Erro ao buscar planos:",
@@ -197,6 +202,26 @@ export function Planos() {
 
     fetchPlans();
   }, []);
+  useEffect(() => {
+    const fetchPlanoAtual = async () => {
+      if (!user?._id) return;
+
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/users/${user._id}/plan`
+        );
+        setPlanoAtualUsuario(res.data.data);
+      } catch (error: any) {
+        if (error.response?.status === 404) {
+          setPlanoAtualUsuario(null); // Usuário sem plano
+        } else {
+          console.error("Erro ao buscar plano atual:", error);
+        }
+      }
+    };
+
+    fetchPlanoAtual();
+  }, [user?._id]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -208,16 +233,22 @@ export function Planos() {
   const onClickBotaoMensal = () => setTempoPlanos(true);
   const onClickBotaoAnual = () => setTempoPlanos(false);
 
-  const handleAssinar = (plano: "free" | "premium" | "enterprise") => {
-    if (plano === "free" || user?.role?.toLowerCase() === plano) {
-      toast.info("Seu plano atual já está ativo!");
-      return;
-    }
+  const handleAssinar = async (planoName: string) => {
+    const plan = plans.find((p) => p.name.toLowerCase() === planoName);
+    if (!plan || !user) return;
 
-    toast.success(
-      `Assinatura do plano ${plano.toUpperCase()} realizada com sucesso!`
-    );
-    setPlanoSelecionado(plano);
+    try {
+      await axios.put(`http://localhost:3000/users/${user._id}/plan`, {
+        planId: plan._id,
+      });
+
+      toast.success(`Plano ${plan.name} ativado com sucesso!`);
+      updateUser?.({ role: planoName.toLowerCase() as UserRole });
+      setPlanoAtualUsuario(plan); // Atualiza localmente o plano atual
+    } catch (error: any) {
+      console.error("Erro ao assinar plano:", error);
+      toast.error("Erro ao assinar plano");
+    }
   };
 
   return (
@@ -243,8 +274,7 @@ export function Planos() {
 
         <PlanosGrid>
           {plans.map((plan, index) => {
-            const isCurrent =
-              user?.role?.toLowerCase() === plan.name.toLowerCase();
+            const isCurrent = planoAtualUsuario?._id === plan._id;
             const isHighlighted = index === 1;
 
             return (
@@ -275,7 +305,7 @@ export function Planos() {
                     {plan.price === 0 ? "Free" : plan.price}
                   </span>
                   {plan.price > 0 && <span className="periodo">/mês</span>}
-                  {plan.points > 0 && (
+                  {plan.points && (
                     <span
                       style={{ marginLeft: 10, color: "#3498db", fontSize: 14 }}
                     >
@@ -287,7 +317,7 @@ export function Planos() {
                 <PlanoButton
                   highlighted={isHighlighted}
                   disabled={isCurrent}
-                  onClick={() => handleAssinar(plan.name.toLowerCase() as any)}
+                  onClick={() => handleAssinar(plan.name.toLowerCase())}
                 >
                   {isCurrent ? "Você já tem" : "Assinar"}
                 </PlanoButton>

@@ -147,6 +147,26 @@ const ButtonGroup = styled.div`
   }
 `;
 
+const DetalhesCardModal = styled.div`
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 320px;
+  text-align: center;
+`;
+
+const BotaoFechar = styled.button`
+  margin-top: 20px;
+  padding: 10px 16px;
+  background-color: #ddd;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #ccc;
+  }
+`;
 // --- Types ---
 
 type List = {
@@ -160,8 +180,6 @@ type CardData = {
   title: string;
 };
 
-// --- Componente Escolar ---
-
 export function Escolar() {
   const { user } = useAuth();
   const userId = user?._id;
@@ -174,6 +192,7 @@ export function Escolar() {
   const [showCardModal, setShowCardModal] = useState(false);
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [cardTitle, setCardTitle] = useState("");
+  const [cardSelecionado, setCardSelecionado] = useState<CardData | null>(null);
 
   const porPagina = 5;
   const totalPaginas = Math.ceil(lists.length / porPagina);
@@ -267,6 +286,13 @@ export function Escolar() {
     }
   };
 
+  const handleExibirDetalhes = (cardId: string, listId: string) => {
+    const card = cards[listId]?.find((c) => c.id === cardId);
+    if (card) {
+      setCardSelecionado(card);
+    }
+  };
+
   return (
     <>
       <Header />
@@ -299,7 +325,12 @@ export function Escolar() {
               <ColumnTitle>{list.name}</ColumnTitle>
               <CardArea>
                 {(cards[list.id] || []).map((card) => (
-                  <Card key={card.id}>{card.title}</Card>
+                  <Card
+                    key={card.id}
+                    onClick={() => handleExibirDetalhes(card.id, list.id)}
+                  >
+                    {card.title}
+                  </Card>
                 ))}
                 <Card onClick={() => openCardModal(list.id)}>
                   + Adicionar Card
@@ -310,6 +341,7 @@ export function Escolar() {
         </Grid>
       </Container>
 
+      {/* Modal criar lista */}
       {showModal && (
         <ModalOverlay>
           <ModalContent>
@@ -332,6 +364,7 @@ export function Escolar() {
         </ModalOverlay>
       )}
 
+      {/* Modal criar card */}
       {showCardModal && (
         <ModalOverlay>
           <ModalContent>
@@ -354,6 +387,24 @@ export function Escolar() {
               </button>
             </ButtonGroup>
           </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {/* Modal detalhes do card */}
+      {cardSelecionado && (
+        <ModalOverlay>
+          <DetalhesCardModal>
+            <h3>Detalhes do Card</h3>
+            <p>
+              <strong>ID:</strong> {cardSelecionado.id}
+            </p>
+            <p>
+              <strong>Título:</strong> {cardSelecionado.title}
+            </p>
+            <BotaoFechar onClick={() => setCardSelecionado(null)}>
+              Fechar
+            </BotaoFechar>
+          </DetalhesCardModal>
         </ModalOverlay>
       )}
     </>

@@ -3,6 +3,8 @@ import { useAuth } from "../../Contexts/AuthContexts";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import config from "../../../assets/Settings.svg";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const Container = styled.div`
   max-width: 1000px;
@@ -16,6 +18,7 @@ const Banner = styled.div`
   background-color: #e0e0e0;
   border-radius: 8px;
   position: relative;
+  z-index: -1;
 `;
 
 const PerfilBox = styled.div`
@@ -37,6 +40,8 @@ const Avatar = styled.div`
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 10000;
   margin-left: 30px;
+  overflow: hidden;
+  cursor: pointer;
 `;
 
 const UserInfo = styled.div`
@@ -84,6 +89,7 @@ const Value = styled.p`
   margin: 0;
   font-weight: 500;
 `;
+
 const BotaoSair = styled.button`
   background-color: red;
   color: white;
@@ -97,6 +103,7 @@ const BotaoSair = styled.button`
     background-color: black;
   }
 `;
+
 const Titulo_config = styled.div`
   display: flex;
   justify-content: space-between;
@@ -113,11 +120,74 @@ const IconConfig = styled.img`
     background-color: #bbb;
   }
 `;
+
+type Plano = {
+  name: string;
+  price: number;
+};
+
 export function Perfil() {
   const { user, isLoading, logout } = useAuth();
+  const [planoAtual, setPlanoAtual] = useState<Plano | null>(null);
+  const [image, setImage] = useState<string | null>(user?.profileImage || null);
+
+  useEffect(() => {
+    const fetchPlano = async () => {
+      if (!user?._id) return;
+
+      try {
+        const res = await axios.get(
+          `http://localhost:3000/users/${user._id}/plan`
+        );
+        setPlanoAtual(res.data.data);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setPlanoAtual(null);
+        } else {
+          console.error("Erro ao buscar plano atual do usuário", err);
+        }
+      }
+    };
+
+    fetchPlano();
+  }, [user?._id]);
+
+  useEffect(() => {
+    if (user?.profileImage) {
+      setImage(user.profileImage);
+    }
+  }, [user?.profileImage]);
+
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?._id) return;
+
+    try {
+      const base64 = await convertToBase64(file);
+
+      const response = await axios.patch(
+        `http://localhost:3000/users/${user._id}/image`,
+        {
+          image: base64,
+        }
+      );
+
+      setImage(response.data.data.profileImage); // Atualiza preview com base no retorno da API
+    } catch (err) {
+      console.error("Erro ao enviar imagem", err);
+    }
+  };
 
   if (isLoading) return <p>Carregando perfil...</p>;
-
   if (!user) return <p>Usuário não encontrado.</p>;
 
   return (
@@ -126,7 +196,26 @@ export function Perfil() {
       <Container>
         <Banner />
         <PerfilBox>
-          <Avatar>FOTO</Avatar>
+          <label htmlFor="upload-photo">
+            <Avatar>
+              {image ? (
+                <img
+                  src={image}
+                  alt="avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                "FOTO"
+              )}
+            </Avatar>
+          </label>
+          <input
+            type="file"
+            id="upload-photo"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageChange}
+          />
           <UserInfo>
             <UserName>{user.name}</UserName>
           </UserInfo>
@@ -156,6 +245,22 @@ export function Perfil() {
               <Label>Data de Nascimento</Label>
               <Value>{new Date(user.dateOfBirth).toLocaleDateString()}</Value>
             </InfoBox>
+            {planoAtual && (
+              <>
+                <InfoBox>
+                  <Label>Plano Atual</Label>
+                  <Value>{planoAtual.name}</Value>
+                </InfoBox>
+                <InfoBox>
+                  <Label>Valor</Label>
+                  <Value>
+                    {planoAtual.price === 0
+                      ? "Gratuito"
+                      : `R$ ${planoAtual.price}`}
+                  </Value>
+                </InfoBox>
+              </>
+            )}
           </InfoGrid>
 
           <BotaoSair onClick={logout}>Sair</BotaoSair>

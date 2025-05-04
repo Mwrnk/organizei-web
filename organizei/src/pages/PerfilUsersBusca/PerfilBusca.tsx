@@ -90,6 +90,7 @@ const Value = styled.p`
 export function PerfilBusca() {
   const { id } = useParams();
   const [usuario, setUsuario] = useState<any>(null);
+  const [cards, setCards] = useState<any[]>([]);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
@@ -99,6 +100,21 @@ export function PerfilBusca() {
 
         const response = await axios.get(`http://localhost:3000/users/${id}`);
         setUsuario(response.data.data);
+
+        const listasResponse = await axios.get(
+          `http://localhost:3000/lists/${id}/lists`
+        );
+        const listas = listasResponse.data.data;
+
+        const todosCards: any[] = [];
+        for (const lista of listas) {
+          const cardsResponse = await axios.get(
+            `http://localhost:3000/cards/list/${lista.id}`
+          );
+          todosCards.push(...cardsResponse.data.data);
+        }
+
+        setCards(todosCards);
         setErro("");
       } catch (error) {
         console.error(error);
@@ -154,6 +170,23 @@ export function PerfilBusca() {
                 {new Date(usuario.dateOfBirth).toLocaleDateString()}
               </Value>
             </InfoBox>
+          </InfoGrid>
+        </InfoSection>
+
+        <InfoSection>
+          <InfoTitle>Cards Criados</InfoTitle>
+          <InfoGrid>
+            {cards.length > 0 ? (
+              cards.map((card) => (
+                <InfoBox key={card._id}>
+                  <Value>{card.title}</Value>
+                </InfoBox>
+              ))
+            ) : (
+              <InfoBox>
+                <Value>Nenhum card encontrado.</Value>
+              </InfoBox>
+            )}
           </InfoGrid>
         </InfoSection>
       </Container>
