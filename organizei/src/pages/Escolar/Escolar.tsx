@@ -162,7 +162,7 @@ const ConfirmBox = styled.div`
 
 // Tipagens
 type List = { id: string; name: string; userId: string };
-type CardData = { id: string; title: string };
+type CardData = { id: string; title: string; createdAt?: string };
 
 export function Escolar() {
   const { user } = useAuth();
@@ -199,6 +199,7 @@ export function Escolar() {
             cardsPorLista[list.id] = cardsRes.data.data.map((card: any) => ({
               id: card._id,
               title: card.title,
+              createdAt: card.createdAt,
             }));
           })
         );
@@ -418,6 +419,17 @@ export function Escolar() {
             <p>
               <strong>Título:</strong> {cardSelecionado.title}
             </p>
+            {cardSelecionado?.createdAt && (
+              <p>
+                <strong>Criado em:</strong>{" "}
+                {new Date(cardSelecionado.createdAt).toLocaleString("pt-BR", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })}
+              </p>
+            )}
+
             <ButtonGroup>
               <button
                 className="cancel"
