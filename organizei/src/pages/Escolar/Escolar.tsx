@@ -40,7 +40,9 @@ const ScrollWrapper = styled.div`
     opacity: 1;
   }
 `;
-const ScrollButton = styled.button<{ left?: boolean }>`
+const ScrollButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== "left",
+})<{ left?: boolean }>`
   position: absolute;
   top: 50%;
   ${({ left }) => (left ? "left: -20px;" : "right: -20px;")}
@@ -56,6 +58,7 @@ const ScrollButton = styled.button<{ left?: boolean }>`
   opacity: 0;
   transition: opacity 0.2s;
 `;
+
 const Grid = styled.div`
   display: flex;
   gap: 24px;
@@ -162,7 +165,12 @@ const ConfirmBox = styled.div`
 
 // Tipagens
 type List = { id: string; name: string; userId: string };
-type CardData = { id: string; title: string; createdAt?: string };
+type CardData = {
+  id: string;
+  title: string;
+  userId: string;
+  createdAt?: string;
+};
 
 export function Escolar() {
   const { user } = useAuth();
@@ -197,8 +205,9 @@ export function Escolar() {
               `http://localhost:3000/lists/${list.id}/cards`
             );
             cardsPorLista[list.id] = cardsRes.data.data.map((card: any) => ({
-              id: card._id,
+              id: card.id,
               title: card.title,
+              userId: card.userId,
               createdAt: card.createdAt,
             }));
           })
@@ -280,7 +289,13 @@ export function Escolar() {
         title: cardTitle,
         listId: selectedListId,
       });
-      const newCard = { id: res.data.data.id, title: res.data.data.title };
+      const newCard = {
+        id: res.data.data.id,
+        title: res.data.data.title,
+        userId: res.data.data.userId,
+        createdAt: res.data.data.createdAt, // se o backend enviar isso
+      };
+
       setCards((prev) => ({
         ...prev,
         [selectedListId]: [...(prev[selectedListId] || []), newCard],
@@ -419,17 +434,7 @@ export function Escolar() {
             <p>
               <strong>Título:</strong> {cardSelecionado.title}
             </p>
-            {cardSelecionado?.createdAt && (
-              <p>
-                <strong>Criado em:</strong>{" "}
-                {new Date(cardSelecionado.createdAt).toLocaleString("pt-BR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
-              </p>
-            )}
-
+            );
             <ButtonGroup>
               <button
                 className="cancel"
