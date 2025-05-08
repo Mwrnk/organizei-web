@@ -2,7 +2,29 @@ import { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
-import styled from "styled-components";
+import { Lista } from "../../Types/Lista";
+import { CardData } from "../../Types/Card";
+import {
+  Container,
+  Subtitle,
+  Title,
+  ButtonPrimary,
+  ScrollWrapper,
+  ScrollButton,
+  Grid,
+  ListColumn,
+  ColumnTitle,
+  CardArea,
+  Card,
+  ModalOverlay,
+  ModalContent,
+  Input,
+  ButtonGroup,
+  DetalhesCardModal,
+  ConfirmOverlay,
+  ConfirmBox,
+} from "../../Style/Escolar";
+
 import {
   DragDropContext,
   Droppable,
@@ -11,173 +33,15 @@ import {
 } from "@hello-pangea/dnd";
 
 // Styled Components
-const Container = styled.div`
-  padding: 24px;
-`;
-const Subtitle = styled.p`
-  color: #555;
-  margin-bottom: 8px;
-`;
-const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 24px;
-`;
-const ButtonPrimary = styled.button`
-  padding: 10px 16px;
-  font-size: 14px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 500;
-`;
-const ScrollWrapper = styled.div`
-  position: relative;
-  margin-top: 16px;
-  &:hover button {
-    opacity: 1;
-  }
-`;
-const ScrollButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => prop !== "left",
-})<{ left?: boolean }>`
-  position: absolute;
-  top: 50%;
-  ${({ left }) => (left ? "left: -20px;" : "right: -20px;")}
-  transform: translateY(-50%);
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  z-index: 10;
-  opacity: 0;
-  transition: opacity 0.2s;
-`;
-
-const Grid = styled.div`
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
-  scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`;
-const ListColumn = styled.div`
-  min-width: 300px;
-  scroll-snap-align: start;
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-`;
-const ColumnTitle = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  text-align: left;
-`;
-const CardArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-const Card = styled.div`
-  background-color: white;
-  border: 1.5px dashed #bbb;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 18px;
-  cursor: pointer;
-`;
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-const ModalContent = styled.div`
-  background: white;
-  padding: 32px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-`;
-const Input = styled.input`
-  width: 100%;
-  padding: 8px;
-  margin-top: 12px;
-`;
-const ButtonGroup = styled.div`
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  button {
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-  .confirm {
-    background: #007bff;
-    color: white;
-    border: none;
-  }
-  .cancel {
-    background: #ccc;
-    border: none;
-  }
-`;
-const DetalhesCardModal = styled.div`
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  width: 320px;
-  text-align: center;
-`;
-const ConfirmOverlay = styled(ModalOverlay)`
-  z-index: 1100;
-`;
-const ConfirmBox = styled.div`
-  background-color: white;
-  padding: 24px;
-  border-radius: 12px;
-  width: 320px;
-  text-align: center;
-`;
 
 // Tipagens
-type List = { id: string; name: string; userId: string };
-type CardData = {
-  id: string;
-  title: string;
-  userId: string;
-  createdAt?: string;
-};
 
 export function Escolar() {
   const { user } = useAuth();
   const userId = user?._id;
   const gridRef = useRef<HTMLDivElement | null>(null);
 
-  const [lists, setLists] = useState<List[]>([]);
+  const [lists, setLists] = useState<Lista[]>([]);
   const [cards, setCards] = useState<Record<string, CardData[]>>({});
   const [showModal, setShowModal] = useState(false);
   const [listName, setListName] = useState("");
@@ -434,7 +298,7 @@ export function Escolar() {
             <p>
               <strong>Título:</strong> {cardSelecionado.title}
             </p>
-            );
+
             <ButtonGroup>
               <button
                 className="cancel"
