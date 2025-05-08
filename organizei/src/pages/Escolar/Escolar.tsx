@@ -60,8 +60,13 @@ export function Escolar() {
         const res = await axios.get(
           `http://localhost:3000/users/${userId}/lists`
         );
-        const listas = res.data.data;
+
+        const listas = res.data.data || [];
         setLists(listas);
+        if (listas.length === 0) {
+          setCards({});
+          return;
+        }
         const cardsPorLista: Record<string, CardData[]> = {};
         await Promise.all(
           listas.map(async (list) => {
@@ -216,6 +221,19 @@ export function Escolar() {
       console.error("Erro ao editar card", err);
     }
   };
+  const handleDeleteList = async (listId: string) => {
+    try {
+      await axios.delete(`http://localhost:3000/lists/${listId}`);
+      setLists((prev) => prev.filter((list) => list.id !== listId));
+      setCards((prev) => {
+        const updated = { ...prev };
+        delete updated[listId];
+        return updated;
+      });
+    } catch (err) {
+      console.error("Erro ao excluir lista", err);
+    }
+  };
 
   return (
     <>
@@ -243,6 +261,21 @@ export function Escolar() {
                       {...provided.droppableProps}
                     >
                       <ColumnTitle>{list.name}</ColumnTitle>
+                      <button
+                        onClick={() => handleDeleteList(list.id)}
+                        style={{
+                          alignSelf: "flex-end",
+                          background: "transparent",
+                          color: "red",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          marginBottom: "8px",
+                        }}
+                      >
+                        Excluir Lista
+                      </button>
+
                       <CardArea>
                         {(cards[list.id] || []).map((card, index) => (
                           <Draggable
