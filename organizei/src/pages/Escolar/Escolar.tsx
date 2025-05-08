@@ -157,7 +157,6 @@ export function Escolar() {
         id: res.data.data.id,
         title: res.data.data.title,
         userId: res.data.data.userId,
-        createdAt: res.data.data.createdAt, // se o backend enviar isso
       };
 
       setCards((prev) => ({
