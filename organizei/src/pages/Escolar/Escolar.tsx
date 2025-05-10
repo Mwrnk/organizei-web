@@ -58,7 +58,7 @@ export function Escolar() {
       if (!userId) return;
       try {
         const res = await axios.get(
-          `http://localhost:3000/users/${userId}/lists`
+          `http://localhost:3000/lists/user/${userId}`
         );
 
         const listas = res.data.data || [];
