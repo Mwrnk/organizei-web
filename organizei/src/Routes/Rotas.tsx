@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContexts";
-import { UserRole, getUserPermissions } from "../Types/User";
+import { getUserPermissions } from "../Types/User";
 import { ReactNode } from "react";
 
 // Componente para rotas protegidas que requerem autenticação
@@ -46,10 +46,10 @@ interface PermissionRouteProps {
 }
 
 // Componente para rotas que requerem permissões específicas
-export const PermissionRoute = ({ 
-  requiredPermission, 
+export const PermissionRoute = ({
+  requiredPermission,
   fallbackPath = "/perfil",
-  children 
+  children,
 }: PermissionRouteProps) => {
   const { user, isLoading } = useAuth();
 
@@ -69,21 +69,21 @@ export const PermissionRoute = ({
 
 // Componente para rotas que requerem role premium
 export const PremiumRoute = ({ children }: { children: ReactNode }) => {
-  const { user, isLoading } = useAuth();
+  const { currentPlan, isLoading } = useAuth();
 
-  // Se estiver carregando, mostra um indicador de carregamento
   if (isLoading) {
     return <div>Carregando...</div>;
   }
 
-  // Se não tiver usuário ou não for premium
-  if (!user || user.role !== UserRole.PREMIUM && user.role !== UserRole.ADMIN) {
+  const isPremium = currentPlan === "premium" || currentPlan === "enterprise";
+
+  if (!isPremium) {
     return (
       <div style={{ textAlign: "center", padding: "50px 20px" }}>
         <h2>Acesso Restrito</h2>
         <p>Esta funcionalidade é exclusiva para usuários premium.</p>
         <button
-          onClick={() => window.location.href = "/planos"}
+          onClick={() => (window.location.href = "/planos")}
           style={{
             backgroundColor: "#1d1b20",
             color: "white",
@@ -91,13 +91,13 @@ export const PremiumRoute = ({ children }: { children: ReactNode }) => {
             border: "none",
             borderRadius: "4px",
             marginTop: "20px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Ver Planos
         </button>
         <button
-          onClick={() => window.location.href = "/perfil"}
+          onClick={() => (window.location.href = "/perfil")}
           style={{
             backgroundColor: "transparent",
             color: "#1d1b20",
@@ -106,7 +106,7 @@ export const PremiumRoute = ({ children }: { children: ReactNode }) => {
             borderRadius: "4px",
             marginTop: "20px",
             marginLeft: "10px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           Voltar para Perfil
@@ -115,6 +115,5 @@ export const PremiumRoute = ({ children }: { children: ReactNode }) => {
     );
   }
 
-  // Se for premium, renderiza o componente filho
   return <>{children}</>;
 };

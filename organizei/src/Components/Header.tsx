@@ -12,7 +12,9 @@ import IconIa from "../../assets/bot.svg";
 
 export function Header() {
   const location = useLocation();
-  const { currentPlan } = useAuth();
+  const { currentPlan, isLoading } = useAuth();
+
+  if (isLoading) return null; // ou um spinner se preferir
 
   const canUseAI = currentPlan === "premium" || currentPlan === "enterprise";
 

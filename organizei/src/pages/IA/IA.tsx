@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Header } from '../../Components/Header';
-import styled from 'styled-components';
+import { useState } from "react";
+import { Header } from "../../Components/Header";
+import styled from "styled-components";
+import axios from "axios";
 
 const ChatContainer = styled.div`
   max-width: 800px;
@@ -30,19 +31,19 @@ const MessageBubble = styled.div<{ isUser: boolean }>`
   padding: 10px 15px;
   margin: 10px 0;
   border-radius: 18px;
-  ${({ isUser }) => isUser
-    ? `
+  ${({ isUser }) =>
+    isUser
+      ? `
       background-color: #1d1b20;
       color: white;
       align-self: flex-end;
       margin-left: auto;
     `
-    : `
+      : `
       background-color: #e1e1e1;
       color: #333;
       align-self: flex-start;
-    `
-  }
+    `}
   display: flex;
   flex-direction: column;
 `;
@@ -59,7 +60,6 @@ const ChatInput = styled.input`
   border: 1px solid #ccc;
   outline: none;
   font-size: 16px;
-  
   &:focus {
     border-color: #1d1b20;
   }
@@ -74,7 +74,6 @@ const SendButton = styled.button`
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s;
-  
   &:hover {
     background-color: #2c2c2c;
   }
@@ -87,59 +86,46 @@ type Message = {
 };
 
 export function IA() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Olá! Sou o assistente virtual do Organiz.ei. Como posso ajudar você?", isUser: false }
-  ]);
-  const [newMessage, setNewMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!newMessage.trim()) return;
-    
-    // Adiciona a mensagem do usuário
+
     const userMessage: Message = {
       id: Date.now(),
       text: newMessage,
-      isUser: true
+      isUser: true,
     };
-    
-    setMessages(prev => [...prev, userMessage]);
-    setNewMessage('');
-    
-    // Simula resposta da IA após 1 segundo
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: Date.now() + 1,
-        text: getAIResponse(newMessage),
-        isUser: false
-      };
-      
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
-  };
 
-  // Função simples para simular respostas da IA
-  const getAIResponse = (message: string): string => {
-    const normalizedMessage = message.toLowerCase();
-    
-    if (normalizedMessage.includes('olá') || normalizedMessage.includes('oi') || normalizedMessage.includes('hey')) {
-      return 'Olá! Como posso ajudar você hoje?';
+    setMessages((prev) => [...prev, userMessage]);
+    setNewMessage("");
+    setLoading(true);
+
+    try {
+      const response = await axios.post("http://localhost:3000/chat", {
+        message: newMessage,
+      });
+
+      const aiMessage: Message = {
+        id: Date.now() + 1,
+        text: response.data.response,
+        isUser: false,
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      const errorMessage: Message = {
+        id: Date.now() + 2,
+        text: "Erro ao se comunicar com a IA. Tente novamente mais tarde.",
+        isUser: false,
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setLoading(false);
     }
-    
-    if (normalizedMessage.includes('ajuda') || normalizedMessage.includes('ajudar')) {
-      return 'Posso ajudar você a organizar suas tarefas, planejar sua rotina ou responder dúvidas sobre o Organiz.ei!';
-    }
-    
-    if (normalizedMessage.includes('tarefa') || normalizedMessage.includes('tarefas')) {
-      return 'Para gerenciar suas tarefas, você pode usar nossa funcionalidade de listas de tarefas. Quer que eu crie uma nova lista para você?';
-    }
-    
-    if (normalizedMessage.includes('obrigado') || normalizedMessage.includes('obrigada')) {
-      return 'De nada! Estou aqui para ajudar. Tem mais alguma coisa em que posso auxiliar?';
-    }
-    
-    return 'Entendi. Como posso ajudar você com isso? Sou especialista em organização de tarefas e planejamento.';
   };
 
   return (
@@ -148,27 +134,35 @@ export function IA() {
       <ChatContainer>
         <ChatHeader>
           <h2>Assistente Virtual</h2>
-          <p>Versão Premium - Converse com nossa IA para ajudar na organização</p>
+          <p>
+            Versão Premium - Converse com nossa IA para ajudar na organização
+          </p>
         </ChatHeader>
-        
+
         <ChatMessages>
-          {messages.map(message => (
+          {messages.map((message) => (
             <MessageBubble key={message.id} isUser={message.isUser}>
               {message.text}
             </MessageBubble>
           ))}
+          {loading && (
+            <MessageBubble isUser={false}>Analisando...</MessageBubble>
+          )}
         </ChatMessages>
-        
+
         <ChatForm onSubmit={handleSendMessage}>
           <ChatInput
             type="text"
             placeholder="Digite sua mensagem..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            disabled={loading}
           />
-          <SendButton type="submit">Enviar</SendButton>
+          <SendButton type="submit" disabled={loading}>
+            Enviar
+          </SendButton>
         </ChatForm>
       </ChatContainer>
     </>
   );
-} 
+}

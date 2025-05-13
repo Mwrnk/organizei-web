@@ -245,9 +245,9 @@ export function Planos() {
 
       toast.success(`Plano ${plan.name} ativado com sucesso!`);
       updateUser?.({ role: planoName.toLowerCase() as UserRole });
-      setPlanoAtualUsuario(plan); // atualiza local
+      setPlanoAtualUsuario(plan);
 
-      await loadUserPlan(user._id); // ✅ atualiza o contexto global (Header reagirá)
+      await loadUserPlan(user._id);
     } catch (error: any) {
       console.error("Erro ao assinar plano:", error);
       toast.error("Erro ao assinar plano");
