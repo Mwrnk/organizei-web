@@ -126,11 +126,12 @@ export function Comunidade() {
 
   const fetchAllCards = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/cards");
+      const res = await axios.get("http://localhost:3000/comunidade/cards");
       const data = res.data?.data;
+
       if (Array.isArray(data)) {
         setCards(data);
-        setVisibleCount(8);
+        setVisibleCount(8); // ou o valor que estiver usando
       }
     } catch (err) {
       console.error("Erro ao buscar cards:", err);
@@ -216,13 +217,64 @@ export function Comunidade() {
         )}
 
         <GridCards>
-          {cards.slice(0, visibleCount).map((card) => (
-            <Card key={card._id}>
+          {cards.slice(0, visibleCount).map((card, index) => (
+            <Card key={index}>
               <CardTitulo>{card.title}</CardTitulo>
+              <CardInfo>Downloads: {card.downloads}</CardInfo>
+              <CardInfo>Likes: {card.likes}</CardInfo>
+              <CardInfo>Comentários: {card.comments}</CardInfo>
               <CardInfo>
-                {new Date(card.createdAt).toLocaleDateString()}
+                Criado por: {card.user?.name || "Desconhecido"}
               </CardInfo>
-              <CardInfo>{card.listId?.userId?.name || "Desconhecido"}</CardInfo>
+
+              <button
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#1d1b20",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+                onClick={async () => {
+                  const token = localStorage.getItem("authenticacao");
+
+                  if (!token) {
+                    alert("Você precisa estar logado para curtir.");
+                    return;
+                  }
+
+                  try {
+                    const res = await axios.post(
+                      `http://localhost:3000/cards/${card.id}/like`,
+                      {},
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
+
+                    const updatedLikes = res.data?.data?.likes;
+
+                    setCards((prev) =>
+                      prev.map((c) =>
+                        c.id === card.id ? { ...c, likes: updatedLikes } : c
+                      )
+                    );
+                  } catch (err: any) {
+                    if (err.response?.status === 400) {
+                      alert("Você já curtiu este card.");
+                    } else {
+                      console.error("Erro ao curtir o card", err);
+                      alert("Erro ao curtir. Tente novamente.");
+                    }
+                  }
+                }}
+              >
+                Curtir
+              </button>
             </Card>
           ))}
         </GridCards>

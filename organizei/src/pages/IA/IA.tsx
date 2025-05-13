@@ -133,10 +133,8 @@ export function IA() {
       <Header />
       <ChatContainer>
         <ChatHeader>
-          <h2>Assistente Virtual</h2>
-          <p>
-            Versão Premium - Converse com nossa IA para ajudar na organização
-          </p>
+          <h2>ORGAN.IA</h2>
+          <p>Converse com nossa IA para ajudar na organização</p>
         </ChatHeader>
 
         <ChatMessages>
