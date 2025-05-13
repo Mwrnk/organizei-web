@@ -24,17 +24,12 @@ import {
   ConfirmOverlay,
   ConfirmBox,
 } from "../../Style/Escolar";
-
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-
-// Styled Components
-
-// Tipagens
 
 export function Escolar() {
   const { user } = useAuth();
@@ -60,13 +55,14 @@ export function Escolar() {
         const res = await axios.get(
           `http://localhost:3000/lists/user/${userId}`
         );
-
         const listas = res.data.data || [];
         setLists(listas);
+
         if (listas.length === 0) {
           setCards({});
           return;
         }
+
         const cardsPorLista: Record<string, CardData[]> = {};
         await Promise.all(
           listas.map(async (list) => {
@@ -81,11 +77,13 @@ export function Escolar() {
             }));
           })
         );
+
         setCards(cardsPorLista);
       } catch (err) {
         console.error("Erro ao buscar listas ou cards", err);
       }
     };
+
     fetchListsAndCards();
   }, [userId]);
 
@@ -108,6 +106,7 @@ export function Escolar() {
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
+
     const sourceId = source.droppableId;
     const destId = destination.droppableId;
 
@@ -131,24 +130,40 @@ export function Escolar() {
     }
   };
 
-  const handleCreateList = async () => {
-    if (!userId || !listName.trim()) return;
-    try {
-      const res = await axios.post("http://localhost:3000/lists", {
-        name: listName.trim(),
-        userId,
-      });
-      setLists((prev) => [...prev, res.data.data]);
-      setListName("");
-      setShowModal(false);
-    } catch (err) {
-      console.error("Erro ao criar lista", err);
-    }
-  };
-
   const openCardModal = (listId: string) => {
     setSelectedListId(listId);
     setShowCardModal(true);
+  };
+
+  const handleCreateList = async () => {
+    if (!userId || !listName.trim()) {
+      alert("Preencha o nome da lista corretamente.");
+      return;
+    }
+
+    const payload = {
+      name: listName.trim(),
+      userId,
+    };
+
+    try {
+      const res = await axios.post("http://localhost:3000/lists", payload);
+
+      const novaLista = {
+        id: res.data.data.id || res.data.data._id,
+        name: res.data.data.name,
+        userId: res.data.data.userId,
+      };
+
+      setLists((prev) => [...prev, novaLista]);
+      setListName("");
+      setShowModal(false);
+    } catch (err: any) {
+      console.error("Erro ao criar lista", err);
+      if (err.response) {
+        console.error("Resposta do backend:", err.response.data);
+      }
+    }
   };
 
   const handleCreateCard = async () => {
@@ -158,6 +173,7 @@ export function Escolar() {
         title: cardTitle,
         listId: selectedListId,
       });
+
       const newCard = {
         id: res.data.data.id,
         title: res.data.data.title,
@@ -205,10 +221,9 @@ export function Escolar() {
     try {
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
-        {
-          title: novoTitulo.trim(),
-        }
+        { title: novoTitulo.trim() }
       );
+
       setCards((prev) => ({
         ...prev,
         [selectedListId]: prev[selectedListId].map((c) =>
@@ -221,6 +236,7 @@ export function Escolar() {
       console.error("Erro ao editar card", err);
     }
   };
+
   const handleDeleteList = async (listId: string) => {
     try {
       await axios.delete(`http://localhost:3000/lists/${listId}`);

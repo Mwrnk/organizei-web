@@ -173,10 +173,11 @@ type Plan = {
 
 export function Planos() {
   const [tempoPlanos, setTempoPlanos] = useState(true);
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, loadUserPlan } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planoAtualUsuario, setPlanoAtualUsuario] = useState<Plan | null>(null);
   const [isOn, setIsOn] = useState(false);
+
   useEffect(() => {
     const fetchPlans = async () => {
       try {
@@ -244,7 +245,9 @@ export function Planos() {
 
       toast.success(`Plano ${plan.name} ativado com sucesso!`);
       updateUser?.({ role: planoName.toLowerCase() as UserRole });
-      setPlanoAtualUsuario(plan); // Atualiza localmente o plano atual
+      setPlanoAtualUsuario(plan); // atualiza local
+
+      await loadUserPlan(user._id); // ✅ atualiza o contexto global (Header reagirá)
     } catch (error: any) {
       console.error("Erro ao assinar plano:", error);
       toast.error("Erro ao assinar plano");

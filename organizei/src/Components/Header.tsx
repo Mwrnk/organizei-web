@@ -5,8 +5,6 @@ import {
 } from "../Style/StyledHeader";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContexts";
-import { useEffect, useState } from "react";
-import axios from "axios";
 
 import IconNotifacoes from "../../assets/Bell.svg";
 import Iconconfig from "../../assets/Settings.svg";
@@ -14,33 +12,9 @@ import IconIa from "../../assets/bot.svg";
 
 export function Header() {
   const location = useLocation();
-  const { user } = useAuth();
+  const { currentPlan } = useAuth();
 
-  const [canUseAI, setCanUseAI] = useState(false);
-
-  useEffect(() => {
-    const fetchUserPlan = async () => {
-      if (!user?._id) return;
-
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/users/${user._id}/plan`
-        );
-        const planName = response.data.data?.name?.toLowerCase();
-
-        if (planName === "premium" || planName === "enterprise") {
-          setCanUseAI(true);
-        } else {
-          setCanUseAI(false);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar plano do usuário no Header:", error);
-        setCanUseAI(false);
-      }
-    };
-
-    fetchUserPlan();
-  }, [user?._id]);
+  const canUseAI = currentPlan === "premium" || currentPlan === "enterprise";
 
   return (
     <HeaderContainer>
