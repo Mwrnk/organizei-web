@@ -109,6 +109,7 @@ export function Comunidade() {
   const [users, setUsers] = useState<any[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(8);
+  const [selectedCardId, setSelectedCardId] = useState("");
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -138,7 +139,11 @@ export function Comunidade() {
       const res = await axios.get("http://localhost:3000/cards", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setMeusCards(res.data.data || []);
+      const cardsCorrigidos = (res.data.data || []).map((card: any) => ({
+        ...card,
+        _id: card._id || card.id,
+      }));
+      setMeusCards(cardsCorrigidos);
     } catch (error) {
       console.error("Erro ao buscar seus cards", error);
     }
@@ -307,29 +312,80 @@ export function Comunidade() {
             </Subtitulo>
 
             <GridCards style={{ marginTop: 40 }}>
-              {meusCards
-                .filter((card) => !card.is_published)
-                .map((card) => (
-                  <Card key={card._id}>
-                    <CardTitulo>{card.title}</CardTitulo>
-                    <CardInfo>Prioridade: {card.priority}</CardInfo>
-                    <CardInfo>Downloads: {card.downloads}</CardInfo>
-                    <CardInfo>Likes: {card.likes}</CardInfo>
-                    <CardInfo>
-                      Comentários: {card.comments?.length ?? 0}
-                    </CardInfo>
+              <Card>
+                <CardTitulo>Selecione um card</CardTitulo>
 
-                    <button
-                      onClick={() => {
-                        console.log("ID enviado:", card.id);
+                <select
+                  value={selectedCardId}
+                  onChange={(e) => {
+                    console.log("Card selecionado:", e.target.value);
+                    setSelectedCardId(e.target.value);
+                  }}
+                  style={{
+                    padding: "12px",
+                    borderRadius: "8px",
+                    width: "100%",
+                    fontSize: "14px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <option value="">Selecione um card</option>
+                  {meusCards
+                    .filter((card) => !card.is_published)
+                    .map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.title}
+                      </option>
+                    ))}
+                </select>
 
-                        handlePublicar(card.id);
-                      }}
-                    >
-                      Publicar
-                    </button>
-                  </Card>
-                ))}
+                {(() => {
+                  const selectedCard = meusCards.find(
+                    (card) => card._id === selectedCardId
+                  );
+
+                  if (!selectedCard) return null;
+
+                  return (
+                    <>
+                      {/* <CardInfo>Prioridade: {selectedCard.priority}</CardInfo>
+                      <CardInfo>Downloads: {selectedCard.downloads}</CardInfo>
+                      <CardInfo>Likes: {selectedCard.likes}</CardInfo>
+                      <CardInfo>
+                        Comentários: {selectedCard.comments?.length ?? 0}
+                      </CardInfo> */}
+                    </>
+                  );
+                })()}
+
+                <button
+                  onClick={() => {
+                    const selectedCard = meusCards.find(
+                      (card) => card._id === selectedCardId
+                    );
+                    console.log("Tentando publicar:", selectedCard);
+
+                    if (selectedCard) {
+                      handlePublicar(selectedCard._id);
+                    } else {
+                      alert("Selecione um card válido.");
+                    }
+                  }}
+                  style={{
+                    marginTop: "12px",
+                    padding: "10px 16px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: "#1d1b20",
+                    color: "white",
+                    cursor: selectedCardId ? "pointer" : "not-allowed",
+                    fontWeight: "bold",
+                  }}
+                  disabled={!selectedCardId}
+                >
+                  Publicar
+                </button>
+              </Card>
             </GridCards>
           </>
         )}
