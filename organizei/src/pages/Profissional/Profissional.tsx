@@ -4,271 +4,270 @@ import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import styled from "styled-components";
 
-// --- Styled Components ---
-
-const Container = styled.div`
+const Container = styled.div``;
+const Card = styled.div`
+  background: #fff;
   padding: 24px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 `;
-
-const Subtitle = styled.p`
-  color: #555;
-  margin-bottom: 8px;
+const FlashText = styled.p`
+  font-size: 18px;
+  margin-bottom: 12px;
 `;
-
-const Title = styled.h1`
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 24px;
-`;
-
-const ControlsWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 24px;
-`;
-
-const ButtonPrimary = styled.button`
-  padding: 10px 16px;
-  font-size: 14px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-weight: 500;
-`;
-
-const Pagination = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const PageButton = styled.button<{ active: boolean }>`
-  padding: 6px 12px;
+const GradeButton = styled.button`
+  padding: 8px 12px;
+  margin: 4px;
   border: none;
   border-radius: 6px;
-  background-color: ${({ active }) => (active ? "#007bff" : "#eee")};
-  color: ${({ active }) => (active ? "white" : "#333")};
+  background-color: #0066ff;
+  color: white;
   cursor: pointer;
-  font-weight: 500;
+  &:hover {
+    background-color: #0050cc;
+  }
 `;
-
-const Grid = styled.div`
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-`;
-
-const ListColumn = styled.div`
-  min-width: 220px;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  padding: 16px;
-  border: 1px solid #ddd;
-  display: flex;
-  flex-direction: column;
-`;
-
-const ColumnTitle = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  text-align: left;
-`;
-
-const CardArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const Card = styled.div`
-  background-color: white;
-  border: 1.5px dashed #bbb;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 18px;
-  cursor: pointer;
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: white;
-  padding: 32px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-`;
-
 const Input = styled.input`
   width: 100%;
+  margin: 8px 0;
   padding: 8px;
-  margin-top: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+`;
+const Select = styled.select`
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 `;
 
-const ButtonGroup = styled.div`
-  margin-top: 16px;
-
-  button {
-    padding: 8px 16px;
-    margin: 0 4px;
-    border-radius: 6px;
-    cursor: pointer;
-  }
-
-  .confirm {
-    background: #007bff;
-    color: white;
-    border: none;
-  }
-
-  .cancel {
-    background: #ccc;
-    border: none;
+const Button = styled.button`
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  &:hover {
+    background-color: #218838;
   }
 `;
-
-// --- Types ---
-
-type List = {
-  _id: string;
-  name: string;
-  userId: string;
-};
-
-// --- Componente Escolar ---
 
 export function Profissional() {
   const { user } = useAuth();
-  const userId = user?._id;
+  const token = localStorage.getItem("authenticacao");
 
-  const [listName, setListName] = useState("");
-  const [lists, setLists] = useState<List[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [flashcards, setFlashcards] = useState<any[]>([]);
+  const [cards, setCards] = useState<any[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showBack, setShowBack] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const porPagina = 5;
-  const totalPaginas = Math.ceil(lists.length / porPagina);
-  const listasVisiveis = lists.slice(
-    (paginaAtual - 1) * porPagina,
-    paginaAtual * porPagina
-  );
+  // campos de criação
+  const [selectedCardId, setSelectedCardId] = useState("");
+  const [front, setFront] = useState("");
+  const [back, setBack] = useState("");
+  const [tags, setTags] = useState("");
+  const [amount, setAmount] = useState("3");
 
-  useEffect(() => {
-    const fetchLists = async () => {
-      if (!userId) return;
-
-      try {
-        const response = await axios.get(
-          `http://localhost:3000/lists/${userId}/lists`
-        );
-        setLists(response.data.data);
-      } catch (error) {
-        console.error("Erro ao buscar listas", error);
-      }
-    };
-
-    fetchLists();
-  }, [userId]);
-
-  const handleCreateList = async () => {
-    const trimmedName = listName.trim();
-
-    if (!userId || !trimmedName) return;
-
+  const loadFlashcards = async () => {
     try {
-      const response = await axios.post("http://localhost:3000/lists", {
-        name: trimmedName,
-        userId,
+      const res = await axios.get("http://localhost:3000/flashcards", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      setLists((prev) => [...prev, response.data.data]);
-      setListName("");
-      setShowModal(false);
-      setPaginaAtual(1);
-    } catch (error) {
-      console.error("Erro ao criar lista", error);
+      setFlashcards(res.data.data);
+    } catch (err) {
+      console.error("Erro ao carregar flashcards", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const loadCards = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/cards", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCards(res.data.data);
+    } catch (err) {
+      console.error("Erro ao carregar cards do usuário", err);
     }
   };
 
-  return (
-    <>
-      <Header />
+  const createFlashcard = async () => {
+    if (!selectedCardId || front.trim().length < 1 || back.trim().length < 1) {
+      alert("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        "http://localhost:3000/flashcards",
+        {
+          cardId: selectedCardId,
+          front,
+          back,
+          tags: tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t.length > 0),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Flashcard criado com sucesso");
+      setFront("");
+      setBack("");
+      setTags("");
+      loadFlashcards();
+    } catch (err: any) {
+      console.error("Erro ao criar flashcard", err);
+      alert(
+        "Erro ao criar flashcard: " +
+          (err.response?.data?.message || "Erro desconhecido")
+      );
+    }
+  };
+
+  const createFlashcardWithAI = async () => {
+    try {
+      await axios.post(
+        "http://localhost:3000/flashcards/withAI",
+        {
+          cardId: selectedCardId,
+          amount: parseInt(amount),
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Flashcards com IA gerados com sucesso");
+      setAmount("3");
+      loadFlashcards();
+    } catch (err) {
+      console.error("Erro ao gerar flashcards por IA", err);
+    }
+  };
+
+  const handleGrade = async (grade: number) => {
+    const current = flashcards[currentIndex];
+    try {
+      await axios.patch(
+        `http://localhost:3000/flashcards/doreview/${current._id}`,
+        { grade },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowBack(false);
+      setCurrentIndex((prev) => prev + 1);
+    } catch (err) {
+      console.error("Erro ao avaliar", err);
+    }
+  };
+
+  useEffect(() => {
+    if (token && user) {
+      loadFlashcards();
+      loadCards();
+    }
+  }, [token, user]);
+
+  if (isLoading)
+    return (
       <Container>
-        <div>
-          <Subtitle>#profisional</Subtitle>
-          <Title>A sua melhor organização profissional</Title>
-          <ButtonPrimary onClick={() => setShowModal(true)}>
-            + Criar nova lista
-          </ButtonPrimary>
-        </div>
-
-        <ControlsWrapper>
-          <Pagination>
-            {Array.from({ length: totalPaginas }, (_, i) => (
-              <PageButton
-                key={i + 1}
-                active={paginaAtual === i + 1}
-                onClick={() => setPaginaAtual(i + 1)}
-              >
-                {i + 1}
-              </PageButton>
-            ))}
-          </Pagination>
-        </ControlsWrapper>
-
-        <Grid>
-          {listasVisiveis.map((list) => (
-            <ListColumn key={list._id}>
-              <ColumnTitle>{list.name}</ColumnTitle>
-              <CardArea>
-                {[...Array(5)].map((_, i) => (
-                  <Card key={i}>+</Card>
-                ))}
-              </CardArea>
-            </ListColumn>
-          ))}
-        </Grid>
+        <p>Carregando flashcards...</p>
       </Container>
+    );
 
-      {showModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <h3>Nova Lista</h3>
-            <Input
-              type="text"
-              placeholder="Nome da lista"
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-            />
-            <ButtonGroup>
-              <button className="confirm" onClick={handleCreateList}>
-                Criar
-              </button>
-              <button className="cancel" onClick={() => setShowModal(false)}>
-                Cancelar
-              </button>
-            </ButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
+  const current = flashcards[currentIndex];
+
+  return (
+    <Container>
+      <Header />
+
+      <Card>
+        <h3>Criar Flashcard Manual</h3>
+        <Select
+          value={selectedCardId}
+          onChange={(e) => setSelectedCardId(e.target.value)}
+        >
+          <option value="">Selecione um card</option>
+          {cards.map((card: any) => (
+            <option key={card._id} value={card._id}>
+              {card.title}
+            </option>
+          ))}
+        </Select>
+        <Input
+          placeholder="Frente"
+          value={front}
+          onChange={(e) => setFront(e.target.value)}
+        />
+        <Input
+          placeholder="Verso"
+          value={back}
+          onChange={(e) => setBack(e.target.value)}
+        />
+        <Input
+          placeholder="Tags (separadas por vírgula)"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+        />
+        <Button onClick={createFlashcard}>Criar Flashcard</Button>
+      </Card>
+
+      {/* FORMULÁRIO POR IA */}
+      <Card>
+        <h3>Gerar Flashcards com IA</h3>
+        <Select
+          value={selectedCardId}
+          onChange={(e) => setSelectedCardId(e.target.value)}
+        >
+          <option value="">Selecione um card</option>
+          {cards.map((card: any) => (
+            <option key={card._id} value={card._id}>
+              {card.title}
+            </option>
+          ))}
+        </Select>
+        <Input
+          placeholder="Quantidade"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+        <Button onClick={createFlashcardWithAI}>Gerar com IA</Button>
+      </Card>
+
+      {/* REVISÃO */}
+      {flashcards.length === 0 ? (
+        <p>Você ainda não possui flashcards.</p>
+      ) : currentIndex >= flashcards.length ? (
+        <p>Parabéns! Você revisou todos os flashcards.</p>
+      ) : (
+        <Card>
+          <FlashText>
+            <strong>Frente:</strong> {current.front}
+          </FlashText>
+          {showBack && (
+            <FlashText>
+              <strong>Verso:</strong> {current.back}
+            </FlashText>
+          )}
+          {!showBack ? (
+            <GradeButton onClick={() => setShowBack(true)}>
+              Mostrar Resposta
+            </GradeButton>
+          ) : (
+            <div>
+              <p>Como você se saiu? (0 a 5)</p>
+              {[0, 1, 2, 3, 4, 5].map((n) => (
+                <GradeButton key={n} onClick={() => handleGrade(n)}>
+                  {n}
+                </GradeButton>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
-    </>
+    </Container>
   );
 }
