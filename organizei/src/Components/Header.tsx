@@ -47,7 +47,7 @@ export function Header() {
               to="/profissional"
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              Profissional
+              Games
             </Link>
           </li>
           <li
