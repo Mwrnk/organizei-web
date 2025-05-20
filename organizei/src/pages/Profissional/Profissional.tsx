@@ -131,13 +131,15 @@ export function Profissional() {
   };
 
   const createFlashcardWithAI = async () => {
+    if (!selectedCardId) {
+      alert("Selecione um card válido.");
+      return;
+    }
+
     try {
       await axios.post(
-        "http://localhost:3000/flashcards/withAI",
-        {
-          cardId: selectedCardId,
-          amount: parseInt(amount),
-        },
+        `http://localhost:3000/flashcards/withAI/${selectedCardId}`,
+        { amount: parseInt(amount) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       alert("Flashcards com IA gerados com sucesso");
@@ -145,6 +147,7 @@ export function Profissional() {
       loadFlashcards();
     } catch (err) {
       console.error("Erro ao gerar flashcards por IA", err);
+      alert("Erro ao gerar flashcards por IA");
     }
   };
 
@@ -191,7 +194,7 @@ export function Profissional() {
         >
           <option value="">Selecione um card</option>
           {cards.map((card: any) => (
-            <option key={card._id} value={card._id}>
+            <option key={card.id} value={card.id}>
               {card.title}
             </option>
           ))}
