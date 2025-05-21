@@ -356,10 +356,43 @@ export function Escolar() {
     }
 
     try {
+      console.log("🚀 Iniciando salvamento...");
+
       // Atualiza o título
-      await axios.patch(`http://localhost:3000/cards/${cardSelecionado.id}`, {
-        title: tituloEditavel.trim(),
-      });
+      const res = await axios.patch(
+        `http://localhost:3000/cards/${cardSelecionado.id}`,
+        {
+          title: tituloEditavel.trim(),
+        }
+      );
+
+      console.log("✅ Título atualizado:", res.data.data.title);
+
+      // Upload dos arquivos, se houver
+      const fileInput = document.getElementById(
+        "fileInput"
+      ) as HTMLInputElement;
+      const files = fileInput?.files;
+
+      if (files && files.length > 0) {
+        const formData = new FormData();
+
+        Array.from(files).forEach((file) => {
+          formData.append("files", file);
+          console.log("📤 Arquivo enviado:", file.name);
+        });
+
+        await axios.post(
+          `http://localhost:3000/cards/${cardSelecionado.id}/files`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        console.log("✅ Upload de arquivos concluído.");
+        toast.success("Arquivos enviados com sucesso.");
+      } else {
+        console.log("ℹ️ Nenhum arquivo para enviar.");
+      }
 
       // Atualiza frontend
       setCards((prev) => ({
@@ -378,7 +411,7 @@ export function Escolar() {
 
       toast.success("Card atualizado com sucesso.");
     } catch (error) {
-      console.error("Erro ao atualizar card", error);
+      console.error("💥 Erro ao atualizar card ou enviar arquivos:", error);
       toast.error("Erro ao atualizar card.");
     }
   };
@@ -496,14 +529,20 @@ export function Escolar() {
             {/* Sidebar */}
             <Sidebar>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                }}
               >
-                <div
+                <img
+                  src={user?.profileImage || "https://via.placeholder.com/40"}
+                  alt="Foto de perfil"
                   style={{
                     width: 40,
                     height: 40,
                     borderRadius: "10px",
-                    background: "#111",
+                    objectFit: "cover",
                   }}
                 />
                 <div>
@@ -556,7 +595,22 @@ export function Escolar() {
 
             {/* Content */}
             <ContentArea>
-              <h2>{cardSelecionado.title}</h2>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <h2>{tituloEditavel}</h2>
+                {/* Botão X para fechar */}
+                <button
+                  onClick={() => setCardSelecionado(null)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontSize: "24px",
+                    cursor: "pointer",
+                    color: "white",
+                  }}
+                >
+                  ❌
+                </button>
+              </div>
               <hr />
 
               <UploadArea>
@@ -570,7 +624,14 @@ export function Escolar() {
                   type="file"
                   id="fileInput"
                   multiple
-                  onChange={(e) => console.log(e.target.files)}
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files) {
+                      Array.from(files).forEach((file) => {
+                        console.log("📦 Arquivo selecionado:", file.name);
+                      });
+                    }
+                  }}
                   style={{ display: "none" }}
                 />
               </UploadArea>
