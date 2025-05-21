@@ -29,7 +29,6 @@ import {
   SidebarCard,
   PrioridadeWrapper,
   ContentArea,
-  UploadArea,
   SaveButton,
   ConfirmBox,
 } from "../../Style/Escolar";
@@ -80,7 +79,7 @@ export function Escolar() {
 
         const cardsPorLista: Record<string, CardData[]> = {};
         await Promise.all(
-          listas.map(async (list) => {
+          listas.map(async (list: any) => {
             const cardsRes = await axios.get(
               `http://localhost:3000/lists/${list.id}/cards`
             );
@@ -89,6 +88,7 @@ export function Escolar() {
               title: card.title,
               userId: card.userId,
               createdAt: card.createdAt,
+              pdfs: card.pdfs || [],
             }));
           })
         );
@@ -149,7 +149,15 @@ export function Escolar() {
     setSelectedListId(listId);
     setShowCardModal(true);
   };
-
+  // const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setPdfFile(file);
+  //     const url = URL.createObjectURL(file);
+  //     setPdfUrl(url);
+  //     console.log("📄 PDF selecionado:", file.name);
+  //   }
+  // };
   const handleCreateList = async () => {
     if (!userId || !listName.trim()) {
       alert("Preencha o nome da lista corretamente.");
@@ -349,6 +357,72 @@ export function Escolar() {
       console.error("Erro ao editar card ou enviar arquivos", err);
     }
   };
+  // const handleSalvarDetalhes = async () => {
+  //   if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
+  //     toast.error("Preencha o título corretamente.");
+  //     return;
+  //   }
+
+  //   try {
+  //     console.log("🚀 Iniciando salvamento...");
+
+  //     // Atualiza o título
+  //     const res = await axios.patch(
+  //       `http://localhost:3000/cards/${cardSelecionado.id}`,
+  //       {
+  //         title: tituloEditavel.trim(),
+  //       }
+  //     );
+
+  //     console.log("✅ Título atualizado:", res.data.data.title);
+
+  //     // Upload dos arquivos, se houver
+  //     const fileInput = document.getElementById(
+  //       "fileInput"
+  //     ) as HTMLInputElement;
+  //     const files = fileInput?.files;
+
+  //     if (files && files.length > 0) {
+  //       const formData = new FormData();
+
+  //       Array.from(files).forEach((file) => {
+  //         formData.append("files", file);
+  //         console.log("📤 Arquivo enviado:", file.name);
+  //       });
+
+  //       await axios.post(
+  //         `http://localhost:3000/cards/${cardSelecionado.id}/files`,
+  //         formData,
+  //         { headers: { "Content-Type": "multipart/form-data" } }
+  //       );
+
+  //       console.log("✅ Upload de arquivos concluído.");
+  //       toast.success("Arquivos enviados com sucesso.");
+  //     } else {
+  //       console.log("ℹ️ Nenhum arquivo para enviar.");
+  //     }
+
+  //     // Atualiza frontend
+  //     setCards((prev) => ({
+  //       ...prev,
+  //       [selectedListId]: prev[selectedListId].map((c) =>
+  //         c.id === cardSelecionado.id
+  //           ? { ...c, title: tituloEditavel.trim() }
+  //           : c
+  //       ),
+  //     }));
+
+  //     setCardSelecionado({
+  //       ...cardSelecionado,
+  //       title: tituloEditavel.trim(),
+  //     });
+
+  //     toast.success("Card atualizado com sucesso.");
+  //   } catch (error) {
+  //     console.error("💥 Erro ao atualizar card ou enviar arquivos:", error);
+  //     toast.error("Erro ao atualizar card.");
+  //   }
+  // };
   const handleSalvarDetalhes = async () => {
     if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
       toast.error("Preencha o título corretamente.");
@@ -356,62 +430,47 @@ export function Escolar() {
     }
 
     try {
-      console.log("🚀 Iniciando salvamento...");
-
       // Atualiza o título
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
-        {
-          title: tituloEditavel.trim(),
-        }
+        { title: tituloEditavel.trim() }
       );
 
-      console.log("✅ Título atualizado:", res.data.data.title);
+      const updatedCard = {
+        ...cardSelecionado,
+        title: res.data.data.title,
+      };
 
-      // Upload dos arquivos, se houver
-      const fileInput = document.getElementById(
-        "fileInput"
-      ) as HTMLInputElement;
-      const files = fileInput?.files;
-
-      if (files && files.length > 0) {
+      // Upload do PDF se houver
+      if (pdf) {
         const formData = new FormData();
+        formData.append("files", pdf);
 
-        Array.from(files).forEach((file) => {
-          formData.append("files", file);
-          console.log("📤 Arquivo enviado:", file.name);
-        });
-
-        await axios.post(
+        const fileRes = await axios.post(
           `http://localhost:3000/cards/${cardSelecionado.id}/files`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        console.log("✅ Upload de arquivos concluído.");
-        toast.success("Arquivos enviados com sucesso.");
-      } else {
-        console.log("ℹ️ Nenhum arquivo para enviar.");
+        const uploadedPdfs = fileRes.data.data.pdfs || [];
+
+        updatedCard.pdfs = uploadedPdfs;
       }
 
-      // Atualiza frontend
       setCards((prev) => ({
         ...prev,
         [selectedListId]: prev[selectedListId].map((c) =>
-          c.id === cardSelecionado.id
-            ? { ...c, title: tituloEditavel.trim() }
-            : c
+          c.id === cardSelecionado.id ? updatedCard : c
         ),
       }));
 
-      setCardSelecionado({
-        ...cardSelecionado,
-        title: tituloEditavel.trim(),
-      });
+      // Atualiza no modal
+      setCardSelecionado(updatedCard);
 
       toast.success("Card atualizado com sucesso.");
+      setPdf(null);
     } catch (error) {
-      console.error("💥 Erro ao atualizar card ou enviar arquivos:", error);
+      console.error("Erro ao atualizar card:", error);
       toast.error("Erro ao atualizar card.");
     }
   };
@@ -429,12 +488,31 @@ export function Escolar() {
       console.error("Erro ao excluir lista", err);
     }
   };
-  const handleExibirDetalhes = (cardId: string, listId: string) => {
+  // const handleExibirDetalhes = (cardId: string, listId: string) => {
+  //   const card = cards[listId]?.find((c) => c.id === cardId);
+  //   if (card) {
+  //     setCardSelecionado(card);
+  //     setSelectedListId(listId);
+  //     setTituloEditavel(card.title); // <-- Aqui define o título editável
+  //   }
+  // };
+  const handleExibirDetalhes = async (cardId: string, listId: string) => {
     const card = cards[listId]?.find((c) => c.id === cardId);
     if (card) {
       setCardSelecionado(card);
       setSelectedListId(listId);
-      setTituloEditavel(card.title); // <-- Aqui define o título editável
+      setTituloEditavel(card.title);
+
+      try {
+        const res = await axios.get(`http://localhost:3000/cards/${card.id}`);
+        const cardData = res.data.data;
+        setCardSelecionado({
+          ...card,
+          pdfs: cardData.pdfs || [],
+        });
+      } catch (err) {
+        console.error("Erro ao buscar detalhes do card:", err);
+      }
     }
   };
 
@@ -529,11 +607,7 @@ export function Escolar() {
             {/* Sidebar */}
             <Sidebar>
               <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                }}
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
                 <img
                   src={user?.profileImage || "https://via.placeholder.com/40"}
@@ -573,16 +647,13 @@ export function Escolar() {
                 <h4>#prioridade</h4>
                 <PrioridadeWrapper>
                   <span>
-                    <div className="baixa" />
-                    Baixa
+                    <div className="baixa" /> Baixa
                   </span>
                   <span>
-                    <div className="media" />
-                    Média
+                    <div className="media" /> Média
                   </span>
                   <span>
-                    <div className="alta" />
-                    Alta
+                    <div className="alta" /> Alta
                   </span>
                 </PrioridadeWrapper>
               </SidebarCard>
@@ -597,7 +668,6 @@ export function Escolar() {
             <ContentArea>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <h2>{tituloEditavel}</h2>
-                {/* Botão X para fechar */}
                 <button
                   onClick={() => setCardSelecionado(null)}
                   style={{
@@ -611,30 +681,77 @@ export function Escolar() {
                   ❌
                 </button>
               </div>
+
               <hr />
 
-              <UploadArea>
-                <p>Escreva seu conteúdo ou adicione</p>
-                <button
-                  onClick={() => document.getElementById("fileInput")?.click()}
-                >
-                  ⬆️ Upar arquivos
-                </button>
-                <input
-                  type="file"
-                  id="fileInput"
-                  multiple
-                  onChange={(e) => {
-                    const files = e.target.files;
-                    if (files) {
-                      Array.from(files).forEach((file) => {
-                        console.log("📦 Arquivo selecionado:", file.name);
-                      });
-                    }
+              {/* Visualização do PDF */}
+              {cardSelecionado?.pdfs && cardSelecionado.pdfs.length > 0 ? (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "500px",
+                    background: "#eaeaea",
+                    borderRadius: "20px",
+                    marginBottom: "20px",
+                    overflow: "hidden",
                   }}
-                  style={{ display: "none" }}
-                />
-              </UploadArea>
+                >
+                  <iframe
+                    src={`http://localhost:3000${cardSelecionado.pdfs[0].url}`}
+                    title={cardSelecionado.pdfs[0].filename}
+                    width="100%"
+                    height="100%"
+                    style={{ border: "none" }}
+                  />
+                </div>
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "500px",
+                    background: "#eaeaea",
+                    borderRadius: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "20px",
+                    flexDirection: "column",
+                  }}
+                >
+                  <p style={{ fontWeight: "500", color: "#444" }}>
+                    Nenhum PDF encontrado, envie um!
+                  </p>
+                  <button
+                    onClick={() =>
+                      document.getElementById("fileInput")?.click()
+                    }
+                    style={{
+                      background: "#111",
+                      color: "white",
+                      border: "none",
+                      padding: "8px 16px",
+                      borderRadius: "30px",
+                      cursor: "pointer",
+                      marginTop: "10px",
+                    }}
+                  >
+                    ⬆️ Upar PDF
+                  </button>
+                  <input
+                    type="file"
+                    id="fileInput"
+                    accept="application/pdf"
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setPdf(file);
+                        console.log("📄 PDF selecionado:", file.name);
+                      }
+                    }}
+                  />
+                </div>
+              )}
 
               <SaveButton onClick={handleSalvarDetalhes}>Salvar</SaveButton>
             </ContentArea>
