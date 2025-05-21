@@ -151,15 +151,7 @@ export function Escolar() {
     setSelectedListId(listId);
     setShowCardModal(true);
   };
-  // const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setPdfFile(file);
-  //     const url = URL.createObjectURL(file);
-  //     setPdfUrl(url);
-  //     console.log("📄 PDF selecionado:", file.name);
-  //   }
-  // };
+
   const handleCreateList = async () => {
     if (!userId || !listName.trim()) {
       alert("Preencha o nome da lista corretamente.");
@@ -191,30 +183,6 @@ export function Escolar() {
     }
   };
 
-  // const handleCreateCard = async () => {
-  //   if (!cardTitle || !selectedListId) return;
-  //   try {
-  //     const res = await axios.post("http://localhost:3000/cards", {
-  //       title: cardTitle,
-  //       listId: selectedListId,
-  //     });
-
-  //     const newCard = {
-  //       id: res.data.data.id,
-  //       title: res.data.data.title,
-  //       userId: res.data.data.userId,
-  //     };
-
-  //     setCards((prev) => ({
-  //       ...prev,
-  //       [selectedListId]: [...(prev[selectedListId] || []), newCard],
-  //     }));
-  //     setShowCardModal(false);
-  //     setCardTitle("");
-  //   } catch (err) {
-  //     console.error("Erro ao criar card", err);
-  //   }
-  // };
   const handleCreateCard = async () => {
     if (!cardTitle || !selectedListId) {
       toast.error("Preencha o nome do card.");
@@ -294,26 +262,6 @@ export function Escolar() {
     }
   };
 
-  // const handleSalvarEdicao = async () => {
-  //   if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) return;
-  //   try {
-  //     const res = await axios.patch(
-  //       `http://localhost:3000/cards/${cardSelecionado.id}`,
-  //       { title: novoTitulo.trim() }
-  //     );
-
-  //     setCards((prev) => ({
-  //       ...prev,
-  //       [selectedListId]: prev[selectedListId].map((c) =>
-  //         c.id === cardSelecionado.id ? { ...c, title: res.data.data.title } : c
-  //       ),
-  //     }));
-  //     setCardSelecionado({ ...cardSelecionado, title: res.data.data.title });
-  //     setEditModalOpen(false);
-  //   } catch (err) {
-  //     console.error("Erro ao editar card", err);
-  //   }
-  // };
   const handleSalvarEdicao = async () => {
     if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) {
       console.log("Dados insuficientes para editar.");
@@ -360,72 +308,7 @@ export function Escolar() {
       console.error("Erro ao editar card ou enviar arquivos", err);
     }
   };
-  // const handleSalvarDetalhes = async () => {
-  //   if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
-  //     toast.error("Preencha o título corretamente.");
-  //     return;
-  //   }
 
-  //   try {
-  //     console.log("🚀 Iniciando salvamento...");
-
-  //     // Atualiza o título
-  //     const res = await axios.patch(
-  //       `http://localhost:3000/cards/${cardSelecionado.id}`,
-  //       {
-  //         title: tituloEditavel.trim(),
-  //       }
-  //     );
-
-  //     console.log("✅ Título atualizado:", res.data.data.title);
-
-  //     // Upload dos arquivos, se houver
-  //     const fileInput = document.getElementById(
-  //       "fileInput"
-  //     ) as HTMLInputElement;
-  //     const files = fileInput?.files;
-
-  //     if (files && files.length > 0) {
-  //       const formData = new FormData();
-
-  //       Array.from(files).forEach((file) => {
-  //         formData.append("files", file);
-  //         console.log("📤 Arquivo enviado:", file.name);
-  //       });
-
-  //       await axios.post(
-  //         `http://localhost:3000/cards/${cardSelecionado.id}/files`,
-  //         formData,
-  //         { headers: { "Content-Type": "multipart/form-data" } }
-  //       );
-
-  //       console.log("✅ Upload de arquivos concluído.");
-  //       toast.success("Arquivos enviados com sucesso.");
-  //     } else {
-  //       console.log("ℹ️ Nenhum arquivo para enviar.");
-  //     }
-
-  //     // Atualiza frontend
-  //     setCards((prev) => ({
-  //       ...prev,
-  //       [selectedListId]: prev[selectedListId].map((c) =>
-  //         c.id === cardSelecionado.id
-  //           ? { ...c, title: tituloEditavel.trim() }
-  //           : c
-  //       ),
-  //     }));
-
-  //     setCardSelecionado({
-  //       ...cardSelecionado,
-  //       title: tituloEditavel.trim(),
-  //     });
-
-  //     toast.success("Card atualizado com sucesso.");
-  //   } catch (error) {
-  //     console.error("💥 Erro ao atualizar card ou enviar arquivos:", error);
-  //     toast.error("Erro ao atualizar card.");
-  //   }
-  // };
   const handleSalvarDetalhes = async () => {
     if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
       toast.error("Preencha o título corretamente.");
@@ -491,14 +374,7 @@ export function Escolar() {
       console.error("Erro ao excluir lista", err);
     }
   };
-  // const handleExibirDetalhes = (cardId: string, listId: string) => {
-  //   const card = cards[listId]?.find((c) => c.id === cardId);
-  //   if (card) {
-  //     setCardSelecionado(card);
-  //     setSelectedListId(listId);
-  //     setTituloEditavel(card.title); // <-- Aqui define o título editável
-  //   }
-  // };
+
   const handleExibirDetalhes = async (cardId: string, listId: string) => {
     const card = cards[listId]?.find((c) => c.id === cardId);
     if (card) {
@@ -971,28 +847,6 @@ export function Escolar() {
             <CreateButton onClick={handleCreateCard}>CRIAR</CreateButton>
           </ModalContent>
         </ModalOverlay>
-
-        // <ModalOverlay>
-        //   <ModalContent>
-        //     <h3>Novo Card</h3>
-        //     <Input
-        //       value={cardTitle}
-        //       onChange={(e) => setCardTitle(e.target.value)}
-        //       placeholder="Título do Card"
-        //     />
-        //     <ButtonGroup>
-        //       <button className="confirm" onClick={handleCreateCard}>
-        //         Criar
-        //       </button>
-        //       <button
-        //         className="cancel"
-        //         onClick={() => setShowCardModal(false)}
-        //       >
-        //         Cancelar
-        //       </button>
-        //     </ButtonGroup>
-        //   </ModalContent>
-        // </ModalOverlay>
       )}
     </>
   );
