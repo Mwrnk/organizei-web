@@ -20,16 +20,27 @@ import {
   ModalContent,
   Input,
   ButtonGroup,
-  DetalhesCardModal,
   ConfirmOverlay,
+  ImageUploadArea,
+  CreateButton,
+  InputWrapper,
+  DetalhesContainer,
+  Sidebar,
+  SidebarCard,
+  PrioridadeWrapper,
+  ContentArea,
+  UploadArea,
+  SaveButton,
   ConfirmBox,
 } from "../../Style/Escolar";
+
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
+import { toast } from "react-toastify";
 
 export function Escolar() {
   const { user } = useAuth();
@@ -47,6 +58,10 @@ export function Escolar() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [novoTitulo, setNovoTitulo] = useState("");
+  const [tituloEditavel, setTituloEditavel] = useState<string>("");
+
+  const [image, setImage] = useState<File | null>(null);
+  const [pdf, setPdf] = useState<File | null>(null);
 
   useEffect(() => {
     const fetchListsAndCards = async () => {
@@ -166,9 +181,44 @@ export function Escolar() {
     }
   };
 
+  // const handleCreateCard = async () => {
+  //   if (!cardTitle || !selectedListId) return;
+  //   try {
+  //     const res = await axios.post("http://localhost:3000/cards", {
+  //       title: cardTitle,
+  //       listId: selectedListId,
+  //     });
+
+  //     const newCard = {
+  //       id: res.data.data.id,
+  //       title: res.data.data.title,
+  //       userId: res.data.data.userId,
+  //     };
+
+  //     setCards((prev) => ({
+  //       ...prev,
+  //       [selectedListId]: [...(prev[selectedListId] || []), newCard],
+  //     }));
+  //     setShowCardModal(false);
+  //     setCardTitle("");
+  //   } catch (err) {
+  //     console.error("Erro ao criar card", err);
+  //   }
+  // };
   const handleCreateCard = async () => {
-    if (!cardTitle || !selectedListId) return;
+    if (!cardTitle || !selectedListId) {
+      toast.error("Preencha o nome do card.");
+      console.log("❌ Título do card ou lista não selecionados.");
+      return;
+    }
+
     try {
+      console.log("🚀 Iniciando criação do card...");
+      console.log("📦 Dados enviados:", {
+        title: cardTitle,
+        listId: selectedListId,
+      });
+
       const res = await axios.post("http://localhost:3000/cards", {
         title: cardTitle,
         listId: selectedListId,
@@ -180,25 +230,42 @@ export function Escolar() {
         userId: res.data.data.userId,
       };
 
+      console.log("✅ Card criado com sucesso:", newCard);
+      toast.success("Card criado com sucesso!");
+
+      // Upload da imagem, se houver
+      if (image) {
+        console.log("🖼️ Iniciando upload da imagem:", image.name);
+        const formData = new FormData();
+        formData.append("files", image);
+
+        await axios.post(
+          `http://localhost:3000/cards/${newCard.id}/files`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        console.log("✅ Upload da imagem concluído.");
+        toast.success("Imagem enviada com sucesso.");
+      } else {
+        console.log("ℹ️ Nenhuma imagem selecionada.");
+      }
+
       setCards((prev) => ({
         ...prev,
         [selectedListId]: [...(prev[selectedListId] || []), newCard],
       }));
+      console.log("🗂️ Card adicionado ao estado.");
+
       setShowCardModal(false);
       setCardTitle("");
+      setImage(null);
+      console.log("🧹 Formulário resetado. Modal fechado.");
     } catch (err) {
-      console.error("Erro ao criar card", err);
+      console.error("💥 Erro ao criar card ou enviar imagem:", err);
+      toast.error("Erro ao criar card ou enviar imagem.");
     }
   };
-
-  const handleExibirDetalhes = (cardId: string, listId: string) => {
-    const card = cards[listId]?.find((c) => c.id === cardId);
-    if (card) {
-      setCardSelecionado(card);
-      setSelectedListId(listId);
-    }
-  };
-
   const handleDeleteCard = async () => {
     if (!cardSelecionado || !selectedListId) return;
     try {
@@ -216,13 +283,55 @@ export function Escolar() {
     }
   };
 
+  // const handleSalvarEdicao = async () => {
+  //   if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) return;
+  //   try {
+  //     const res = await axios.patch(
+  //       `http://localhost:3000/cards/${cardSelecionado.id}`,
+  //       { title: novoTitulo.trim() }
+  //     );
+
+  //     setCards((prev) => ({
+  //       ...prev,
+  //       [selectedListId]: prev[selectedListId].map((c) =>
+  //         c.id === cardSelecionado.id ? { ...c, title: res.data.data.title } : c
+  //       ),
+  //     }));
+  //     setCardSelecionado({ ...cardSelecionado, title: res.data.data.title });
+  //     setEditModalOpen(false);
+  //   } catch (err) {
+  //     console.error("Erro ao editar card", err);
+  //   }
+  // };
   const handleSalvarEdicao = async () => {
-    if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) return;
+    if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) {
+      console.log("Dados insuficientes para editar.");
+      return;
+    }
+
     try {
+      console.log("Editando título...");
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
         { title: novoTitulo.trim() }
       );
+
+      console.log("Título atualizado:", res.data.data.title);
+
+      // Upload de arquivos (imagem e/ou PDF)
+      if (image || pdf) {
+        const formData = new FormData();
+        if (image) formData.append("files", image);
+        if (pdf) formData.append("files", pdf);
+
+        await axios.post(
+          `http://localhost:3000/cards/${cardSelecionado.id}/files`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        console.log("Arquivos enviados com sucesso.");
+      }
 
       setCards((prev) => ({
         ...prev,
@@ -230,10 +339,47 @@ export function Escolar() {
           c.id === cardSelecionado.id ? { ...c, title: res.data.data.title } : c
         ),
       }));
+
       setCardSelecionado({ ...cardSelecionado, title: res.data.data.title });
       setEditModalOpen(false);
+      setImage(null);
+      setPdf(null);
+      console.log("Edição concluída.");
     } catch (err) {
-      console.error("Erro ao editar card", err);
+      console.error("Erro ao editar card ou enviar arquivos", err);
+    }
+  };
+  const handleSalvarDetalhes = async () => {
+    if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
+      toast.error("Preencha o título corretamente.");
+      return;
+    }
+
+    try {
+      // Atualiza o título
+      await axios.patch(`http://localhost:3000/cards/${cardSelecionado.id}`, {
+        title: tituloEditavel.trim(),
+      });
+
+      // Atualiza frontend
+      setCards((prev) => ({
+        ...prev,
+        [selectedListId]: prev[selectedListId].map((c) =>
+          c.id === cardSelecionado.id
+            ? { ...c, title: tituloEditavel.trim() }
+            : c
+        ),
+      }));
+
+      setCardSelecionado({
+        ...cardSelecionado,
+        title: tituloEditavel.trim(),
+      });
+
+      toast.success("Card atualizado com sucesso.");
+    } catch (error) {
+      console.error("Erro ao atualizar card", error);
+      toast.error("Erro ao atualizar card.");
     }
   };
 
@@ -248,6 +394,14 @@ export function Escolar() {
       });
     } catch (err) {
       console.error("Erro ao excluir lista", err);
+    }
+  };
+  const handleExibirDetalhes = (cardId: string, listId: string) => {
+    const card = cards[listId]?.find((c) => c.id === cardId);
+    if (card) {
+      setCardSelecionado(card);
+      setSelectedListId(listId);
+      setTituloEditavel(card.title); // <-- Aqui define o título editável
     }
   };
 
@@ -338,39 +492,92 @@ export function Escolar() {
 
       {cardSelecionado && (
         <ModalOverlay>
-          <DetalhesCardModal>
-            <h3>Detalhes do Card</h3>
-            <p>
-              <strong>ID:</strong> {cardSelecionado.id}
-            </p>
-            <p>
-              <strong>Título:</strong> {cardSelecionado.title}
-            </p>
+          <DetalhesContainer>
+            {/* Sidebar */}
+            <Sidebar>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "10px",
+                    background: "#111",
+                  }}
+                />
+                <div>
+                  <p style={{ margin: 0, fontWeight: "bold" }}>{user?.name}</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
+                    Criador premium
+                  </p>
+                </div>
+              </div>
 
-            <ButtonGroup>
-              <button
-                className="cancel"
-                onClick={() => setCardSelecionado(null)}
-              >
-                Fechar
-              </button>
-              <button
-                className="confirm"
-                onClick={() => {
-                  setNovoTitulo(cardSelecionado.title);
-                  setEditModalOpen(true);
-                }}
-              >
-                Editar
-              </button>
-              <button
-                className="confirm"
-                onClick={() => setConfirmDelete(true)}
-              >
-                Excluir
-              </button>
-            </ButtonGroup>
-          </DetalhesCardModal>
+              <SidebarCard>
+                <h4>#titulo</h4>
+                <input
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "#111",
+                    color: "white",
+                  }}
+                  value={tituloEditavel}
+                  onChange={(e) => setTituloEditavel(e.target.value)}
+                />
+              </SidebarCard>
+
+              <SidebarCard>
+                <h4>#prioridade</h4>
+                <PrioridadeWrapper>
+                  <span>
+                    <div className="baixa" />
+                    Baixa
+                  </span>
+                  <span>
+                    <div className="media" />
+                    Média
+                  </span>
+                  <span>
+                    <div className="alta" />
+                    Alta
+                  </span>
+                </PrioridadeWrapper>
+              </SidebarCard>
+
+              <SidebarCard>
+                <h4>#origem</h4>
+                <p>Minha Criação</p>
+              </SidebarCard>
+            </Sidebar>
+
+            {/* Content */}
+            <ContentArea>
+              <h2>{cardSelecionado.title}</h2>
+              <hr />
+
+              <UploadArea>
+                <p>Escreva seu conteúdo ou adicione</p>
+                <button
+                  onClick={() => document.getElementById("fileInput")?.click()}
+                >
+                  ⬆️ Upar arquivos
+                </button>
+                <input
+                  type="file"
+                  id="fileInput"
+                  multiple
+                  onChange={(e) => console.log(e.target.files)}
+                  style={{ display: "none" }}
+                />
+              </UploadArea>
+
+              <SaveButton onClick={handleSalvarDetalhes}>Salvar</SaveButton>
+            </ContentArea>
+          </DetalhesContainer>
         </ModalOverlay>
       )}
 
@@ -382,6 +589,28 @@ export function Escolar() {
               value={novoTitulo}
               onChange={(e) => setNovoTitulo(e.target.value)}
             />
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files?.[0] || null)}
+            />
+            {image && (
+              <p style={{ marginBottom: "8px" }}>
+                🖼️ <strong>Imagem selecionada:</strong> {image.name}
+              </p>
+            )}
+
+            <Input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setPdf(e.target.files?.[0] || null)}
+            />
+            {pdf && (
+              <p style={{ marginBottom: "8px" }}>
+                📄 <strong>PDF selecionado:</strong> {pdf.name}
+              </p>
+            )}
+
             <ButtonGroup>
               <button
                 className="cancel"
@@ -443,25 +672,62 @@ export function Escolar() {
       {showCardModal && (
         <ModalOverlay>
           <ModalContent>
-            <h3>Novo Card</h3>
-            <Input
-              value={cardTitle}
-              onChange={(e) => setCardTitle(e.target.value)}
-              placeholder="Título do Card"
+            <h2>Criando seu card</h2>
+
+            <p>Imagem que aparecerá na comunidade</p>
+            <ImageUploadArea
+              onClick={() => document.getElementById("imageInput")?.click()}
+            >
+              {image ? (
+                <img src={URL.createObjectURL(image)} alt="Preview" />
+              ) : (
+                <span>📷</span>
+              )}
+            </ImageUploadArea>
+
+            <input
+              type="file"
+              id="imageInput"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files?.[0] || null)}
+              style={{ display: "none" }}
             />
-            <ButtonGroup>
-              <button className="confirm" onClick={handleCreateCard}>
-                Criar
-              </button>
-              <button
-                className="cancel"
-                onClick={() => setShowCardModal(false)}
-              >
-                Cancelar
-              </button>
-            </ButtonGroup>
+
+            <p>Defina o nome do card</p>
+            <InputWrapper>
+              <span>✏️</span>
+              <input
+                placeholder="Nome do card"
+                value={cardTitle}
+                onChange={(e) => setCardTitle(e.target.value)}
+              />
+            </InputWrapper>
+
+            <CreateButton onClick={handleCreateCard}>CRIAR</CreateButton>
           </ModalContent>
         </ModalOverlay>
+
+        // <ModalOverlay>
+        //   <ModalContent>
+        //     <h3>Novo Card</h3>
+        //     <Input
+        //       value={cardTitle}
+        //       onChange={(e) => setCardTitle(e.target.value)}
+        //       placeholder="Título do Card"
+        //     />
+        //     <ButtonGroup>
+        //       <button className="confirm" onClick={handleCreateCard}>
+        //         Criar
+        //       </button>
+        //       <button
+        //         className="cancel"
+        //         onClick={() => setShowCardModal(false)}
+        //       >
+        //         Cancelar
+        //       </button>
+        //     </ButtonGroup>
+        //   </ModalContent>
+        // </ModalOverlay>
       )}
     </>
   );

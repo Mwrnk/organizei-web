@@ -142,7 +142,13 @@ export function Profissional() {
       const res = await axios.get("http://localhost:3000/cards", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setCards(res.data.data);
+      console.log("Cards recebidos:", res.data.data);
+      setCards(
+        res.data.data.map((card) => ({
+          _id: card._id || card.id,
+          title: card.title,
+        }))
+      );
     } catch (err) {
       console.error("Erro ao carregar cards do usuário", err);
     }

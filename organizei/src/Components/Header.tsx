@@ -14,8 +14,7 @@ export function Header() {
   const location = useLocation();
   const { currentPlan, isLoading } = useAuth();
 
-  if (isLoading) return null; // ou um spinner se preferir
-
+  if (isLoading) return null;
   const canUseAI = currentPlan === "premium" || currentPlan === "enterprise";
 
   return (
