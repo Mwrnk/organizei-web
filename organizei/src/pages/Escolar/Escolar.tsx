@@ -61,6 +61,8 @@ export function Escolar() {
 
   const [image, setImage] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
+  const [modoExcluir, setModoExcluir] = useState(false);
+  const [cardParaExcluir, setCardParaExcluir] = useState<CardData | null>(null);
 
   useEffect(() => {
     const fetchListsAndCards = async () => {
@@ -275,17 +277,18 @@ export function Escolar() {
     }
   };
   const handleDeleteCard = async () => {
-    if (!cardSelecionado || !selectedListId) return;
+    if (!cardParaExcluir || !selectedListId) return;
     try {
-      await axios.delete(`http://localhost:3000/cards/${cardSelecionado.id}`);
+      await axios.delete(`http://localhost:3000/cards/${cardParaExcluir.id}`);
       setCards((prev) => ({
         ...prev,
         [selectedListId]: prev[selectedListId].filter(
-          (c) => c.id !== cardSelecionado.id
+          (c) => c.id !== cardParaExcluir.id
         ),
       }));
-      setCardSelecionado(null);
+      setCardParaExcluir(null);
       setConfirmDelete(false);
+      setModoExcluir(false); // Sai do modo excluir após deletar
     } catch (err) {
       console.error("Erro ao excluir card", err);
     }
@@ -525,6 +528,12 @@ export function Escolar() {
         <ButtonPrimary onClick={() => setShowModal(true)}>
           + Criar nova lista
         </ButtonPrimary>
+        <ButtonPrimary
+          style={{ backgroundColor: modoExcluir ? "red" : "#222" }}
+          onClick={() => setModoExcluir(!modoExcluir)}
+        >
+          {modoExcluir ? "Cancelar Exclusão" : "Excluir Card"}
+        </ButtonPrimary>
 
         <ScrollWrapper>
           <ScrollButton left onClick={scrollLeft}>
@@ -574,15 +583,65 @@ export function Escolar() {
                                 }
                                 onClick={() => {
                                   const now = Date.now();
-                                  if (
+                                  if (modoExcluir) {
+                                    setCardParaExcluir(card);
+                                    setSelectedListId(list.id);
+                                    setConfirmDelete(true);
+                                  } else if (
                                     (card as any).clickStart &&
                                     now - (card as any).clickStart < 150
                                   ) {
                                     handleExibirDetalhes(card.id, list.id);
                                   }
                                 }}
+                                style={{
+                                  border: modoExcluir
+                                    ? "2px dashed red"
+                                    : "none",
+                                  position: "relative",
+                                  transition: "0.3s",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (modoExcluir) {
+                                    e.currentTarget.style.background =
+                                      "#ff4d4d";
+                                    const icon = e.currentTarget.querySelector(
+                                      ".icon-excluir"
+                                    ) as HTMLElement;
+                                    if (icon) icon.style.display = "flex";
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (modoExcluir) {
+                                    e.currentTarget.style.background = "";
+                                    const icon = e.currentTarget.querySelector(
+                                      ".icon-excluir"
+                                    ) as HTMLElement;
+                                    if (icon) icon.style.display = "none";
+                                  }
+                                }}
                               >
-                                {card.title}
+                                <div style={{ opacity: modoExcluir ? 0.2 : 1 }}>
+                                  {card.title}
+                                </div>
+
+                                <div
+                                  className="icon-excluir"
+                                  style={{
+                                    position: "absolute",
+                                    top: "50%",
+                                    left: "50%",
+                                    transform: "translate(-50%, -50%)",
+                                    color: "white",
+                                    fontSize: "24px",
+                                    display: "none",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    pointerEvents: "none",
+                                  }}
+                                >
+                                  ❌
+                                </div>
                               </Card>
                             )}
                           </Draggable>
@@ -809,7 +868,7 @@ export function Escolar() {
           <ConfirmBox>
             <h3>Confirmar Exclusão</h3>
             <p>
-              Deseja excluir o card <strong>{cardSelecionado?.title}</strong>?
+              Deseja excluir o card <strong>{cardParaExcluir?.title}</strong>?
             </p>
             <ButtonGroup>
               <button
