@@ -621,10 +621,38 @@ export function Escolar() {
                                   }
                                 }}
                               >
-                                <div style={{ opacity: modoExcluir ? 0.2 : 1 }}>
-                                  {card.title}
+                                {/* Conteúdo do Card */}
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    opacity: modoExcluir ? 0.2 : 1,
+                                    gap: "8px",
+                                  }}
+                                >
+                                  {/* Nome do Card */}
+                                  <span style={{ fontWeight: "500" }}>
+                                    {card.title}
+                                  </span>
+
+                                  {/* Foto do Usuário */}
+                                  <img
+                                    src={
+                                      user?.profileImage ||
+                                      "https://via.placeholder.com/24"
+                                    }
+                                    alt="foto"
+                                    style={{
+                                      width: 24,
+                                      height: 24,
+                                      borderRadius: "50%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
                                 </div>
 
+                                {/* Ícone de excluir no meio */}
                                 <div
                                   className="icon-excluir"
                                   style={{
