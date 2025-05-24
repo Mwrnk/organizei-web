@@ -64,6 +64,8 @@ export function Escolar() {
   const [modoExcluir, setModoExcluir] = useState(false);
   const [cardParaExcluir, setCardParaExcluir] = useState<CardData | null>(null);
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchListsAndCards = async () => {
       if (!userId) return;
@@ -270,9 +272,15 @@ export function Escolar() {
 
     try {
       console.log("Editando título...");
+      const token = localStorage.getItem("token");
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
-        { title: novoTitulo.trim() }
+        { title: novoTitulo.trim() },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       console.log("Título atualizado:", res.data.data.title);
@@ -286,7 +294,12 @@ export function Escolar() {
         await axios.post(
           `http://localhost:3000/cards/${cardSelecionado.id}/files`,
           formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
 
         console.log("Arquivos enviados com sucesso.");
@@ -378,22 +391,124 @@ export function Escolar() {
   const handleExibirDetalhes = async (cardId: string, listId: string) => {
     const card = cards[listId]?.find((c) => c.id === cardId);
     if (card) {
-      setCardSelecionado(card);
       setSelectedListId(listId);
       setTituloEditavel(card.title);
 
       try {
         const res = await axios.get(`http://localhost:3000/cards/${card.id}`);
         const cardData = res.data.data;
-        setCardSelecionado({
+        console.log("Card data received:", cardData);
+
+        // Atualiza o card com os dados completos, incluindo PDFs
+        const updatedCard = {
           ...card,
           pdfs: cardData.pdfs || [],
-        });
+          image_url: cardData.image_url || [],
+          content: cardData.content || "",
+          priority: cardData.priority,
+          is_published: cardData.is_published,
+        };
+
+        console.log("Updated card with PDFs:", updatedCard);
+        setCardSelecionado(updatedCard);
+
+        // Atualiza o card na lista de cards
+        setCards((prev) => ({
+          ...prev,
+          [listId]: prev[listId].map((c) =>
+            c.id === cardId ? updatedCard : c
+          ),
+        }));
       } catch (err) {
         console.error("Erro ao buscar detalhes do card:", err);
       }
     }
   };
+
+  const loadPdf = async (cardId: string) => {
+    try {
+      console.log("Current cardSelecionado:", cardSelecionado);
+
+      // Verifica se o card tem PDFs
+      if (
+        !cardSelecionado?.pdfs ||
+        !Array.isArray(cardSelecionado.pdfs) ||
+        cardSelecionado.pdfs.length === 0
+      ) {
+        console.log("No PDFs available for this card");
+        setPdfUrl(null);
+        return;
+      }
+
+      const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      const pdfData = cardSelecionado.pdfs[0];
+      console.log("PDF data to load:", pdfData);
+
+      // Usa o endpoint correto para visualizar o PDF
+      const response = await fetch(
+        `http://localhost:3000/cards/${cardId}/pdf/0/view`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/pdf",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("PDF loading failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData,
+        });
+        throw new Error(
+          `Failed to load PDF: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/pdf")) {
+        console.error("Invalid content type:", contentType);
+        throw new Error("Invalid PDF content type");
+      }
+
+      const blob = await response.blob();
+      if (blob.size === 0) {
+        throw new Error("Received empty PDF");
+      }
+
+      console.log("PDF loaded successfully, size:", blob.size);
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error("Error loading PDF:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Erro ao carregar o PDF"
+      );
+      setPdfUrl(null);
+    }
+  };
+
+  // Efeito para carregar o PDF quando o card selecionado mudar
+  useEffect(() => {
+    if (cardSelecionado?.id) {
+      console.log("Card selected, loading PDF...");
+      // Pequeno delay para garantir que o estado foi atualizado
+      setTimeout(() => {
+        loadPdf(cardSelecionado.id);
+      }, 100);
+    }
+    return () => {
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
+      }
+    };
+  }, [cardSelecionado?.id, cardSelecionado?.pdfs]);
 
   return (
     <>
@@ -648,7 +763,9 @@ export function Escolar() {
               <hr />
 
               {/* Visualização do PDF */}
-              {cardSelecionado?.pdfs && cardSelecionado.pdfs.length > 0 ? (
+              {cardSelecionado?.pdfs &&
+              Array.isArray(cardSelecionado.pdfs) &&
+              cardSelecionado.pdfs.length > 0 ? (
                 <div
                   style={{
                     width: "100%",
@@ -659,13 +776,43 @@ export function Escolar() {
                     overflow: "hidden",
                   }}
                 >
-                  <iframe
-                    src={`http://localhost:3000${cardSelecionado.pdfs[0].url}`}
-                    title={cardSelecionado.pdfs[0].filename}
-                    width="100%"
-                    height="100%"
-                    style={{ border: "none" }}
-                  />
+                  {pdfUrl ? (
+                    <iframe
+                      src={pdfUrl}
+                      title={cardSelecionado.pdfs[0].filename}
+                      width="100%"
+                      height="100%"
+                      style={{ border: "none" }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: "100%",
+                        flexDirection: "column",
+                        gap: "10px",
+                      }}
+                    >
+                      <p>Carregando PDF...</p>
+                      <button
+                        onClick={() =>
+                          document.getElementById("fileInput")?.click()
+                        }
+                        style={{
+                          background: "#111",
+                          color: "white",
+                          border: "none",
+                          padding: "8px 16px",
+                          borderRadius: "30px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        ⬆️ Upar PDF
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div
