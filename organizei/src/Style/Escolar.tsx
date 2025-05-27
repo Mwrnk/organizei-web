@@ -49,6 +49,22 @@ export const ColumnTitle = styled.div`
   margin-bottom: 12px;
   text-align: left;
 `;
+export const CardTitle = styled.div`
+  font-size: 20px;
+  font-weight: 600;
+  word-break: break-word;
+  line-height: 1.4;
+`;
+
+export const CardDate = styled.div`
+  color: #999;
+  font-size: 12px;
+`;
+
+export const PublishedIcon = styled.img`
+  width: 18px;
+  height: 18px;
+`;
 
 export const CardArea = styled.div`
   display: flex;
@@ -58,13 +74,90 @@ export const CardArea = styled.div`
 
 export const Card = styled.div`
   background-color: white;
-  border: 1.5px dashed #bbb;
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 18px;
+  border-radius: 16px;
+  padding: 20px;
+  min-height: 120px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Modo de exclusão */
+  &.modo-excluir {
+    border: 2px dashed red;
+    opacity: 0.3;
+  }
+
+  /* Card para adicionar */
+  &.add-card {
+    background-color: transparent;
+    border: 2px dashed #bbb;
+    box-shadow: none;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    min-height: 120px;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+  }
+
+  /* Título do card */
+  .card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111;
+    word-break: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    max-width: 220px;
+  }
+
+  /* Data do card */
+  .card-date {
+    font-size: 13px;
+    color: #888;
+  }
+
+  /* Ícone de exclusão */
+  .icon-excluir {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 28px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  /* Hover de exclusão */
+  &.hover-excluir .icon-excluir {
+    display: flex;
+  }
+`;
+
+export const Avatar = styled.img`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 
 export const Input = styled.input`

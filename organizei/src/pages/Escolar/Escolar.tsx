@@ -31,6 +31,9 @@ import {
   ContentArea,
   SaveButton,
   ConfirmBox,
+  PublishedIcon,
+  CardDate,
+  CardTitle,
 } from "../../Style/Escolar";
 
 import {
@@ -40,6 +43,8 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import { toast } from "react-toastify";
+import comunidadeIcon from "../../../assets/comunidade.svg";
+import adicionarCard from "../../../assets/adicionarCard.svg";
 
 export function Escolar() {
   const { user } = useAuth();
@@ -93,6 +98,7 @@ export function Escolar() {
               userId: card.userId,
               createdAt: card.createdAt,
               pdfs: card.pdfs || [],
+              is_published: card.is_published,
             }));
           })
         );
@@ -514,17 +520,33 @@ export function Escolar() {
     <>
       <Header />
       <Container>
-        <Subtitle>#escolar</Subtitle>
-        <Title>O que vamos estudar hoje?</Title>
-        <ButtonPrimary onClick={() => setShowModal(true)}>
-          + Criar nova lista
-        </ButtonPrimary>
-        <ButtonPrimary
-          style={{ backgroundColor: modoExcluir ? "red" : "#222" }}
-          onClick={() => setModoExcluir(!modoExcluir)}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "16px",
+            flexWrap: "wrap",
+            gap: "10px",
+          }}
         >
-          {modoExcluir ? "Cancelar Exclusão" : "Excluir Card"}
-        </ButtonPrimary>
+          <div>
+            <Subtitle>#escolar</Subtitle>
+            <Title>O que vamos estudar hoje?</Title>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <ButtonPrimary onClick={() => setShowModal(true)}>
+              + Criar nova lista
+            </ButtonPrimary>
+            <ButtonPrimary
+              style={{ backgroundColor: modoExcluir ? "red" : "#222" }}
+              onClick={() => setModoExcluir(!modoExcluir)}
+            >
+              {modoExcluir ? "Cancelar Exclusão" : "Excluir Card"}
+            </ButtonPrimary>
+          </div>
+        </div>
 
         <ScrollWrapper>
           <ScrollButton left onClick={scrollLeft}>
@@ -569,6 +591,7 @@ export function Escolar() {
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
+                                className={modoExcluir ? "modo-excluir" : ""}
                                 onMouseDown={() =>
                                   ((card as any).clickStart = Date.now())
                                 }
@@ -585,89 +608,92 @@ export function Escolar() {
                                     handleExibirDetalhes(card.id, list.id);
                                   }
                                 }}
-                                style={{
-                                  border: modoExcluir
-                                    ? "2px dashed red"
-                                    : "none",
-                                  position: "relative",
-                                  transition: "0.3s",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (modoExcluir) {
-                                    e.currentTarget.style.background =
-                                      "#ff4d4d";
-                                    const icon = e.currentTarget.querySelector(
-                                      ".icon-excluir"
-                                    ) as HTMLElement;
-                                    if (icon) icon.style.display = "flex";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (modoExcluir) {
-                                    e.currentTarget.style.background = "";
-                                    const icon = e.currentTarget.querySelector(
-                                      ".icon-excluir"
-                                    ) as HTMLElement;
-                                    if (icon) icon.style.display = "none";
-                                  }
-                                }}
                               >
-                                {/* Conteúdo do Card */}
                                 <div
                                   style={{
                                     display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    opacity: modoExcluir ? 0.2 : 1,
+                                    flexDirection: "column",
                                     gap: "8px",
+                                    height: "100%",
                                   }}
                                 >
-                                  {/* Nome do Card */}
-                                  <span style={{ fontWeight: "500" }}>
-                                    {card.title}
-                                  </span>
-
-                                  {/* Foto do Usuário */}
-                                  <img
-                                    src={
-                                      user?.profileImage ||
-                                      "https://via.placeholder.com/24"
-                                    }
-                                    alt="foto"
+                                  {/* Título e foto */}
+                                  <div
                                     style={{
-                                      width: 24,
-                                      height: 24,
-                                      borderRadius: "50%",
-                                      objectFit: "cover",
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "start",
                                     }}
-                                  />
+                                  >
+                                    <CardTitle>
+                                      {card.title.length > 40
+                                        ? card.title.slice(0, 40) + "..."
+                                        : card.title}
+                                    </CardTitle>
+                                    <img
+                                      src={
+                                        user?.profileImage ||
+                                        "https://via.placeholder.com/30"
+                                      }
+                                      alt="foto"
+                                      style={{
+                                        width: "30px",
+                                        height: "30px",
+                                        borderRadius: "50%",
+                                        objectFit: "cover",
+                                      }}
+                                    />
+                                  </div>
+
+                                  {/* Linha inferior com data e ícone publicado */}
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      justifyContent: "space-between",
+                                      alignItems: "center",
+                                      marginTop: "auto",
+                                    }}
+                                  >
+                                    <CardDate>
+                                      {card.createdAt
+                                        ? new Date(
+                                            card.createdAt
+                                          ).toLocaleDateString("pt-BR")
+                                        : "Sem data"}
+                                    </CardDate>
+
+                                    {card.is_published && (
+                                      <PublishedIcon
+                                        src={comunidadeIcon}
+                                        alt="Publicado"
+                                        title="Publicado na comunidade"
+                                      />
+                                    )}
+                                  </div>
                                 </div>
 
-                                {/* Ícone de excluir no meio */}
-                                <div
-                                  className="icon-excluir"
-                                  style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "50%",
-                                    transform: "translate(-50%, -50%)",
-                                    color: "white",
-                                    fontSize: "24px",
-                                    display: "none",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    pointerEvents: "none",
-                                  }}
-                                >
-                                  ❌
-                                </div>
+                                <div className="icon-excluir">❌</div>
                               </Card>
                             )}
                           </Draggable>
                         ))}
                         {provided.placeholder}
-                        <Card onClick={() => openCardModal(list.id)}>
-                          + Adicionar Card
+
+                        {/* Card de adicionar */}
+                        <Card
+                          className="add-card"
+                          onClick={() => openCardModal(list.id)}
+                        >
+                          <img
+                            src={adicionarCard}
+                            alt="Adicionar"
+                            style={{
+                              width: "32px",
+                              height: "32px",
+                              display: "block",
+                              margin: "0 auto",
+                            }}
+                          />
                         </Card>
                       </CardArea>
                     </ListColumn>
@@ -875,8 +901,13 @@ export function Escolar() {
             <h3>Editar Título</h3>
             <Input
               value={novoTitulo}
-              onChange={(e) => setNovoTitulo(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 50) {
+                  setNovoTitulo(e.target.value);
+                }
+              }}
             />
+
             <Input
               type="file"
               accept="image/*"
@@ -987,7 +1018,11 @@ export function Escolar() {
               <input
                 placeholder="Nome do card"
                 value={cardTitle}
-                onChange={(e) => setCardTitle(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 50) {
+                    setCardTitle(e.target.value);
+                  }
+                }}
               />
             </InputWrapper>
 
