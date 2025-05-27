@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { toast } from "react-toastify";
+import { Usuario } from "../../Types/User";
 
 // Styled Components
 const Container = styled.div`
@@ -108,8 +109,8 @@ export function Comunidade() {
   const [cards, setCards] = useState<any[]>([]);
   const [meusCards, setMeusCards] = useState<any[]>([]);
   const [searchTitle, setSearchTitle] = useState("");
-  const [users, setUsers] = useState<any[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Usuario[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
   const [visibleCount, setVisibleCount] = useState(8);
   const [selectedCardId, setSelectedCardId] = useState("");
 
