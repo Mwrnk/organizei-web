@@ -8,7 +8,6 @@ import {
   Container,
   Subtitle,
   Title,
-  ButtonPrimary,
   ScrollWrapper,
   ScrollButton,
   Grid,
@@ -34,6 +33,8 @@ import {
   PublishedIcon,
   CardDate,
   CardTitle,
+  ButtonCriar,
+  ButtonExcluir,
 } from "../../Style/Escolar";
 
 import {
@@ -45,6 +46,7 @@ import {
 import { toast } from "react-toastify";
 import comunidadeIcon from "../../../assets/comunidade.svg";
 import adicionarCard from "../../../assets/adicionarCard.svg";
+import lixeira from "../../../assets/lixeira.svg";
 
 export function Escolar() {
   const { user } = useAuth();
@@ -536,15 +538,17 @@ export function Escolar() {
           </div>
 
           <div style={{ display: "flex", gap: "10px" }}>
-            <ButtonPrimary onClick={() => setShowModal(true)}>
-              + Criar nova lista
-            </ButtonPrimary>
-            <ButtonPrimary
-              style={{ backgroundColor: modoExcluir ? "red" : "#222" }}
+            <ButtonCriar onClick={() => setShowModal(true)}>
+              <img src={adicionarCard} alt="Adicionar" />
+              Criar nova lista
+            </ButtonCriar>
+
+            <ButtonExcluir
+              className={modoExcluir ? "ativo" : ""}
               onClick={() => setModoExcluir(!modoExcluir)}
             >
-              {modoExcluir ? "Cancelar Exclusão" : "Excluir Card"}
-            </ButtonPrimary>
+              <img src={lixeira} alt="Excluir" />
+            </ButtonExcluir>
           </div>
         </div>
 
@@ -608,16 +612,23 @@ export function Escolar() {
                                     handleExibirDetalhes(card.id, list.id);
                                   }
                                 }}
+                                onMouseEnter={(e) => {
+                                  if (modoExcluir) {
+                                    e.currentTarget.classList.add(
+                                      "hover-excluir"
+                                    );
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (modoExcluir) {
+                                    e.currentTarget.classList.remove(
+                                      "hover-excluir"
+                                    );
+                                  }
+                                }}
                               >
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "8px",
-                                    height: "100%",
-                                  }}
-                                >
-                                  {/* Título e foto */}
+                                {/* Conteúdo do card */}
+                                <div className="card-content">
                                   <div
                                     style={{
                                       display: "flex",
@@ -645,7 +656,7 @@ export function Escolar() {
                                     />
                                   </div>
 
-                                  {/* Linha inferior com data e ícone publicado */}
+                                  {/* Linha de data e publicado */}
                                   <div
                                     style={{
                                       display: "flex",
@@ -672,7 +683,10 @@ export function Escolar() {
                                   </div>
                                 </div>
 
-                                <div className="icon-excluir">❌</div>
+                                {/* Ícone de exclusão */}
+                                <div className="icon-excluir">
+                                  <img src={lixeira} alt="Excluir" />
+                                </div>
                               </Card>
                             )}
                           </Draggable>

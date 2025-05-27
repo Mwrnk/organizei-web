@@ -15,15 +15,69 @@ export const Title = styled.h1`
   margin-bottom: 24px;
 `;
 
-export const ButtonPrimary = styled.button`
-  padding: 10px 16px;
-  font-size: 14px;
-  background-color: #007bff;
-  color: white;
+export const ButtonCriar = styled.button`
+  background-color: #e9e8e8;
+  color: black;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  img {
+    width: 18px;
+    height: 18px;
+    transition: all 0.3s ease;
+    filter: brightness(0);
+  }
+
+  &:hover {
+    background-color: black;
+    color: white;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
+`;
+
+export const ButtonExcluir = styled.button`
+  background-color: #e9e8e8;
   border: none;
   border-radius: 12px;
+  padding: 8px 12px;
   cursor: pointer;
-  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    filter: invert(0%);
+    transition: filter 0.3s ease;
+    width: 24px;
+    height: 24px;
+  }
+
+  &:hover {
+    background-color: red;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
+
+  &.ativo {
+    background-color: red;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
 `;
 
 export const ScrollWrapper = styled.div`
@@ -48,22 +102,6 @@ export const ColumnTitle = styled.div`
   font-weight: 600;
   margin-bottom: 12px;
   text-align: left;
-`;
-export const CardTitle = styled.div`
-  font-size: 20px;
-  font-weight: 600;
-  word-break: break-word;
-  line-height: 1.4;
-`;
-
-export const CardDate = styled.div`
-  color: #999;
-  font-size: 12px;
-`;
-
-export const PublishedIcon = styled.img`
-  width: 18px;
-  height: 18px;
 `;
 
 export const CardArea = styled.div`
@@ -90,10 +128,33 @@ export const Card = styled.div`
     box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.12);
   }
 
-  /* Modo de exclusão */
+  /* Modo excluir */
   &.modo-excluir {
     border: 2px dashed red;
     opacity: 0.3;
+    pointer-events: auto;
+
+    &:hover {
+      background-color: #ff4d4d;
+      opacity: 1;
+      border: 2px dashed red;
+    }
+
+    &:hover .icon-excluir {
+      display: flex;
+      opacity: 1;
+    }
+
+    &:hover .card-content {
+      display: none;
+    }
+  }
+
+  /* Hover dentro do modo excluir */
+  &.hover-excluir {
+    background-color: #ff4d4d;
+    opacity: 1;
+    border: 2px dashed red;
   }
 
   /* Card para adicionar */
@@ -113,21 +174,12 @@ export const Card = styled.div`
     }
   }
 
-  /* Título do card */
-  .card-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #111;
-    word-break: break-word;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    max-width: 220px;
-  }
-
-  /* Data do card */
-  .card-date {
-    font-size: 13px;
-    color: #888;
+  /* Conteúdo normal do card */
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
   }
 
   /* Ícone de exclusão */
@@ -136,18 +188,39 @@ export const Card = styled.div`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: white;
-    font-size: 28px;
+    opacity: 0;
     display: none;
-    align-items: center;
-    justify-content: center;
     pointer-events: none;
-  }
 
-  /* Hover de exclusão */
-  &.hover-excluir .icon-excluir {
-    display: flex;
+    img {
+      width: 42px;
+      height: 42px;
+      filter: brightness(0) invert(1);
+    }
   }
+`;
+
+/* Título */
+export const CardTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: #111;
+  word-break: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  max-width: 220px;
+`;
+
+/* Data */
+export const CardDate = styled.p`
+  font-size: 13px;
+  color: #888;
+`;
+
+/* Ícone de publicado */
+export const PublishedIcon = styled.img`
+  width: 18px;
+  height: 18px;
 `;
 
 export const Avatar = styled.img`
