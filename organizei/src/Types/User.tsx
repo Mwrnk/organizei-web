@@ -7,6 +7,7 @@ export type Usuario = {
   role: UserRole;
   profileImage: string | null;
   plan?: string; //
+  orgPoints?: number;
 };
 
 export enum UserRole {

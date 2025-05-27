@@ -121,6 +121,22 @@ const IconConfig = styled.img`
   }
 `;
 
+const PontosBox = styled(InfoBox)`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  
+  ${Label} {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  ${Value} {
+    color: white;
+    font-weight: 700;
+    font-size: 18px;
+  }
+`;
+
 type Plano = {
   name: string;
   price: number;
@@ -245,6 +261,12 @@ export function Perfil() {
               <Label>Data de Nascimento</Label>
               <Value>{new Date(user.dateOfBirth).toLocaleDateString()}</Value>
             </InfoBox>
+            <PontosBox>
+              <Label>Pontos</Label>
+              <Value>
+                ⚡ {(user.orgPoints || 0).toLocaleString()} pts
+              </Value>
+            </PontosBox>
             {planoAtual && (
               <>
                 <InfoBox>
