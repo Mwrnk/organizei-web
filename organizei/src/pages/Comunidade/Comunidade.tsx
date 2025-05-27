@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { toast } from "react-toastify";
 
+// Styled Components
 const Container = styled.div`
   padding: 40px 60px;
 `;
@@ -206,6 +208,46 @@ export function Comunidade() {
     }
   };
 
+  const handleLike = async (card: any) => {
+    const token = localStorage.getItem("authenticacao");
+    const cardId = card.id || card._id;
+
+    if (!cardId) {
+      toast.error("ID do card não encontrado.");
+      console.error("Card sem ID:", card);
+      return;
+    }
+
+    if (!token) {
+      toast.error("Você precisa estar logado para curtir.");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/cards/${cardId}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const updatedLikes = res.data?.data?.likes;
+      setCards((prev) =>
+        prev.map((c) =>
+          (c.id || c._id) === cardId ? { ...c, likes: updatedLikes } : c
+        )
+      );
+
+      toast.success("Curtido com sucesso! ❤️");
+    } catch (err: any) {
+      if (err.response?.status === 400 || err.response?.status === 403) {
+        toast.error(err.response?.data?.message || "Não foi possível curtir.");
+      } else {
+        console.error("Erro ao curtir o card", err);
+        toast.error("Erro ao curtir. Tente novamente.");
+      }
+    }
+  };
+
   return (
     <>
       <Header />
@@ -256,33 +298,7 @@ export function Comunidade() {
                   color: "white",
                   cursor: "pointer",
                 }}
-                onClick={async () => {
-                  const token = localStorage.getItem("authenticacao");
-                  if (!token) {
-                    alert("Você precisa estar logado para curtir.");
-                    return;
-                  }
-                  try {
-                    const res = await axios.post(
-                      `http://localhost:3000/cards/${card._id}/like`,
-                      {},
-                      { headers: { Authorization: `Bearer ${token}` } }
-                    );
-                    const updatedLikes = res.data?.data?.likes;
-                    setCards((prev) =>
-                      prev.map((c) =>
-                        c._id === card._id ? { ...c, likes: updatedLikes } : c
-                      )
-                    );
-                  } catch (err: any) {
-                    if (err.response?.status === 400) {
-                      alert("Você já curtiu este card.");
-                    } else {
-                      console.error("Erro ao curtir o card", err);
-                      alert("Erro ao curtir. Tente novamente.");
-                    }
-                  }
-                }}
+                onClick={() => handleLike(card)}
               >
                 Curtir
               </button>
@@ -302,7 +318,6 @@ export function Comunidade() {
           </VerMais>
         )}
 
-        {/* SEÇÃO #publique */}
         {user && (
           <>
             <Titulo id="publique">#publique</Titulo>
@@ -317,10 +332,7 @@ export function Comunidade() {
 
                 <select
                   value={selectedCardId}
-                  onChange={(e) => {
-                    console.log("Card selecionado:", e.target.value);
-                    setSelectedCardId(e.target.value);
-                  }}
+                  onChange={(e) => setSelectedCardId(e.target.value)}
                   style={{
                     padding: "12px",
                     borderRadius: "8px",
@@ -339,31 +351,11 @@ export function Comunidade() {
                     ))}
                 </select>
 
-                {(() => {
-                  const selectedCard = meusCards.find(
-                    (card) => card._id === selectedCardId
-                  );
-
-                  if (!selectedCard) return null;
-
-                  return (
-                    <>
-                      {/* <CardInfo>Prioridade: {selectedCard.priority}</CardInfo>
-                      <CardInfo>Downloads: {selectedCard.downloads}</CardInfo>
-                      <CardInfo>Likes: {selectedCard.likes}</CardInfo>
-                      <CardInfo>
-                        Comentários: {selectedCard.comments?.length ?? 0}
-                      </CardInfo> */}
-                    </>
-                  );
-                })()}
-
                 <button
                   onClick={() => {
                     const selectedCard = meusCards.find(
                       (card) => card._id === selectedCardId
                     );
-                    console.log("Tentando publicar:", selectedCard);
 
                     if (selectedCard) {
                       handlePublicar(selectedCard._id);
