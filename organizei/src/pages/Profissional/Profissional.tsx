@@ -23,7 +23,12 @@ type CardType = {
 };
 
 // Styled Components
-const Container = styled.div``;
+const Container = styled.div`
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
 const Card = styled.div`
   background: #fff;
   padding: 24px;
@@ -31,47 +36,959 @@ const Card = styled.div`
   border-radius: 10px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 `;
+
+const FlashcardContainer = styled.div`
+  perspective: 1000px;
+  width: 400px;
+  height: 250px;
+  margin: 20px auto;
+`;
+
+const FlashcardInner = styled.div<{ isFlipped: boolean }>`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  transform: ${({ isFlipped }) =>
+    isFlipped ? "rotateY(180deg)" : "rotateY(0deg)"};
+  cursor: pointer;
+`;
+
+const FlashcardFace = styled.div`
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border: 2px solid #e0e0e0;
+`;
+
+const FlashcardFront = styled(FlashcardFace)`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+`;
+
+const FlashcardBack = styled(FlashcardFace)`
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  transform: rotateY(180deg);
+`;
+
 const FlashText = styled.p`
   font-size: 18px;
-  margin-bottom: 12px;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+  font-weight: 500;
 `;
+
+const FlashcardStepTitle = styled.h3`
+  font-size: 14px;
+  margin-bottom: 15px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`;
+
 const GradeButton = styled.button`
-  padding: 8px 12px;
-  margin: 4px;
+  padding: 10px 16px;
+  margin: 6px;
   border: none;
-  border-radius: 6px;
-  background-color: #0066ff;
+  border-radius: 8px;
+  background-color: #4caf50;
   color: white;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
   &:hover {
-    background-color: #0050cc;
+    background-color: #45a049;
+    transform: translateY(-2px);
   }
 `;
+
+const GradeContainer = styled.div`
+  margin-top: 20px;
+  text-align: center;
+`;
+
+const GradeText = styled.p`
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #333;
+`;
+
+const FlipInstruction = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 10px;
+  font-style: italic;
+`;
+const FormCard = styled.div`
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 30px;
+  margin-bottom: 25px;
+  border-radius: 15px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dee2e6;
+`;
+
+const FormTitle = styled.h3`
+  color: #495057;
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  gap: 15px;
+  grid-template-columns: 1fr;
+`;
+
 const Input = styled.input`
   width: 100%;
-  margin: 8px 0;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: white;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  &::placeholder {
+    color: #adb5bd;
+  }
 `;
+
 const Select = styled.select`
   width: 100%;
-  margin: 8px 0;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-`;
-const Button = styled.button`
-  background-color: #28a745;
-  color: white;
-  padding: 8px 16px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background-color: white;
   cursor: pointer;
-  &:hover {
-    background-color: #218838;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
+
+  &[multiple] {
+    min-height: 100px;
+  }
+`;
+
+const Button = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 24px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const AIButton = styled(Button)`
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+  }
+`;
+
+const TagButton = styled(Button)`
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+  &:hover {
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+  }
+`;
+
+const InputLabel = styled.label`
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 5px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const TagSelectInfo = styled.p`
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+  font-style: italic;
+`;
+
+// Styled Components para o fluxo de criação
+const CreationFlowContainer = styled.div`
+  display: flex;
+  min-height: 70vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  animation: slideIn 0.5s ease-out;
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const FlashcardPreview = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+`;
+
+const CreationContent = styled.div`
+  flex: 1;
+  padding: 60px 40px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+`;
+
+const StepTitle = styled.h1`
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #2d3748;
+`;
+
+const StepSubtitle = styled.p`
+  font-size: 18px;
+  color: #718096;
+  margin-bottom: 40px;
+  line-height: 1.6;
+`;
+
+const StepButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+`;
+
+const BackButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  color: #718096;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #2d3748;
+  }
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+`;
+
+const CardOption = styled.div`
+  padding: 16px 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+  position: relative;
+
+  &:hover {
+    border-color: #667eea;
+    background: #f7fafc;
+    transform: translateX(8px);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+`;
+
+const CardOptionTitle = styled.div`
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+`;
+
+const CardOptionSubtitle = styled.div`
+  font-size: 14px;
+  color: #718096;
+`;
+
+const ProgressBar = styled.div`
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin-bottom: 30px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div<{ progress: number }>`
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+  width: ${({ progress }) => progress}%;
+`;
+
+const StepIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #718096;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const NameInput = styled.input`
+  width: 100%;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 18px;
+  margin-bottom: 30px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+`;
+
+const SuccessButton = styled(StepButton)`
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+
+  &:hover {
+    box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
+  }
+`;
+
+const PreviewCard = styled.div`
+  width: 300px;
+  height: 200px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #a0aec0;
+  position: relative;
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 25px;
+    z-index: -1;
+    opacity: 0.1;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+`;
+
+const EmptyStateIcon = styled.div`
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+`;
+
+const EmptyStateText = styled.p`
+  font-size: 16px;
+  margin-bottom: 20px;
+`;
+
+const CreateFirstCardButton = styled(StepButton)`
+  margin: 0 auto;
+`;
+
+// Styled Components para Tags
+const TagsContainer = styled.div`
+  margin-bottom: 20px;
+`;
+
+const TagsTitle = styled.h4`
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 15px;
+`;
+
+const TagsList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const TagItem = styled.div<{ selected: boolean }>`
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 2px solid ${({ selected }) => (selected ? "#667eea" : "#e2e8f0")};
+  background: ${({ selected }) => (selected ? "#667eea" : "white")};
+  color: ${({ selected }) => (selected ? "white" : "#2d3748")};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+
+  &:hover {
+    border-color: #667eea;
+    background: ${({ selected }) => (selected ? "#5a67d8" : "#f7fafc")};
+  }
+`;
+
+const CreateTagButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  background: transparent;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  width: 100%;
+  margin-bottom: 20px;
+
+  &:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f7fafc;
+  }
+`;
+
+const TagModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const TagModalContent = styled.div`
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 400px;
+`;
+
+const TagModalTitle = styled.h3`
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    border-radius: 2px;
+  }
+`;
+
+const TagModalInput = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+  }
+`;
+
+const TagModalButtons = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+const TagModalButton = styled.button<{ variant?: "primary" | "secondary" }>`
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  ${({ variant }) =>
+    variant === "primary"
+      ? `
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+    }
+  `
+      : `
+    background: #f7fafc;
+    color: #718096;
+    
+    &:hover {
+      background: #edf2f7;
+    }
+  `}
+`;
+
+const SelectedTagsPreview = styled.div`
+  margin-top: 15px;
+  padding: 15px;
+  background: #f7fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+`;
+
+const SelectedTagsTitle = styled.p`
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const SelectedTagsCount = styled.span`
+  color: #667eea;
+  font-weight: 600;
+`;
+
+// Styled Components para a seção de todos os flashcards
+const AllFlashcardsSection = styled.div`
+  margin-top: 40px;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding: 20px 0;
+  border-bottom: 2px solid #e2e8f0;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const FlashcardCount = styled.span`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+const FlashcardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+`;
+
+const FlashcardCard = styled.div`
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+  }
+`;
+
+const FlashcardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+`;
+
+const FlashcardTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+`;
+
+const FlashcardDate = styled.span`
+  font-size: 12px;
+  color: #718096;
+  background: #f7fafc;
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  margin-left: 10px;
+`;
+
+const FlashcardContent = styled.div`
+  margin-bottom: 20px;
+`;
+
+const ContentSection = styled.div`
+  margin-bottom: 15px;
+`;
+
+const ContentLabel = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+`;
+
+const ContentText = styled.div`
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.5;
+  background: #f7fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid #e2e8f0;
+`;
+
+const FlashcardTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 15px;
+`;
+
+const FlashcardTag = styled.span`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+`;
+
+const FlashcardActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const StudyButton = styled(ActionButton)`
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+  }
+`;
+
+const PreviewButton = styled(ActionButton)`
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+
+  &:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+  }
+`;
+
+const EmptyFlashcardsState = styled.div`
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 15px;
+  border: 2px dashed #e2e8f0;
+`;
+
+const EmptyIcon = styled.div`
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: 24px;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 12px;
+`;
+
+const EmptyDescription = styled.p`
+  font-size: 16px;
+  color: #718096;
+  margin-bottom: 30px;
+  line-height: 1.6;
+`;
+
+const CreateFirstFlashcardButton = styled(StepButton)`
+  margin: 0 auto;
+`;
+
+// Styled Components para área de seleção de cards com scroll
+const CardsSelectionArea = styled.div`
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+  margin-bottom: 20px;
+
+  /* Estilização da barra de rolagem */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  }
+`;
+
+const CardsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 `;
 
 // FlashcardView
@@ -124,6 +1041,17 @@ export function Profissional() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
+  // Estados para o fluxo de criação
+  const [creationStep, setCreationStep] = useState(0); // 0=inicial, 1=card, 2=nome, 3=tags, 4=pronto
+  const [newFlashcardName, setNewFlashcardName] = useState("");
+  const [createdFlashcard, setCreatedFlashcard] = useState<Flashcard | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [selectedCardTitle, setSelectedCardTitle] = useState("");
+  const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+
   const loadFlashcards = async () => {
     try {
       const res = await axios.get("http://localhost:3000/flashcards", {
@@ -144,7 +1072,7 @@ export function Profissional() {
       });
       console.log("Cards recebidos:", res.data.data);
       setCards(
-        res.data.data.map((card) => ({
+        res.data.data.map((card: any) => ({
           _id: card._id || card.id,
           title: card.title,
         }))
@@ -187,6 +1115,39 @@ export function Profissional() {
     }
   };
 
+  const createTagFromModal = async () => {
+    if (!newTag.trim()) return;
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/tags",
+        { name: newTag.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Adicionar a nova tag à lista e selecioná-la automaticamente
+      const newTagObj = { _id: response.data.data._id, name: newTag.trim() };
+      setTagList((prev) => [...prev, newTagObj]);
+      setSelectedTags((prev) => [...prev, newTagObj._id]);
+
+      setNewTag("");
+      setShowCreateTagModal(false);
+    } catch (err: any) {
+      console.error("Erro ao criar tag", err);
+      alert(
+        "Erro ao criar tag: " +
+          (err.response?.data?.message || "Erro desconhecido")
+      );
+    }
+  };
+
+  const toggleTagSelection = (tagId: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
   const createFlashcard = async () => {
     if (!selectedCardId || front.trim().length < 1 || back.trim().length < 1) {
       alert("Preencha todos os campos obrigatórios.");
@@ -220,6 +1181,395 @@ export function Profissional() {
         "Erro ao criar flashcard: " +
           (err.response?.data?.message || "Erro desconhecido")
       );
+    }
+  };
+
+  const createFlashcardFromFlow = async () => {
+    if (
+      !selectedCardId ||
+      !newFlashcardName.trim() ||
+      selectedTags.length === 0
+    ) {
+      alert(
+        "Preencha todos os campos obrigatórios e selecione pelo menos uma tag."
+      );
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/flashcards/withAI`,
+        {
+          cardId: selectedCardId,
+          amount: 1,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Simular flashcard criado para preview baseado na resposta da IA
+      const newFlashcard: Flashcard = {
+        _id: Date.now().toString(),
+        front: newFlashcardName,
+        back: "Resposta gerada pela IA baseada no conteúdo do card selecionado",
+        tags: selectedTags.map((tagId) => {
+          const tag = tagList.find((t) => t._id === tagId);
+          return tag ? tag.name : tagId;
+        }),
+      };
+
+      // Delay para mostrar loading
+      setTimeout(() => {
+        setCreatedFlashcard(newFlashcard);
+        setCreationStep(4);
+        setIsCreating(false);
+        loadFlashcards();
+      }, 2000);
+    } catch (err: any) {
+      console.error("Erro ao criar flashcard com IA:", err);
+
+      let errorMessage = "Erro desconhecido";
+
+      if (err.response) {
+        // Erro de resposta do servidor (4xx, 5xx)
+        console.error("Status:", err.response.status);
+        console.error("Data:", err.response.data);
+        console.error("Headers:", err.response.headers);
+
+        if (err.response.status === 404) {
+          errorMessage =
+            "Endpoint não encontrado. Verifique se a API está rodando.";
+        } else if (err.response.status === 401) {
+          errorMessage =
+            "Token de autenticação inválido. Faça login novamente.";
+        } else if (err.response.status === 500) {
+          errorMessage =
+            "Erro interno do servidor. Tente novamente mais tarde.";
+        } else {
+          errorMessage =
+            err.response.data?.message ||
+            `Erro ${err.response.status}: ${err.response.statusText}`;
+        }
+      } else if (err.request) {
+        // Erro de rede (sem resposta do servidor)
+        console.error("Request:", err.request);
+        errorMessage =
+          "Erro de conexão. Verifique se a API está rodando na porta 3000.";
+      } else {
+        // Erro na configuração da requisição
+        console.error("Error:", err.message);
+        errorMessage = `Erro na requisição: ${err.message}`;
+      }
+
+      alert(`Erro ao criar flashcard com IA: ${errorMessage}`);
+      setIsCreating(false);
+    }
+  };
+
+  const resetCreationFlow = () => {
+    setCreationStep(0);
+    setSelectedCardId("");
+    setSelectedCardTitle("");
+    setNewFlashcardName("");
+    setCreatedFlashcard(null);
+    setSearchTerm("");
+    setIsCreating(false);
+  };
+
+  const filteredCards = cards.filter((card) =>
+    card.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const getProgressPercentage = () => {
+    switch (creationStep) {
+      case 0:
+        return 0;
+      case 1:
+        return 25;
+      case 2:
+        return 50;
+      case 3:
+        return 75;
+      case 4:
+        return 100;
+      default:
+        return 0;
+    }
+  };
+
+  const renderCreationStep = () => {
+    switch (creationStep) {
+      case 0:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <PreviewCard>{cards.length === 0 ? "📚" : "?"}</PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 1 de 4</StepIndicator>
+              <StepTitle>
+                Uma nova forma de{" "}
+                <span style={{ color: "#667eea" }}>aprender</span>!
+              </StepTitle>
+              <StepSubtitle>
+                Acerte e ganhe <strong>+pontos</strong> e depois troque eles!
+              </StepSubtitle>
+              {cards.length === 0 ? (
+                <EmptyState>
+                  <EmptyStateIcon>📝</EmptyStateIcon>
+                  <EmptyStateText>
+                    Você precisa criar pelo menos um card na seção Escolar antes
+                    de criar flashcards.
+                  </EmptyStateText>
+                  <CreateFirstCardButton
+                    onClick={() => (window.location.href = "/escolar")}
+                  >
+                    Ir para Escolar
+                  </CreateFirstCardButton>
+                </EmptyState>
+              ) : (
+                <StepButton onClick={() => setCreationStep(1)}>
+                  🚀 Criar Flashcards
+                </StepButton>
+              )}
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 1:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <PreviewCard>{selectedCardTitle ? "📋" : "?"}</PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 2 de 4</StepIndicator>
+              <BackButton onClick={() => setCreationStep(0)}>
+                ← Voltar
+              </BackButton>
+              <StepTitle>Qual card?</StepTitle>
+              <StepSubtitle>
+                Escolha o card que irá servir de base para as perguntas.
+              </StepSubtitle>
+              <SearchInput
+                placeholder="🔍 Pesquisar cards..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {filteredCards.length === 0 ? (
+                <EmptyState>
+                  <EmptyStateText>
+                    {searchTerm
+                      ? "Nenhum card encontrado com esse termo."
+                      : "Nenhum card disponível."}
+                  </EmptyStateText>
+                </EmptyState>
+              ) : (
+                <CardsSelectionArea>
+                  <CardsContainer>
+                    {filteredCards.map((card) => (
+                      <CardOption
+                        key={card._id}
+                        onClick={() => {
+                          setSelectedCardId(card._id);
+                          setSelectedCardTitle(card.title);
+                          setCreationStep(2);
+                        }}
+                      >
+                        <CardOptionTitle>{card.title}</CardOptionTitle>
+                        <CardOptionSubtitle>
+                          Clique para selecionar este card
+                        </CardOptionSubtitle>
+                      </CardOption>
+                    ))}
+                  </CardsContainer>
+                </CardsSelectionArea>
+              )}
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 2:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <PreviewCard
+                style={{
+                  fontSize: "24px",
+                  textAlign: "center",
+                  fontWeight: "600",
+                }}
+              >
+                {newFlashcardName || "Digite o nome..."}
+              </PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 3 de 4</StepIndicator>
+              <BackButton onClick={() => setCreationStep(1)}>
+                ← Voltar
+              </BackButton>
+              <StepTitle>Qual o nome?</StepTitle>
+              <StepSubtitle>
+                Defina o nome do seu flashcard baseado em:{" "}
+                <strong>{selectedCardTitle}</strong>
+              </StepSubtitle>
+              <NameInput
+                placeholder="✏️ Ex: Conceitos de Matemática"
+                value={newFlashcardName}
+                onChange={(e) => setNewFlashcardName(e.target.value)}
+                maxLength={50}
+              />
+              <StepButton
+                onClick={() => setCreationStep(3)}
+                disabled={!newFlashcardName.trim()}
+              >
+                📝 Próximo: Selecionar Tags
+              </StepButton>
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 3:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <PreviewCard
+                style={{
+                  fontSize: "24px",
+                  textAlign: "center",
+                  fontWeight: "600",
+                }}
+              >
+                🏷️
+              </PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 4 de 4</StepIndicator>
+              <BackButton onClick={() => setCreationStep(2)}>
+                ← Voltar
+              </BackButton>
+              <StepTitle>Selecionar Tags</StepTitle>
+              <StepSubtitle>
+                Escolha as tags que melhor descrevem seu flashcard:{" "}
+                <strong>{newFlashcardName}</strong>
+              </StepSubtitle>
+
+              <TagsContainer>
+                <CreateTagButton onClick={() => setShowCreateTagModal(true)}>
+                  ➕ Criar Nova Tag
+                </CreateTagButton>
+
+                {tagList.length === 0 ? (
+                  <EmptyState>
+                    <EmptyStateText>
+                      Nenhuma tag disponível. Crie sua primeira tag!
+                    </EmptyStateText>
+                  </EmptyState>
+                ) : (
+                  <>
+                    <TagsTitle>Tags Disponíveis:</TagsTitle>
+                    <TagsList>
+                      {tagList.map((tag) => (
+                        <TagItem
+                          key={tag._id}
+                          selected={selectedTags.includes(tag._id)}
+                          onClick={() => toggleTagSelection(tag._id)}
+                        >
+                          {tag.name}
+                        </TagItem>
+                      ))}
+                    </TagsList>
+                  </>
+                )}
+
+                {selectedTags.length > 0 && (
+                  <SelectedTagsPreview>
+                    <SelectedTagsTitle>
+                      <SelectedTagsCount>
+                        {selectedTags.length}
+                      </SelectedTagsCount>{" "}
+                      tag(s) selecionada(s)
+                    </SelectedTagsTitle>
+                    <TagsList>
+                      {selectedTags.map((tagId) => {
+                        const tag = tagList.find((t) => t._id === tagId);
+                        return tag ? (
+                          <TagItem key={tagId} selected={true}>
+                            {tag.name}
+                          </TagItem>
+                        ) : null;
+                      })}
+                    </TagsList>
+                  </SelectedTagsPreview>
+                )}
+              </TagsContainer>
+
+              <StepButton
+                onClick={createFlashcardFromFlow}
+                disabled={selectedTags.length === 0 || isCreating}
+              >
+                {isCreating ? (
+                  <>
+                    <LoadingSpinner />
+                    Criando com IA...
+                  </>
+                ) : (
+                  "🤖 Finalizar e Gerar com IA"
+                )}
+              </StepButton>
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 4:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <FlashcardContainer>
+                <FlashcardInner isFlipped={false}>
+                  <FlashcardFront>
+                    <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
+                    <FlashText>{createdFlashcard?.front}</FlashText>
+                  </FlashcardFront>
+                  <FlashcardBack>
+                    <FlashcardStepTitle>Resposta</FlashcardStepTitle>
+                    <FlashText>{createdFlashcard?.back}</FlashText>
+                  </FlashcardBack>
+                </FlashcardInner>
+              </FlashcardContainer>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>✅ Concluído!</StepIndicator>
+              <StepTitle>🎉 Pronto!</StepTitle>
+              <StepSubtitle>
+                Seu flashcard foi criado com sucesso! Agora você pode estudar e
+                ganhar pontos.
+              </StepSubtitle>
+              <SuccessButton onClick={resetCreationFlow}>
+                📚 Criar Outro
+              </SuccessButton>
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      default:
+        return null;
     }
   };
 
@@ -280,120 +1630,244 @@ export function Profissional() {
     <Container>
       <Header />
 
-      <Card>
-        <h3>Criar Flashcard Manual</h3>
-        <Select
-          value={selectedCardId}
-          onChange={(e) => setSelectedCardId(e.target.value)}
-        >
-          <option value="">Selecione um card</option>
-          {cards.map((card) => (
-            <option key={card._id} value={card._id}>
-              {card.title}
-            </option>
-          ))}
-        </Select>
-        <Input
-          placeholder="Frente"
-          value={front}
-          onChange={(e) => setFront(e.target.value)}
-        />
-        <Input
-          placeholder="Verso"
-          value={back}
-          onChange={(e) => setBack(e.target.value)}
-        />
-        <Select
-          multiple
-          value={selectedTags}
-          onChange={(e) =>
-            setSelectedTags(
-              Array.from(e.target.selectedOptions).map((opt) => opt.value)
-            )
-          }
-        >
-          {tagList.length === 0 ? (
-            <option disabled>Nenhuma tag cadastrada</option>
-          ) : (
-            tagList.map((tag) => (
-              <option key={tag._id} value={tag._id}>
-                {tag.name}
-              </option>
-            ))
-          )}
-        </Select>
-        <Button onClick={createFlashcard}>Criar Flashcard</Button>
-      </Card>
+      {renderCreationStep()}
 
-      <Card>
-        <h3>Criar nova Tag</h3>
-        <Input
-          placeholder="Nome da tag"
-          value={newTag}
-          onChange={(e) => setNewTag(e.target.value)}
-        />
-        <Button onClick={createTag}>Criar Tag</Button>
-      </Card>
+      {/* Modal para criar nova tag */}
+      {showCreateTagModal && (
+        <TagModal onClick={() => setShowCreateTagModal(false)}>
+          <TagModalContent onClick={(e) => e.stopPropagation()}>
+            <TagModalTitle>Criar Nova Tag</TagModalTitle>
+            <TagModalInput
+              placeholder="Digite o nome da nova tag..."
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
+            />
+            <TagModalButtons>
+              <TagModalButton
+                variant="secondary"
+                onClick={() => setShowCreateTagModal(false)}
+              >
+                Cancelar
+              </TagModalButton>
+              <TagModalButton variant="primary" onClick={createTagFromModal}>
+                Criar Tag
+              </TagModalButton>
+            </TagModalButtons>
+          </TagModalContent>
+        </TagModal>
+      )}
 
-      <Card>
-        <h3>Gerar Flashcards com IA</h3>
-        <Select
-          value={selectedCardId}
-          onChange={(e) => setSelectedCardId(e.target.value)}
-        >
-          <option value="">Selecione um card</option>
-          {cards.map((card) => (
-            <option key={card._id} value={card._id}>
-              {card.title}
-            </option>
-          ))}
-        </Select>
-        <Input
-          placeholder="Quantidade"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <Button onClick={createFlashcardWithAI}>Gerar com IA</Button>
-      </Card>
+      {/* <FormCard>
+        <FormTitle>Criar Flashcard Manual</FormTitle>
+        <FormGrid>
+          <div>
+            <InputLabel>Selecionar Card Base</InputLabel>
+            <Select
+              value={selectedCardId}
+              onChange={(e) => setSelectedCardId(e.target.value)}
+            >
+              <option value="">Selecione um card</option>
+              {cards.map((card) => (
+                <option key={card._id} value={card._id}>
+                  {card.title}
+                </option>
+              ))}
+            </Select>
+          </div>
+          
+          <div>
+            <InputLabel>Pergunta (Frente)</InputLabel>
+            <Input
+              placeholder="Digite a pergunta do flashcard..."
+              value={front}
+              onChange={(e) => setFront(e.target.value)}
+            />
+          </div>
+          
+          <div>
+            <InputLabel>Resposta (Verso)</InputLabel>
+            <Input
+              placeholder="Digite a resposta do flashcard..."
+              value={back}
+              onChange={(e) => setBack(e.target.value)}
+            />
+          </div>
+          
+          <div>
+            <InputLabel>Tags</InputLabel>
+            <Select
+              multiple
+              value={selectedTags}
+              onChange={(e) =>
+                setSelectedTags(
+                  Array.from(e.target.selectedOptions).map((opt) => opt.value)
+                )
+              }
+            >
+              {tagList.length === 0 ? (
+                <option disabled>Nenhuma tag cadastrada</option>
+              ) : (
+                tagList.map((tag) => (
+                  <option key={tag._id} value={tag._id}>
+                    {tag.name}
+                  </option>
+                ))
+              )}
+            </Select>
+            <TagSelectInfo>Segure Ctrl/Cmd para selecionar múltiplas tags</TagSelectInfo>
+          </div>
+          
+          <Button onClick={createFlashcard}>Criar Flashcard</Button>
+        </FormGrid>
+      </FormCard> */}
+
+      {/* <FormCard>
+        <FormTitle>Criar Nova Tag</FormTitle>
+        <FormGrid>
+          <div>
+            <InputLabel>Nome da Tag</InputLabel>
+            <Input
+              placeholder="Digite o nome da nova tag..."
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+            />
+          </div>
+          <TagButton onClick={createTag}>Criar Tag</TagButton>
+        </FormGrid>
+      </FormCard> */}
+
+      {/* <FormCard>
+        <FormTitle>Gerar Flashcards com IA</FormTitle>
+        <FormGrid>
+          <div>
+            <InputLabel>Selecionar Card Base</InputLabel>
+            <Select
+              value={selectedCardId}
+              onChange={(e) => setSelectedCardId(e.target.value)}
+            >
+              <option value="">Selecione um card</option>
+              {cards.map((card) => (
+                <option key={card._id} value={card._id}>
+                  {card.title}
+                </option>
+              ))}
+            </Select>
+          </div>
+          
+          <div>
+            <InputLabel>Quantidade de Flashcards</InputLabel>
+            <Input
+              placeholder="Ex: 3, 5, 10..."
+              type="number"
+              min="1"
+              max="20"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </div>
+          
+          <AIButton onClick={createFlashcardWithAI}>🤖 Gerar com IA</AIButton>
+        </FormGrid>
+      </FormCard> */}
 
       {flashcards.length === 0 ? (
         <p>Você ainda não possui flashcards.</p>
       ) : currentIndex >= flashcards.length ? (
         <p>Parabéns! Você revisou todos os flashcards.</p>
       ) : (
-        <Card>
-          <FlashText>
-            <strong>Frente:</strong> {current.front}
-          </FlashText>
+        <div>
+          <FlashcardContainer>
+            <FlashcardInner
+              isFlipped={showBack}
+              onClick={() => setShowBack(!showBack)}
+            >
+              <FlashcardFront>
+                <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
+                <FlashText>{current.front}</FlashText>
+              </FlashcardFront>
+              <FlashcardBack>
+                <FlashcardStepTitle>Resposta</FlashcardStepTitle>
+                <FlashText>{current.back}</FlashText>
+              </FlashcardBack>
+            </FlashcardInner>
+          </FlashcardContainer>
+
+          <FlipInstruction>
+            {!showBack
+              ? "Clique no cartão para ver a resposta"
+              : "Clique no cartão para voltar à pergunta"}
+          </FlipInstruction>
+
           {showBack && (
-            <FlashText>
-              <strong>Verso:</strong> {current.back}
-            </FlashText>
-          )}
-          {!showBack ? (
-            <GradeButton onClick={() => setShowBack(true)}>
-              Mostrar Resposta
-            </GradeButton>
-          ) : (
-            <div>
-              <p>Como você se saiu? (0 a 5)</p>
+            <GradeContainer>
+              <GradeText>Como você se saiu? (0 a 5)</GradeText>
               {[0, 1, 2, 3, 4, 5].map((n) => (
                 <GradeButton key={n} onClick={() => handleGrade(n)}>
                   {n}
                 </GradeButton>
               ))}
-            </div>
+            </GradeContainer>
           )}
-        </Card>
+        </div>
       )}
 
-      <Card>
-        <h3>Todos os seus Flashcards</h3>
-        {flashcards.map((fc) => (
-          <FlashcardView key={fc._id} flashcard={fc} />
-        ))}
-      </Card>
+      <AllFlashcardsSection>
+        <SectionHeader>
+          <SectionTitle>
+            📚 Seus Flashcards
+            <FlashcardCount>{flashcards.length}</FlashcardCount>
+          </SectionTitle>
+        </SectionHeader>
+
+        {flashcards.length === 0 ? (
+          <EmptyFlashcardsState>
+            <EmptyIcon>🎴</EmptyIcon>
+            <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
+            <EmptyDescription>
+              Crie seu primeiro flashcard usando o fluxo step-by-step acima.
+              <br />
+              Organize seus estudos de forma inteligente e ganhe pontos!
+            </EmptyDescription>
+            <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
+              🚀 Criar Primeiro Flashcard
+            </CreateFirstFlashcardButton>
+          </EmptyFlashcardsState>
+        ) : (
+          <FlashcardsGrid>
+            {flashcards.map((fc) => (
+              <FlashcardCard key={fc._id}>
+                <FlashcardHeader>
+                  <FlashcardTitle>{fc.front}</FlashcardTitle>
+                  <FlashcardDate>Criado recentemente</FlashcardDate>
+                </FlashcardHeader>
+
+                <FlashcardContent>
+                  <ContentSection>
+                    <ContentLabel>Pergunta</ContentLabel>
+                    <ContentText>{fc.front}</ContentText>
+                  </ContentSection>
+                </FlashcardContent>
+
+                {fc.tags && fc.tags.length > 0 && (
+                  <FlashcardTags>
+                    {fc.tags.map((tag, index) => (
+                      <FlashcardTag key={index}>
+                        {typeof tag === "object" ? tag.name : tag}
+                      </FlashcardTag>
+                    ))}
+                  </FlashcardTags>
+                )}
+
+                <FlashcardActions>
+                  <StudyButton>📖 Estudar</StudyButton>
+                  <PreviewButton>👁️ Preview</PreviewButton>
+                </FlashcardActions>
+              </FlashcardCard>
+            ))}
+          </FlashcardsGrid>
+        )}
+      </AllFlashcardsSection>
     </Container>
   );
 }
