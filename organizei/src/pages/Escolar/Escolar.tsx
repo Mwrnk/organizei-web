@@ -53,6 +53,42 @@ export function Escolar() {
   const userId = user?._id;
   const gridRef = useRef<HTMLDivElement | null>(null);
 
+  // Função auxiliar para formatar data
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) {
+      return new Date().toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        // Se a data é inválida, usa a data atual
+        return new Date().toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        });
+      }
+      
+      return date.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    } catch (error) {
+      console.error("Erro ao formatar data:", error);
+      return new Date().toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+  };
+
   const [lists, setLists] = useState<Lista[]>([]);
   const [cards, setCards] = useState<Record<string, CardData[]>>({});
   const [showModal, setShowModal] = useState(false);
@@ -94,14 +130,44 @@ export function Escolar() {
             const cardsRes = await axios.get(
               `http://localhost:3000/lists/${list.id}/cards`
             );
-            cardsPorLista[list.id] = cardsRes.data.data.map((card: any) => ({
-              id: card.id,
-              title: card.title,
-              userId: card.userId,
-              createdAt: card.createdAt,
-              pdfs: card.pdfs || [],
-              is_published: card.is_published,
-            }));
+            
+            // Para cada card, buscar os dados completos incluindo imagens
+            const cardsWithDetails = await Promise.all(
+              cardsRes.data.data.map(async (card: any) => {
+                try {
+                  const cardDetailRes = await axios.get(
+                    `http://localhost:3000/cards/${card.id}`
+                  );
+                  const cardDetail = cardDetailRes.data.data;
+                  
+                  console.log("Card detail:", cardDetail); // Debug log
+                  
+                  return {
+                    id: card.id,
+                    title: card.title,
+                    userId: card.userId,
+                    createdAt: cardDetail.createdAt || card.createdAt || new Date().toISOString(),
+                    pdfs: cardDetail.pdfs || [],
+                    image_url: cardDetail.image_url || [],
+                    is_published: cardDetail.is_published || false,
+                  };
+                } catch (err) {
+                  // Se falhar ao buscar detalhes, retorna dados básicos
+                  console.warn(`Erro ao buscar detalhes do card ${card.id}:`, err);
+                  return {
+                    id: card.id,
+                    title: card.title,
+                    userId: card.userId,
+                    createdAt: card.createdAt || new Date().toISOString(),
+                    pdfs: [],
+                    image_url: [],
+                    is_published: false,
+                  };
+                }
+              })
+            );
+            
+            cardsPorLista[list.id] = cardsWithDetails;
           })
         );
 
@@ -212,13 +278,8 @@ export function Escolar() {
         listId: selectedListId,
       });
 
-      const newCard = {
-        id: res.data.data.id,
-        title: res.data.data.title,
-        userId: res.data.data.userId,
-      };
-
-      console.log("✅ Card criado com sucesso:", newCard);
+      const newCardId = res.data.data.id;
+      console.log("✅ Card criado com sucesso:", newCardId);
       toast.success("Card criado com sucesso!");
 
       // Upload da imagem, se houver
@@ -228,22 +289,59 @@ export function Escolar() {
         formData.append("files", image);
 
         await axios.post(
-          `http://localhost:3000/cards/${newCard.id}/files`,
+          `http://localhost:3000/cards/${newCardId}/files`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
         console.log("✅ Upload da imagem concluído.");
         toast.success("Imagem enviada com sucesso.");
-      } else {
-        console.log("ℹ️ Nenhuma imagem selecionada.");
       }
 
-      setCards((prev) => ({
-        ...prev,
-        [selectedListId]: [...(prev[selectedListId] || []), newCard],
-      }));
-      console.log("🗂️ Card adicionado ao estado.");
+      // Recarregar os dados da lista para mostrar o card com a imagem
+      try {
+        const cardsRes = await axios.get(
+          `http://localhost:3000/lists/${selectedListId}/cards`
+        );
+        
+        const cardsWithDetails = await Promise.all(
+          cardsRes.data.data.map(async (card: any) => {
+            try {
+              const cardDetailRes = await axios.get(
+                `http://localhost:3000/cards/${card.id}`
+              );
+              const cardDetail = cardDetailRes.data.data;
+              
+              return {
+                id: card.id,
+                title: card.title,
+                userId: card.userId,
+                createdAt: card.createdAt,
+                pdfs: cardDetail.pdfs || [],
+                image_url: cardDetail.image_url || [],
+                is_published: cardDetail.is_published || false,
+              };
+            } catch (err) {
+              return {
+                id: card.id,
+                title: card.title,
+                userId: card.userId,
+                createdAt: card.createdAt,
+                pdfs: [],
+                image_url: [],
+                is_published: false,
+              };
+            }
+          })
+        );
+
+        setCards((prev) => ({
+          ...prev,
+          [selectedListId]: cardsWithDetails,
+        }));
+      } catch (err) {
+        console.error("Erro ao recarregar cards:", err);
+      }
 
       setShowCardModal(false);
       setCardTitle("");
@@ -343,27 +441,33 @@ export function Escolar() {
         { title: tituloEditavel.trim() }
       );
 
-      const updatedCard = {
-        ...cardSelecionado,
-        title: res.data.data.title,
-      };
-
       // Upload do PDF se houver
       if (pdf) {
         const formData = new FormData();
         formData.append("files", pdf);
 
-        const fileRes = await axios.post(
+        await axios.post(
           `http://localhost:3000/cards/${cardSelecionado.id}/files`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
-
-        const uploadedPdfs = fileRes.data.data.pdfs || [];
-
-        updatedCard.pdfs = uploadedPdfs;
       }
 
+      // Recarregar os dados completos do card
+      const cardDetailRes = await axios.get(
+        `http://localhost:3000/cards/${cardSelecionado.id}`
+      );
+      const cardDetail = cardDetailRes.data.data;
+
+      const updatedCard = {
+        ...cardSelecionado,
+        title: res.data.data.title,
+        pdfs: cardDetail.pdfs || [],
+        image_url: cardDetail.image_url || [],
+        is_published: cardDetail.is_published || false,
+      };
+
+      // Atualizar na lista de cards
       setCards((prev) => ({
         ...prev,
         [selectedListId]: prev[selectedListId].map((c) =>
@@ -629,11 +733,47 @@ export function Escolar() {
                               >
                                 {/* Conteúdo do card */}
                                 <div className="card-content">
+                                  {/* Banner da imagem do card */}
+                                  {card.image_url && card.image_url.length > 0 && (
+                                    <div
+                                      style={{
+                                        width: "100%",
+                                        height: "70px",
+                                        borderRadius: "8px",
+                                        overflow: "hidden",
+                                        background: "#f5f5f5",
+                                        marginBottom: "8px",
+                                        border: "1px solid #e0e0e0",
+                                      }}
+                                    >
+                                      <img
+                                        src={`http://localhost:3000${card.image_url[0]}`}
+                                        alt="Card banner"
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                          objectFit: "cover",
+                                          transition: "opacity 0.3s ease",
+                                        }}
+                                        loading="eager"
+                                        onLoad={(e) => {
+                                          e.currentTarget.style.opacity = "1";
+                                        }}
+                                        onError={(e) => {
+                                          // Fallback caso a imagem não carregue
+                                          e.currentTarget.parentElement!.style.display = "none";
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+
+                                  {/* Área do título e foto do usuário */}
                                   <div
                                     style={{
                                       display: "flex",
                                       justifyContent: "space-between",
                                       alignItems: "start",
+                                      marginBottom: "8px",
                                     }}
                                   >
                                     <CardTitle>
@@ -641,6 +781,8 @@ export function Escolar() {
                                         ? card.title.slice(0, 40) + "..."
                                         : card.title}
                                     </CardTitle>
+                                    
+                                    {/* Foto do perfil do usuário */}
                                     <img
                                       src={
                                         user?.profileImage ||
@@ -652,6 +794,7 @@ export function Escolar() {
                                         height: "30px",
                                         borderRadius: "50%",
                                         objectFit: "cover",
+                                        flexShrink: 0,
                                       }}
                                     />
                                   </div>
@@ -666,11 +809,7 @@ export function Escolar() {
                                     }}
                                   >
                                     <CardDate>
-                                      {card.createdAt
-                                        ? new Date(
-                                            card.createdAt
-                                          ).toLocaleDateString("pt-BR")
-                                        : "Sem data"}
+                                      {formatDate(card.createdAt)}
                                     </CardDate>
 
                                     {card.is_published && (

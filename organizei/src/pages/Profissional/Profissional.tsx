@@ -29,13 +29,7 @@ const Container = styled.div`
   margin: 0 auto;
 `;
 
-const Card = styled.div`
-  background: #fff;
-  padding: 24px;
-  margin-bottom: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-`;
+
 
 const FlashcardContainer = styled.div`
   perspective: 1000px;
@@ -132,139 +126,12 @@ const FlipInstruction = styled.p`
   margin-top: 10px;
   font-style: italic;
 `;
-const FormCard = styled.div`
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 30px;
-  margin-bottom: 25px;
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid #dee2e6;
-`;
 
-const FormTitle = styled.h3`
-  color: #495057;
-  margin-bottom: 20px;
-  font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-  position: relative;
 
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
-    border-radius: 2px;
-  }
-`;
 
-const FormGrid = styled.div`
-  display: grid;
-  gap: 15px;
-  grid-template-columns: 1fr;
-`;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 2px solid #e9ecef;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  background-color: white;
 
-  &:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
 
-  &::placeholder {
-    color: #adb5bd;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 2px solid #e9ecef;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  background-color: white;
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-
-  &[multiple] {
-    min-height: 100px;
-  }
-`;
-
-const Button = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 24px;
-  margin-top: 15px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const AIButton = styled(Button)`
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-
-  &:hover {
-    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
-  }
-`;
-
-const TagButton = styled(Button)`
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-
-  &:hover {
-    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
-  }
-`;
-
-const InputLabel = styled.label`
-  font-size: 12px;
-  font-weight: 600;
-  color: #6c757d;
-  margin-bottom: 5px;
-  display: block;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const TagSelectInfo = styled.p`
-  font-size: 12px;
-  color: #6c757d;
-  margin-top: 5px;
-  font-style: italic;
-`;
 
 // Styled Components para o fluxo de criação
 const CreationFlowContainer = styled.div`
@@ -958,6 +825,132 @@ const CreateFirstFlashcardButton = styled(StepButton)`
   margin: 0 auto;
 `;
 
+// Styled Components para a tela de seleção de jogos
+const GameSelectionContainer = styled.div`
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+`;
+
+const GameSelectionContent = styled.div`
+  background: white;
+  border-radius: 30px;
+  padding: 60px 40px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+`;
+
+const GameTitle = styled.h1`
+  font-size: 48px;
+  font-weight: 800;
+  color: #2d3748;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const GameSubtitle = styled.p`
+  font-size: 20px;
+  color: #718096;
+  margin-bottom: 50px;
+  line-height: 1.6;
+`;
+
+const GamesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+`;
+
+const GameCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 40px 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    border-color: #667eea;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+  }
+`;
+
+const GameIcon = styled.div`
+  font-size: 80px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+`;
+
+const GameCardTitle = styled.h3`
+  font-size: 28px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 15px;
+`;
+
+const GameCardDescription = styled.p`
+  font-size: 16px;
+  color: #718096;
+  line-height: 1.5;
+  margin-bottom: 20px;
+`;
+
+const GameCardFeature = styled.div`
+  background: #f7fafc;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #4a5568;
+  font-weight: 600;
+  border-left: 4px solid #667eea;
+`;
+
+const PointsIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+  font-size: 14px;
+  color: #667eea;
+  font-weight: 600;
+`;
+
+const LightningIcon = styled.span`
+  font-size: 18px;
+  animation: pulse 2s ease-in-out infinite;
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+`;
+
 // Styled Components para área de seleção de cards com scroll
 const CardsSelectionArea = styled.div`
   max-height: 300px;
@@ -992,35 +985,35 @@ const CardsContainer = styled.div`
 `;
 
 // FlashcardView
-const FlashcardView = ({ flashcard }: { flashcard: Flashcard }) => {
-  const [showBack, setShowBack] = useState(false);
+// const FlashcardView = ({ flashcard }: { flashcard: Flashcard }) => {
+//   const [showBack, setShowBack] = useState(false);
 
-  return (
-    <Card>
-      <FlashText>
-        <strong>Frente:</strong> {flashcard.front}
-      </FlashText>
-      {showBack && (
-        <FlashText>
-          <strong>Verso:</strong> {flashcard.back}
-        </FlashText>
-      )}
-      {!showBack && (
-        <GradeButton onClick={() => setShowBack(true)}>
-          Mostrar Resposta
-        </GradeButton>
-      )}
-      {flashcard.tags?.length > 0 && (
-        <p>
-          <strong>Tags:</strong>{" "}
-          {flashcard.tags
-            .map((tag) => (typeof tag === "object" ? tag.name : tag))
-            .join(", ")}
-        </p>
-      )}
-    </Card>
-  );
-};
+//   return (
+//     <Card>
+//       <FlashText>
+//         <strong>Frente:</strong> {flashcard.front}
+//       </FlashText>
+//       {showBack && (
+//         <FlashText>
+//           <strong>Verso:</strong> {flashcard.back}
+//         </FlashText>
+//       )}
+//       {!showBack && (
+//         <GradeButton onClick={() => setShowBack(true)}>
+//           Mostrar Resposta
+//         </GradeButton>
+//       )}
+//       {flashcard.tags?.length > 0 && (
+//         <p>
+//           <strong>Tags:</strong>{" "}
+//           {flashcard.tags
+//             .map((tag) => (typeof tag === "object" ? tag.name : tag))
+//             .join(", ")}
+//         </p>
+//       )}
+//     </Card>
+//   );
+// };
 
 export function Profissional() {
   const { user } = useAuth();
@@ -1032,10 +1025,13 @@ export function Profissional() {
   const [showBack, setShowBack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Novo estado para controlar a tela de seleção de jogos
+  const [showGameSelection, setShowGameSelection] = useState(true);
+
   const [selectedCardId, setSelectedCardId] = useState("");
-  const [front, setFront] = useState("");
-  const [back, setBack] = useState("");
-  const [amount, setAmount] = useState("3");
+  // const [front, setFront] = useState("");
+  // const [back, setBack] = useState("");
+  // const [amount, setAmount] = useState("3");
 
   const [tagList, setTagList] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -1095,25 +1091,25 @@ export function Profissional() {
     }
   };
 
-  const createTag = async () => {
-    if (!newTag.trim()) return alert("Digite um nome para a tag.");
-    try {
-      await axios.post(
-        "http://localhost:3000/tags",
-        { name: newTag.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Tag criada com sucesso.");
-      setNewTag("");
-      loadTags();
-    } catch (err: any) {
-      console.error("Erro ao criar tag", err);
-      alert(
-        "Erro ao criar tag: " +
-          (err.response?.data?.message || "Erro desconhecido")
-      );
-    }
-  };
+  // const createTag = async () => {
+  //   if (!newTag.trim()) return alert("Digite um nome para a tag.");
+  //   try {
+  //     await axios.post(
+  //       "http://localhost:3000/tags",
+  //       { name: newTag.trim() },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     alert("Tag criada com sucesso.");
+  //     setNewTag("");
+  //     loadTags();
+  //   } catch (err: any) {
+  //     console.error("Erro ao criar tag", err);
+  //     alert(
+  //       "Erro ao criar tag: " +
+  //         (err.response?.data?.message || "Erro desconhecido")
+  //     );
+  //   }
+  // };
 
   const createTagFromModal = async () => {
     if (!newTag.trim()) return;
@@ -1148,41 +1144,41 @@ export function Profissional() {
     );
   };
 
-  const createFlashcard = async () => {
-    if (!selectedCardId || front.trim().length < 1 || back.trim().length < 1) {
-      alert("Preencha todos os campos obrigatórios.");
-      return;
-    }
+  // const createFlashcard = async () => {
+  //   if (!selectedCardId || front.trim().length < 1 || back.trim().length < 1) {
+  //     alert("Preencha todos os campos obrigatórios.");
+  //     return;
+  //   }
 
-    if (selectedTags.length === 0) {
-      alert("Selecione pelo menos uma tag.");
-      return;
-    }
+  //   if (selectedTags.length === 0) {
+  //     alert("Selecione pelo menos uma tag.");
+  //     return;
+  //   }
 
-    try {
-      await axios.post(
-        "http://localhost:3000/flashcards",
-        {
-          cardId: selectedCardId,
-          front,
-          back,
-          tags: selectedTags,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Flashcard criado com sucesso");
-      setFront("");
-      setBack("");
-      setSelectedTags([]);
-      loadFlashcards();
-    } catch (err: any) {
-      console.error("Erro ao criar flashcard", err);
-      alert(
-        "Erro ao criar flashcard: " +
-          (err.response?.data?.message || "Erro desconhecido")
-      );
-    }
-  };
+  //   try {
+  //     await axios.post(
+  //       "http://localhost:3000/flashcards",
+  //       {
+  //         cardId: selectedCardId,
+  //         front,
+  //         back,
+  //         tags: selectedTags,
+  //       },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     alert("Flashcard criado com sucesso");
+  //     setFront("");
+  //     setBack("");
+  //     setSelectedTags([]);
+  //     loadFlashcards();
+  //   } catch (err: any) {
+  //     console.error("Erro ao criar flashcard", err);
+  //     alert(
+  //       "Erro ao criar flashcard: " +
+  //         (err.response?.data?.message || "Erro desconhecido")
+  //     );
+  //   }
+  // };
 
   const createFlashcardFromFlow = async () => {
     if (
@@ -1296,6 +1292,55 @@ export function Profissional() {
       default:
         return 0;
     }
+  };
+
+  const renderGameSelection = () => {
+    return (
+      <>
+        <Header />
+        <GameSelectionContainer>
+          <GameSelectionContent>
+            <GameTitle>O que vai jogar hoje?</GameTitle>
+            <GameSubtitle>
+              <LightningIcon>⚡</LightningIcon>
+              30pts
+            </GameSubtitle>
+            
+            <GamesGrid>
+              <GameCard onClick={() => setShowGameSelection(false)}>
+                <GameIcon>?</GameIcon>
+                <GameCardTitle>Flash Cards</GameCardTitle>
+                <GameCardDescription>
+                  Perguntas geradas por IA com o tema da matéria escolhida...
+                </GameCardDescription>
+                <GameCardFeature>
+                  Teste seus conhecimentos
+                </GameCardFeature>
+                <PointsIndicator>
+                  <LightningIcon>⚡</LightningIcon>
+                  Ganhe pontos por acerto
+                </PointsIndicator>
+              </GameCard>
+
+              <GameCard>
+                <GameIcon>?</GameIcon>
+                <GameCardTitle>Jogo do milhão</GameCardTitle>
+                <GameCardDescription>
+                  Inúmeras perguntas com temas diversos.
+                </GameCardDescription>
+                <GameCardFeature>
+                  Desafie seus limites
+                </GameCardFeature>
+                <PointsIndicator>
+                  <LightningIcon>⚡</LightningIcon>
+                  Recompensas especiais
+                </PointsIndicator>
+              </GameCard>
+            </GamesGrid>
+          </GameSelectionContent>
+        </GameSelectionContainer>
+      </>
+    );
   };
 
   const renderCreationStep = () => {
@@ -1573,26 +1618,26 @@ export function Profissional() {
     }
   };
 
-  const createFlashcardWithAI = async () => {
-    if (!selectedCardId) {
-      alert("Selecione um card válido.");
-      return;
-    }
+  // const createFlashcardWithAI = async () => {
+  //   if (!selectedCardId) {
+  //     alert("Selecione um card válido.");
+  //     return;
+  //   }
 
-    try {
-      await axios.post(
-        `http://localhost:3000/flashcards/withAI/${selectedCardId}`,
-        { amount: parseInt(amount) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Flashcards com IA gerados com sucesso");
-      setAmount("3");
-      loadFlashcards();
-    } catch (err) {
-      console.error("Erro ao gerar flashcards por IA", err);
-      alert("Erro ao gerar flashcards por IA");
-    }
-  };
+  //   try {
+  //     await axios.post(
+  //       `http://localhost:3000/flashcards/withAI/${selectedCardId}`,
+  //       { amount: parseInt(amount) },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     alert("Flashcards com IA gerados com sucesso");
+  //     setAmount("3");
+  //     loadFlashcards();
+  //   } catch (err) {
+  //     console.error("Erro ao gerar flashcards por IA", err);
+  //     alert("Erro ao gerar flashcards por IA");
+  //   }
+  // };
 
   const handleGrade = async (grade: number) => {
     const current = flashcards[currentIndex];
@@ -1627,247 +1672,140 @@ export function Profissional() {
   const current = flashcards[currentIndex];
 
   return (
-    <Container>
-      <Header />
-
-      {renderCreationStep()}
-
-      {/* Modal para criar nova tag */}
-      {showCreateTagModal && (
-        <TagModal onClick={() => setShowCreateTagModal(false)}>
-          <TagModalContent onClick={(e) => e.stopPropagation()}>
-            <TagModalTitle>Criar Nova Tag</TagModalTitle>
-            <TagModalInput
-              placeholder="Digite o nome da nova tag..."
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
-            />
-            <TagModalButtons>
-              <TagModalButton
-                variant="secondary"
-                onClick={() => setShowCreateTagModal(false)}
-              >
-                Cancelar
-              </TagModalButton>
-              <TagModalButton variant="primary" onClick={createTagFromModal}>
-                Criar Tag
-              </TagModalButton>
-            </TagModalButtons>
-          </TagModalContent>
-        </TagModal>
-      )}
-
-      {/* <FormCard>
-        <FormTitle>Criar Flashcard Manual</FormTitle>
-        <FormGrid>
-          <div>
-            <InputLabel>Selecionar Card Base</InputLabel>
-            <Select
-              value={selectedCardId}
-              onChange={(e) => setSelectedCardId(e.target.value)}
-            >
-              <option value="">Selecione um card</option>
-              {cards.map((card) => (
-                <option key={card._id} value={card._id}>
-                  {card.title}
-                </option>
-              ))}
-            </Select>
-          </div>
-          
-          <div>
-            <InputLabel>Pergunta (Frente)</InputLabel>
-            <Input
-              placeholder="Digite a pergunta do flashcard..."
-              value={front}
-              onChange={(e) => setFront(e.target.value)}
-            />
-          </div>
-          
-          <div>
-            <InputLabel>Resposta (Verso)</InputLabel>
-            <Input
-              placeholder="Digite a resposta do flashcard..."
-              value={back}
-              onChange={(e) => setBack(e.target.value)}
-            />
-          </div>
-          
-          <div>
-            <InputLabel>Tags</InputLabel>
-            <Select
-              multiple
-              value={selectedTags}
-              onChange={(e) =>
-                setSelectedTags(
-                  Array.from(e.target.selectedOptions).map((opt) => opt.value)
-                )
-              }
-            >
-              {tagList.length === 0 ? (
-                <option disabled>Nenhuma tag cadastrada</option>
-              ) : (
-                tagList.map((tag) => (
-                  <option key={tag._id} value={tag._id}>
-                    {tag.name}
-                  </option>
-                ))
-              )}
-            </Select>
-            <TagSelectInfo>Segure Ctrl/Cmd para selecionar múltiplas tags</TagSelectInfo>
-          </div>
-          
-          <Button onClick={createFlashcard}>Criar Flashcard</Button>
-        </FormGrid>
-      </FormCard> */}
-
-      {/* <FormCard>
-        <FormTitle>Criar Nova Tag</FormTitle>
-        <FormGrid>
-          <div>
-            <InputLabel>Nome da Tag</InputLabel>
-            <Input
-              placeholder="Digite o nome da nova tag..."
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-            />
-          </div>
-          <TagButton onClick={createTag}>Criar Tag</TagButton>
-        </FormGrid>
-      </FormCard> */}
-
-      {/* <FormCard>
-        <FormTitle>Gerar Flashcards com IA</FormTitle>
-        <FormGrid>
-          <div>
-            <InputLabel>Selecionar Card Base</InputLabel>
-            <Select
-              value={selectedCardId}
-              onChange={(e) => setSelectedCardId(e.target.value)}
-            >
-              <option value="">Selecione um card</option>
-              {cards.map((card) => (
-                <option key={card._id} value={card._id}>
-                  {card.title}
-                </option>
-              ))}
-            </Select>
-          </div>
-          
-          <div>
-            <InputLabel>Quantidade de Flashcards</InputLabel>
-            <Input
-              placeholder="Ex: 3, 5, 10..."
-              type="number"
-              min="1"
-              max="20"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </div>
-          
-          <AIButton onClick={createFlashcardWithAI}>🤖 Gerar com IA</AIButton>
-        </FormGrid>
-      </FormCard> */}
-
-      {flashcards.length === 0 ? (
-        <p>Você ainda não possui flashcards.</p>
-      ) : currentIndex >= flashcards.length ? (
-        <p>Parabéns! Você revisou todos os flashcards.</p>
+    <>
+      {showGameSelection ? (
+        renderGameSelection()
       ) : (
-        <div>
-          <FlashcardContainer>
-            <FlashcardInner
-              isFlipped={showBack}
-              onClick={() => setShowBack(!showBack)}
-            >
-              <FlashcardFront>
-                <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
-                <FlashText>{current.front}</FlashText>
-              </FlashcardFront>
-              <FlashcardBack>
-                <FlashcardStepTitle>Resposta</FlashcardStepTitle>
-                <FlashText>{current.back}</FlashText>
-              </FlashcardBack>
-            </FlashcardInner>
-          </FlashcardContainer>
+        <Container>
+          <Header />
 
-          <FlipInstruction>
-            {!showBack
-              ? "Clique no cartão para ver a resposta"
-              : "Clique no cartão para voltar à pergunta"}
-          </FlipInstruction>
+          {renderCreationStep()}
 
-          {showBack && (
-            <GradeContainer>
-              <GradeText>Como você se saiu? (0 a 5)</GradeText>
-              {[0, 1, 2, 3, 4, 5].map((n) => (
-                <GradeButton key={n} onClick={() => handleGrade(n)}>
-                  {n}
-                </GradeButton>
-              ))}
-            </GradeContainer>
+          {/* Modal para criar nova tag */}
+          {showCreateTagModal && (
+            <TagModal onClick={() => setShowCreateTagModal(false)}>
+              <TagModalContent onClick={(e) => e.stopPropagation()}>
+                <TagModalTitle>Criar Nova Tag</TagModalTitle>
+                <TagModalInput
+                  placeholder="Digite o nome da nova tag..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
+                />
+                <TagModalButtons>
+                  <TagModalButton
+                    variant="secondary"
+                    onClick={() => setShowCreateTagModal(false)}
+                  >
+                    Cancelar
+                  </TagModalButton>
+                  <TagModalButton variant="primary" onClick={createTagFromModal}>
+                    Criar Tag
+                  </TagModalButton>
+                </TagModalButtons>
+              </TagModalContent>
+            </TagModal>
           )}
-        </div>
+
+          {flashcards.length === 0 ? (
+            <p>Você ainda não possui flashcards.</p>
+          ) : currentIndex >= flashcards.length ? (
+            <p>Parabéns! Você revisou todos os flashcards.</p>
+          ) : (
+            <div>
+              <FlashcardContainer>
+                <FlashcardInner
+                  isFlipped={showBack}
+                  onClick={() => setShowBack(!showBack)}
+                >
+                  <FlashcardFront>
+                    <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
+                    <FlashText>{current.front}</FlashText>
+                  </FlashcardFront>
+                  <FlashcardBack>
+                    <FlashcardStepTitle>Resposta</FlashcardStepTitle>
+                    <FlashText>{current.back}</FlashText>
+                  </FlashcardBack>
+                </FlashcardInner>
+              </FlashcardContainer>
+
+              <FlipInstruction>
+                {!showBack
+                  ? "Clique no cartão para ver a resposta"
+                  : "Clique no cartão para voltar à pergunta"}
+              </FlipInstruction>
+
+              {showBack && (
+                <GradeContainer>
+                  <GradeText>Como você se saiu? (0 a 5)</GradeText>
+                  {[0, 1, 2, 3, 4, 5].map((n) => (
+                    <GradeButton key={n} onClick={() => handleGrade(n)}>
+                      {n}
+                    </GradeButton>
+                  ))}
+                </GradeContainer>
+              )}
+            </div>
+          )}
+
+          <AllFlashcardsSection>
+            <SectionHeader>
+              <SectionTitle>
+                📚 Seus Flashcards
+                <FlashcardCount>{flashcards.length}</FlashcardCount>
+              </SectionTitle>
+            </SectionHeader>
+
+            {flashcards.length === 0 ? (
+              <EmptyFlashcardsState>
+                <EmptyIcon>🎴</EmptyIcon>
+                <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
+                <EmptyDescription>
+                  Crie seu primeiro flashcard usando o fluxo step-by-step acima.
+                  <br />
+                  Organize seus estudos de forma inteligente e ganhe pontos!
+                </EmptyDescription>
+                <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
+                  🚀 Criar Primeiro Flashcard
+                </CreateFirstFlashcardButton>
+              </EmptyFlashcardsState>
+            ) : (
+              <FlashcardsGrid>
+                {flashcards.map((fc) => (
+                  <FlashcardCard key={fc._id}>
+                    <FlashcardHeader>
+                      <FlashcardTitle>{fc.front}</FlashcardTitle>
+                      <FlashcardDate>Criado recentemente</FlashcardDate>
+                    </FlashcardHeader>
+
+                    <FlashcardContent>
+                      <ContentSection>
+                        <ContentLabel>Pergunta</ContentLabel>
+                        <ContentText>{fc.front}</ContentText>
+                      </ContentSection>
+                    </FlashcardContent>
+
+                    {fc.tags && fc.tags.length > 0 && (
+                      <FlashcardTags>
+                        {fc.tags.map((tag, index) => (
+                          <FlashcardTag key={index}>
+                            {typeof tag === "object" ? tag.name : tag}
+                          </FlashcardTag>
+                        ))}
+                      </FlashcardTags>
+                    )}
+
+                    <FlashcardActions>
+                      <StudyButton>📖 Estudar</StudyButton>
+                      <PreviewButton>👁️ Preview</PreviewButton>
+                    </FlashcardActions>
+                  </FlashcardCard>
+                ))}
+              </FlashcardsGrid>
+            )}
+          </AllFlashcardsSection>
+        </Container>
       )}
-
-      <AllFlashcardsSection>
-        <SectionHeader>
-          <SectionTitle>
-            📚 Seus Flashcards
-            <FlashcardCount>{flashcards.length}</FlashcardCount>
-          </SectionTitle>
-        </SectionHeader>
-
-        {flashcards.length === 0 ? (
-          <EmptyFlashcardsState>
-            <EmptyIcon>🎴</EmptyIcon>
-            <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
-            <EmptyDescription>
-              Crie seu primeiro flashcard usando o fluxo step-by-step acima.
-              <br />
-              Organize seus estudos de forma inteligente e ganhe pontos!
-            </EmptyDescription>
-            <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
-              🚀 Criar Primeiro Flashcard
-            </CreateFirstFlashcardButton>
-          </EmptyFlashcardsState>
-        ) : (
-          <FlashcardsGrid>
-            {flashcards.map((fc) => (
-              <FlashcardCard key={fc._id}>
-                <FlashcardHeader>
-                  <FlashcardTitle>{fc.front}</FlashcardTitle>
-                  <FlashcardDate>Criado recentemente</FlashcardDate>
-                </FlashcardHeader>
-
-                <FlashcardContent>
-                  <ContentSection>
-                    <ContentLabel>Pergunta</ContentLabel>
-                    <ContentText>{fc.front}</ContentText>
-                  </ContentSection>
-                </FlashcardContent>
-
-                {fc.tags && fc.tags.length > 0 && (
-                  <FlashcardTags>
-                    {fc.tags.map((tag, index) => (
-                      <FlashcardTag key={index}>
-                        {typeof tag === "object" ? tag.name : tag}
-                      </FlashcardTag>
-                    ))}
-                  </FlashcardTags>
-                )}
-
-                <FlashcardActions>
-                  <StudyButton>📖 Estudar</StudyButton>
-                  <PreviewButton>👁️ Preview</PreviewButton>
-                </FlashcardActions>
-              </FlashcardCard>
-            ))}
-          </FlashcardsGrid>
-        )}
-      </AllFlashcardsSection>
-    </Container>
+    </>
   );
 }

@@ -113,8 +113,8 @@ export const CardArea = styled.div`
 export const Card = styled.div`
   background-color: white;
   border-radius: 16px;
-  padding: 20px;
-  min-height: 120px;
+  padding: 12px;
+  min-height: 80px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   cursor: pointer;
@@ -165,7 +165,7 @@ export const Card = styled.div`
     justify-content: center;
     align-items: center;
     padding: 0;
-    min-height: 120px;
+    min-height: 80px;
 
     &:hover {
       transform: none;
@@ -178,7 +178,7 @@ export const Card = styled.div`
   .card-content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     height: 100%;
   }
 
