@@ -106,6 +106,7 @@ export function Escolar() {
   const [pdf, setPdf] = useState<File | null>(null);
   const [modoExcluir, setModoExcluir] = useState(false);
   const [cardParaExcluir, setCardParaExcluir] = useState<CardData | null>(null);
+  const [prioridadeSelecionada, setPrioridadeSelecionada] = useState<string>("Baixa");
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
@@ -150,6 +151,7 @@ export function Escolar() {
                     pdfs: cardDetail.pdfs || [],
                     image_url: cardDetail.image_url || [],
                     is_published: cardDetail.is_published || false,
+                    priority: cardDetail.priority || "Baixa",
                   };
                 } catch (err) {
                   // Se falhar ao buscar detalhes, retorna dados básicos
@@ -162,6 +164,7 @@ export function Escolar() {
                     pdfs: [],
                     image_url: [],
                     is_published: false,
+                    priority: "Baixa",
                   };
                 }
               })
@@ -320,6 +323,7 @@ export function Escolar() {
                 pdfs: cardDetail.pdfs || [],
                 image_url: cardDetail.image_url || [],
                 is_published: cardDetail.is_published || false,
+                priority: cardDetail.priority || "Baixa",
               };
             } catch (err) {
               return {
@@ -330,6 +334,7 @@ export function Escolar() {
                 pdfs: [],
                 image_url: [],
                 is_published: false,
+                priority: "Baixa",
               };
             }
           })
@@ -435,10 +440,13 @@ export function Escolar() {
     }
 
     try {
-      // Atualiza o título
+      // Atualiza o título e prioridade
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
-        { title: tituloEditavel.trim() }
+        { 
+          title: tituloEditavel.trim(),
+          priority: prioridadeSelecionada
+        }
       );
 
       // Upload do PDF se houver
@@ -462,6 +470,7 @@ export function Escolar() {
       const updatedCard = {
         ...cardSelecionado,
         title: res.data.data.title,
+        priority: prioridadeSelecionada,
         pdfs: cardDetail.pdfs || [],
         image_url: cardDetail.image_url || [],
         is_published: cardDetail.is_published || false,
@@ -509,7 +518,6 @@ export function Escolar() {
       try {
         const res = await axios.get(`http://localhost:3000/cards/${card.id}`);
         const cardData = res.data.data;
-        console.log("Card data received:", cardData);
 
         // Atualiza o card com os dados completos, incluindo PDFs
         const updatedCard = {
@@ -517,11 +525,12 @@ export function Escolar() {
           pdfs: cardData.pdfs || [],
           image_url: cardData.image_url || [],
           content: cardData.content || "",
-          priority: cardData.priority,
+          priority: cardData.priority || "Baixa",
           is_published: cardData.is_published,
         };
 
-        console.log("Updated card with PDFs:", updatedCard);
+        // Define a prioridade selecionada
+        setPrioridadeSelecionada(updatedCard.priority);
         setCardSelecionado(updatedCard);
 
         // Atualiza o card na lista de cards
@@ -621,6 +630,20 @@ export function Escolar() {
       }
     };
   }, [cardSelecionado?.id, cardSelecionado?.pdfs]);
+
+  // Função para obter a cor da prioridade
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "Alta":
+        return "#ff4757"; // Vermelho
+      case "Média":
+        return "#ffa502"; // Laranja
+      case "Baixa":
+        return "#2ed573"; // Verde
+      default:
+        return "#2ed573"; // Verde (padrão)
+    }
+  };
 
   return (
     <>
@@ -799,7 +822,7 @@ export function Escolar() {
                                     />
                                   </div>
 
-                                  {/* Linha de data e publicado */}
+                                  {/* Linha de data, barra de prioridade e publicado */}
                                   <div
                                     style={{
                                       display: "flex",
@@ -808,9 +831,22 @@ export function Escolar() {
                                       marginTop: "auto",
                                     }}
                                   >
-                                    <CardDate>
-                                      {formatDate(card.createdAt)}
-                                    </CardDate>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+                                      <CardDate style={{ flexShrink: 0 }}>
+                                        {formatDate(card.createdAt)}
+                                      </CardDate>
+                                      
+                                      {/* Barra horizontal de prioridade */}
+                                      <div
+                                        style={{
+                                          width: "50px",
+                                          height: "6px",
+                                          backgroundColor: getPriorityColor(card.priority || "Baixa"),
+                                          borderRadius: "3px",
+                                          flexShrink: 0,
+                                        }}
+                                      />
+                                    </div>
 
                                     {card.is_published && (
                                       <PublishedIcon
@@ -903,13 +939,34 @@ export function Escolar() {
               <SidebarCard>
                 <h4>#prioridade</h4>
                 <PrioridadeWrapper>
-                  <span>
+                  <span 
+                    onClick={() => setPrioridadeSelecionada("Baixa")}
+                    style={{ 
+                      cursor: "pointer",
+                      opacity: prioridadeSelecionada === "Baixa" ? 1 : 0.5,
+                      fontWeight: prioridadeSelecionada === "Baixa" ? "bold" : "normal"
+                    }}
+                  >
                     <div className="baixa" /> Baixa
                   </span>
-                  <span>
+                  <span 
+                    onClick={() => setPrioridadeSelecionada("Média")}
+                    style={{ 
+                      cursor: "pointer",
+                      opacity: prioridadeSelecionada === "Média" ? 1 : 0.5,
+                      fontWeight: prioridadeSelecionada === "Média" ? "bold" : "normal"
+                    }}
+                  >
                     <div className="media" /> Média
                   </span>
-                  <span>
+                  <span 
+                    onClick={() => setPrioridadeSelecionada("Alta")}
+                    style={{ 
+                      cursor: "pointer",
+                      opacity: prioridadeSelecionada === "Alta" ? 1 : 0.5,
+                      fontWeight: prioridadeSelecionada === "Alta" ? "bold" : "normal"
+                    }}
+                  >
                     <div className="alta" /> Alta
                   </span>
                 </PrioridadeWrapper>

@@ -122,6 +122,8 @@ export const Card = styled.div`
   flex-direction: column;
   justify-content: space-between;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
@@ -133,11 +135,23 @@ export const Card = styled.div`
     border: 2px dashed red;
     opacity: 0.3;
     pointer-events: auto;
+    transform: none;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    /* Manter tamanho original */
+    min-height: 80px;
+    padding: 12px;
+    width: 100%;
 
     &:hover {
       background-color: #ff4d4d;
       opacity: 1;
       border: 2px dashed red;
+      transform: none;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+      /* Manter tamanho no hover */
+      min-height: 80px;
+      padding: 12px;
+      width: 100%;
     }
 
     &:hover .icon-excluir {
@@ -146,7 +160,8 @@ export const Card = styled.div`
     }
 
     &:hover .card-content {
-      display: none;
+      opacity: 0;
+      visibility: hidden;
     }
   }
 
@@ -155,6 +170,12 @@ export const Card = styled.div`
     background-color: #ff4d4d;
     opacity: 1;
     border: 2px dashed red;
+    transform: none;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    /* Manter tamanho */
+    min-height: 80px;
+    padding: 12px;
+    width: 100%;
   }
 
   /* Card para adicionar */
@@ -180,6 +201,9 @@ export const Card = styled.div`
     flex-direction: column;
     gap: 6px;
     height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
   }
 
   /* Ícone de exclusão */
@@ -191,6 +215,7 @@ export const Card = styled.div`
     opacity: 0;
     display: none;
     pointer-events: none;
+    z-index: 10;
 
     img {
       width: 42px;
