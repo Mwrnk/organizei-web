@@ -101,6 +101,7 @@ export function Escolar() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [novoTitulo, setNovoTitulo] = useState("");
   const [tituloEditavel, setTituloEditavel] = useState<string>("");
+  const [descricaoEditavel, setDescricaoEditavel] = useState<string>("");
 
   const [image, setImage] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
@@ -486,12 +487,13 @@ export function Escolar() {
     }
 
     try {
-      // Atualiza o título e prioridade
+      // Atualiza o título, prioridade e descrição
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
         { 
           title: tituloEditavel.trim(),
-          priority: prioridadeSelecionada
+          priority: prioridadeSelecionada,
+          content: descricaoEditavel
         }
       );
 
@@ -517,6 +519,7 @@ export function Escolar() {
         ...cardSelecionado,
         title: res.data.data.title,
         priority: prioridadeSelecionada,
+        content: descricaoEditavel,
         pdfs: cardDetail.pdfs || [],
         image_url: cardDetail.image_url || [],
         is_published: cardDetail.is_published || false,
@@ -597,8 +600,9 @@ export function Escolar() {
           is_published: cardData.is_published,
         };
 
-        // Define a prioridade selecionada
+        // Define a prioridade selecionada e descrição
         setPrioridadeSelecionada(updatedCard.priority);
+        setDescricaoEditavel(updatedCard.content);
         setCardSelecionado(updatedCard);
 
         // Atualiza o card na lista de cards
@@ -756,6 +760,16 @@ export function Escolar() {
     setShowEditListModal(false);
     setListToEdit(null);
     setNewListName("");
+  };
+
+  const handleCloseCardModal = () => {
+    setCardSelecionado(null);
+    setDescricaoEditavel("");
+    setPdf(null);
+    setPdfUrl(null);
+    // Limpar o input de arquivo
+    const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   const handlePublishToCommunity = async () => {
@@ -1184,6 +1198,40 @@ export function Escolar() {
                 </PrioridadeWrapper>
               </SidebarCard>
 
+              <SidebarCard>
+                <h4>#descrição</h4>
+                <textarea
+                  style={{
+                    width: "100%",
+                    minHeight: "100px",
+                    padding: "10px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "#111",
+                    color: "white",
+                    resize: "vertical",
+                    fontFamily: "inherit",
+                    fontSize: "14px",
+                    lineHeight: "1.4"
+                  }}
+                  value={descricaoEditavel}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setDescricaoEditavel(e.target.value);
+                    }
+                  }}
+                  placeholder="Adicione uma descrição para o seu card..."
+                />
+                <div style={{
+                  fontSize: "12px",
+                  color: "#999",
+                  marginTop: "8px",
+                  textAlign: "right"
+                }}>
+                  {descricaoEditavel.length}/500
+                </div>
+              </SidebarCard>
+
               {/* Botão de Publicar na Comunidade */}
               <div style={{ marginTop: "20px" }}>
                 <button
@@ -1235,7 +1283,7 @@ export function Escolar() {
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <h2>{tituloEditavel}</h2>
                 <button
-                  onClick={() => setCardSelecionado(null)}
+                  onClick={handleCloseCardModal}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -1538,21 +1586,210 @@ export function Escolar() {
 
       {showModal && (
         <ModalOverlay>
-          <ModalContent>
-            <h3>Nova Lista</h3>
-            <Input
-              value={listName}
-              onChange={(e) => setListName(e.target.value)}
-              placeholder="Nome da lista"
-            />
-            <ButtonGroup>
-              <button className="confirm" onClick={handleCreateList}>
-                Criar
+          <ModalContent style={{
+            maxWidth: '450px',
+            padding: '32px',
+            borderRadius: '20px',
+            background: '#000000',
+            color: 'white',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Background decoration */}
+            <div style={{
+              position: 'absolute',
+              top: '-50%',
+              right: '-50%',
+              width: '200%',
+              height: '200%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+              pointerEvents: 'none'
+            }} />
+            
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '24px',
+                fontWeight: '700',
+                background: 'linear-gradient(45deg, #fff, #f0f0f0)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                📋 Nova Lista
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              >
+                ✕
               </button>
-              <button className="cancel" onClick={() => setShowModal(false)}>
+            </div>
+
+            {/* Input Section */}
+            <div style={{ marginBottom: '32px', position: 'relative', zIndex: 1 }}>
+              <label style={{
+                display: 'block',
+                fontSize: '16px',
+                fontWeight: '600',
+                marginBottom: '12px',
+                color: 'rgba(255,255,255,0.9)'
+              }}>
+                ✏️ Nome da lista
+              </label>
+              <div style={{
+                position: 'relative',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '12px',
+                border: '2px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease'
+              }}>
+                <input
+                  value={listName}
+                  onChange={(e) => setListName(e.target.value)}
+                  placeholder="Digite o nome da sua lista..."
+                  style={{
+                    width: '100%',
+                    padding: '16px 20px',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: 'white',
+                    fontSize: '16px',
+                    borderRadius: '12px'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.5)';
+                    e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.15)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.2)';
+                    e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.1)';
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && listName.trim()) {
+                      handleCreateList();
+                    }
+                  }}
+                  autoFocus
+                />
+                <div style={{
+                  position: 'absolute',
+                  right: '16px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '12px',
+                  color: 'rgba(255,255,255,0.6)'
+                }}>
+                  {listName.length}/100
+                </div>
+              </div>
+              <p style={{
+                fontSize: '12px',
+                color: 'rgba(255,255,255,0.7)',
+                margin: '8px 0 0 0',
+                fontStyle: 'italic'
+              }}>
+                💡 Dica: Use nomes descritivos como "Matemática", "Projetos" ou "Estudos"
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  flex: 1,
+                  padding: '14px 20px',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
                 Cancelar
               </button>
-            </ButtonGroup>
+              <button
+                onClick={handleCreateList}
+                disabled={!listName.trim()}
+                style={{
+                  flex: 2,
+                  padding: '14px 20px',
+                  background: listName.trim() 
+                    ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
+                    : 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  cursor: listName.trim() ? 'pointer' : 'not-allowed',
+                  transition: 'all 0.3s ease',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  boxShadow: listName.trim() ? '0 8px 20px rgba(76, 175, 80, 0.3)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (listName.trim()) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 12px 25px rgba(76, 175, 80, 0.4)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (listName.trim()) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.3)';
+                  }
+                }}
+              >
+                {listName.trim() ? '🚀 Criar Lista' : '⚠️ Digite um nome'}
+              </button>
+            </div>
           </ModalContent>
         </ModalOverlay>
       )}
