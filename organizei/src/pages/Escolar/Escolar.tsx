@@ -113,6 +113,10 @@ export function Escolar() {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [confirmDeleteList, setConfirmDeleteList] = useState(false);
   const [listToDelete, setListToDelete] = useState<Lista | null>(null);
+  const [confirmListName, setConfirmListName] = useState("");
+  const [showEditListModal, setShowEditListModal] = useState(false);
+  const [listToEdit, setListToEdit] = useState<Lista | null>(null);
+  const [newListName, setNewListName] = useState("");
 
   usePageLoading(isDataLoading);
 
@@ -393,7 +397,7 @@ export function Escolar() {
 
     try {
       console.log("Editando título...");
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authenticacao");
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
         { title: novoTitulo.trim() },
@@ -516,6 +520,12 @@ export function Escolar() {
   const confirmDeleteListAction = async () => {
     if (!listToDelete) return;
     
+    // Verificar se o nome digitado está correto
+    if (confirmListName.trim() !== listToDelete.name) {
+      toast.error("O nome digitado não confere com o nome da lista!");
+      return;
+    }
+    
     try {
       await axios.delete(`http://localhost:3000/lists/${listToDelete.id}`);
       setLists((prev) => prev.filter((list) => list.id !== listToDelete.id));
@@ -531,6 +541,7 @@ export function Escolar() {
     } finally {
       setConfirmDeleteList(false);
       setListToDelete(null);
+      setConfirmListName("");
     }
   };
 
@@ -670,6 +681,126 @@ export function Escolar() {
     }
   };
 
+  const handleEditList = (listId: string, currentName: string) => {
+    const list = lists.find(l => l.id === listId);
+    if (list) {
+      setListToEdit(list);
+      setNewListName(list.name);
+      setShowEditListModal(true);
+    }
+  };
+
+  const handleSaveListEdit = async () => {
+    if (!listToEdit || !newListName.trim()) {
+      toast.error("Nome da lista não pode estar vazio!");
+      return;
+    }
+
+    try {
+      const response = await axios.patch(`http://localhost:3000/lists/${listToEdit.id}`, {
+        name: newListName.trim()
+      });
+
+      // Atualizar a lista no estado
+      setLists((prev) => 
+        prev.map((list) => 
+          list.id === listToEdit.id 
+            ? { ...list, name: newListName.trim() }
+            : list
+        )
+      );
+
+      toast.success("Nome da lista atualizado com sucesso!");
+      setShowEditListModal(false);
+      setListToEdit(null);
+      setNewListName("");
+    } catch (err) {
+      console.error("Erro ao editar lista", err);
+      toast.error("Erro ao editar lista");
+    }
+  };
+
+  const handleCancelListEdit = () => {
+    setShowEditListModal(false);
+    setListToEdit(null);
+    setNewListName("");
+  };
+
+  const handlePublishToCommunity = async () => {
+    if (!cardSelecionado || !selectedListId) {
+      toast.error("Card não selecionado.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authenticacao");
+      const res = await axios.post(
+        `http://localhost:3000/comunidade/publish/${cardSelecionado.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Card publicado com sucesso:", res.data.data);
+      toast.success("Card publicado na comunidade com sucesso!");
+
+      // Recarregar os dados da lista
+      try {
+        const cardsRes = await axios.get(
+          `http://localhost:3000/lists/${selectedListId}/cards`
+        );
+        
+        const cardsWithDetails = await Promise.all(
+          cardsRes.data.data.map(async (card: any) => {
+            try {
+              const cardDetailRes = await axios.get(
+                `http://localhost:3000/cards/${card.id}`
+              );
+              const cardDetail = cardDetailRes.data.data;
+              
+              return {
+                id: card.id,
+                title: card.title,
+                userId: card.userId,
+                createdAt: card.createdAt,
+                pdfs: cardDetail.pdfs || [],
+                image_url: cardDetail.image_url || [],
+                is_published: cardDetail.is_published || false,
+                priority: cardDetail.priority || "Baixa",
+              };
+            } catch (err) {
+              return {
+                id: card.id,
+                title: card.title,
+                userId: card.userId,
+                createdAt: card.createdAt,
+                pdfs: [],
+                image_url: [],
+                is_published: false,
+                priority: "Baixa",
+              };
+            }
+          })
+        );
+
+        setCards((prev) => ({
+          ...prev,
+          [selectedListId]: cardsWithDetails,
+        }));
+      } catch (err) {
+        console.error("Erro ao recarregar cards:", err);
+      }
+
+      setCardSelecionado({ ...cardSelecionado, is_published: true });
+    } catch (err) {
+      console.error("Erro ao publicar card:", err);
+      toast.error("Erro ao publicar card.");
+    }
+  };
+
   return (
     <>
       <Header />
@@ -720,20 +851,49 @@ export function Escolar() {
                       {...provided.droppableProps}
                     >
                       <ColumnTitle>{list.name}</ColumnTitle>
-                      <button
-                        onClick={() => handleDeleteList(list.id)}
-                        style={{
-                          alignSelf: "flex-end",
-                          background: "transparent",
-                          color: "red",
-                          border: "none",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        Excluir Lista
-                      </button>
+                      
+                      <div style={{ 
+                        display: "flex", 
+                        justifyContent: "flex-end", 
+                        gap: "8px", 
+                        marginBottom: "8px" 
+                      }}>
+                        <button
+                          onClick={() => handleEditList(list.id, list.name)}
+                          style={{
+                            background: "transparent",
+                            color: "#666",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            transition: "color 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = "#333"}
+                          onMouseLeave={(e) => e.currentTarget.style.color = "#666"}
+                        >
+                          Editar Lista
+                        </button>
+                        
+                        <button
+                          onClick={() => handleDeleteList(list.id)}
+                          style={{
+                            background: "transparent",
+                            color: "red",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            transition: "color 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.color = "#d32f2f"}
+                          onMouseLeave={(e) => e.currentTarget.style.color = "red"}
+                        >
+                          Excluir Lista
+                        </button>
+                      </div>
 
                       <CardArea>
                         {(cards[list.id] || []).map((card, index) => (
@@ -997,10 +1157,50 @@ export function Escolar() {
                 </PrioridadeWrapper>
               </SidebarCard>
 
-              <SidebarCard>
-                <h4>#origem</h4>
-                <p>Minha Criação</p>
-              </SidebarCard>
+              {/* Botão de Publicar na Comunidade */}
+              <div style={{ marginTop: "20px" }}>
+                <button
+                  onClick={handlePublishToCommunity}
+                  disabled={cardSelecionado?.is_published}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    backgroundColor: cardSelecionado?.is_published ? "#4caf50" : "#2196f3",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "10px",
+                    cursor: cardSelecionado?.is_published ? "not-allowed" : "pointer",
+                    fontSize: "14px",
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    transition: "all 0.3s ease",
+                    opacity: cardSelecionado?.is_published ? 0.7 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!cardSelecionado?.is_published) {
+                      e.currentTarget.style.backgroundColor = "#1976d2";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!cardSelecionado?.is_published) {
+                      e.currentTarget.style.backgroundColor = "#2196f3";
+                    }
+                  }}
+                >
+                  {cardSelecionado?.is_published ? (
+                    <>
+                      ✅ Publicado na Comunidade
+                    </>
+                  ) : (
+                    <>
+                      🌐 Publicar na Comunidade
+                    </>
+                  )}
+                </button>
+              </div>
             </Sidebar>
 
             {/* Content */}
@@ -1089,25 +1289,67 @@ export function Escolar() {
                     flexDirection: "column",
                   }}
                 >
-                  <p style={{ fontWeight: "500", color: "#444" }}>
-                    Nenhum PDF encontrado, envie um!
-                  </p>
-                  <button
-                    onClick={() =>
-                      document.getElementById("fileInput")?.click()
-                    }
-                    style={{
-                      background: "#111",
-                      color: "white",
-                      border: "none",
-                      padding: "8px 16px",
-                      borderRadius: "30px",
-                      cursor: "pointer",
-                      marginTop: "10px",
-                    }}
-                  >
-                    ⬆️ Upar PDF
-                  </button>
+                  {pdf ? (
+                    <div style={{ textAlign: "center" }}>
+                      <p style={{ fontWeight: "500", color: "#444", marginBottom: "16px" }}>
+                        📄 PDF selecionado:
+                      </p>
+                      <p style={{ 
+                        fontWeight: "bold", 
+                        color: "#333", 
+                        marginBottom: "20px",
+                        padding: "10px 20px",
+                        backgroundColor: "#fff",
+                        borderRadius: "8px",
+                        border: "2px solid #4caf50"
+                      }}>
+                        {pdf.name}
+                      </p>
+                      <p style={{ color: "#666", fontSize: "14px", marginBottom: "16px" }}>
+                        Clique em "Salvar" para enviar o arquivo
+                      </p>
+                      <button
+                        onClick={() => {
+                          setPdf(null);
+                          const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+                          if (fileInput) fileInput.value = "";
+                        }}
+                        style={{
+                          background: "#f44336",
+                          color: "white",
+                          border: "none",
+                          padding: "8px 16px",
+                          borderRadius: "20px",
+                          cursor: "pointer",
+                          fontSize: "14px"
+                        }}
+                      >
+                        ❌ Remover PDF
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ textAlign: "center" }}>
+                      <p style={{ fontWeight: "500", color: "#444" }}>
+                        Nenhum PDF encontrado, envie um!
+                      </p>
+                      <button
+                        onClick={() =>
+                          document.getElementById("fileInput")?.click()
+                        }
+                        style={{
+                          background: "#111",
+                          color: "white",
+                          border: "none",
+                          padding: "8px 16px",
+                          borderRadius: "30px",
+                          cursor: "pointer",
+                          marginTop: "10px",
+                        }}
+                      >
+                        ⬆️ Upar PDF
+                      </button>
+                    </div>
+                  )}
                   <input
                     type="file"
                     id="fileInput"
@@ -1212,12 +1454,41 @@ export function Escolar() {
             <p style={{ color: '#d32f2f', fontWeight: 'bold', marginTop: '16px' }}>
               ⚠️ ATENÇÃO: Todos os {cards[listToDelete?.id || '']?.length || 0} cards desta lista serão excluídos permanentemente e não poderão ser recuperados!
             </p>
+            
+            <div style={{ marginTop: '20px', textAlign: 'center' }}>
+              <p style={{ marginBottom: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                Para confirmar, digite o nome da lista: <br/>
+                <span style={{ color: '#d32f2f', fontSize: '16px' }}>"{listToDelete?.name}"</span>
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <Input
+                  type="text"
+                  placeholder={`Digite "${listToDelete?.name}" para confirmar`}
+                  value={confirmListName}
+                  onChange={(e) => setConfirmListName(e.target.value)}
+                  style={{ 
+                    width: '300px',
+                    padding: '10px 12px', 
+                    border: confirmListName.trim() === listToDelete?.name ? '2px solid #4caf50' : '2px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    transition: 'border-color 0.3s ease',
+                    backgroundColor: '#fff',
+                    textAlign: 'center'
+                  }}
+                />
+              </div>
+            </div>
+
             <ButtonGroup>
               <button
                 className="cancel"
                 onClick={() => {
                   setConfirmDeleteList(false);
                   setListToDelete(null);
+                  setConfirmListName("");
                 }}
               >
                 Cancelar
@@ -1225,7 +1496,11 @@ export function Escolar() {
               <button 
                 className="confirm" 
                 onClick={confirmDeleteListAction}
-                style={{ backgroundColor: '#d32f2f' }}
+                disabled={confirmListName.trim() !== listToDelete?.name}
+                style={{ 
+                  backgroundColor: confirmListName.trim() === listToDelete?.name ? '#d32f2f' : '#ccc',
+                  cursor: confirmListName.trim() === listToDelete?.name ? 'pointer' : 'not-allowed'
+                }}
               >
                 Excluir Lista
               </button>
@@ -1294,6 +1569,71 @@ export function Escolar() {
             </InputWrapper>
 
             <CreateButton onClick={handleCreateCard}>CRIAR</CreateButton>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+
+      {showEditListModal && (
+        <ModalOverlay>
+          <ModalContent>
+            <h3>Editar Lista</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Nome atual:</p>
+              <p style={{ 
+                padding: '10px 12px', 
+                backgroundColor: '#f5f5f5', 
+                borderRadius: '8px',
+                margin: '0 0 16px 0',
+                color: '#666'
+              }}>
+                {listToEdit?.name}
+              </p>
+              
+              <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Novo nome:</p>
+              <Input
+                value={newListName}
+                onChange={(e) => setNewListName(e.target.value)}
+                placeholder="Digite o novo nome da lista"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '16px',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px',
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveListEdit();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+
+            <ButtonGroup>
+              <button
+                className="cancel"
+                onClick={handleCancelListEdit}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="confirm" 
+                onClick={handleSaveListEdit}
+                disabled={!newListName.trim() || newListName.trim() === listToEdit?.name}
+                style={{
+                  backgroundColor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? '#ccc' : '#4caf50',
+                  cursor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Salvar
+              </button>
+            </ButtonGroup>
           </ModalContent>
         </ModalOverlay>
       )}
