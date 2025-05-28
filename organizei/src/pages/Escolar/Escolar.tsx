@@ -10,7 +10,6 @@ import {
   Subtitle,
   Title,
   ScrollWrapper,
-  ScrollButton,
   Grid,
   ListColumn,
   ColumnTitle,
@@ -160,6 +159,7 @@ export function Escolar() {
                     title: card.title,
                     userId: card.userId,
                     createdAt: cardDetail.createdAt || card.createdAt || new Date().toISOString(),
+                    updatedAt: cardDetail.updatedAt || card.updatedAt || new Date().toISOString(),
                     pdfs: cardDetail.pdfs || [],
                     image_url: cardDetail.image_url || [],
                     is_published: cardDetail.is_published || false,
@@ -173,6 +173,7 @@ export function Escolar() {
                     title: card.title,
                     userId: card.userId,
                     createdAt: card.createdAt || new Date().toISOString(),
+                    updatedAt: card.updatedAt || new Date().toISOString(),
                     pdfs: [],
                     image_url: [],
                     is_published: false,
@@ -197,11 +198,6 @@ export function Escolar() {
     fetchListsAndCards();
   }, [userId]);
 
-  const scrollLeft = () =>
-    gridRef.current?.scrollBy({ left: -300, behavior: "smooth" });
-  const scrollRight = () =>
-    gridRef.current?.scrollBy({ left: 300, behavior: "smooth" });
-
   const reorder = (
     list: CardData[],
     start: number,
@@ -213,7 +209,7 @@ export function Escolar() {
     return result;
   };
 
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = async (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
 
@@ -221,6 +217,7 @@ export function Escolar() {
     const destId = destination.droppableId;
 
     if (sourceId === destId) {
+      // Reordenação dentro da mesma lista (apenas visual)
       const reordered = reorder(
         cards[sourceId],
         source.index,
@@ -228,15 +225,50 @@ export function Escolar() {
       );
       setCards((prev) => ({ ...prev, [sourceId]: reordered }));
     } else {
+      // Movendo card entre listas diferentes
       const sourceCards = Array.from(cards[sourceId]);
       const destCards = Array.from(cards[destId]);
       const [movedCard] = sourceCards.splice(source.index, 1);
       destCards.splice(destination.index, 0, movedCard);
+      
+      // Atualiza o estado visual imediatamente
       setCards((prev) => ({
         ...prev,
         [sourceId]: sourceCards,
         [destId]: destCards,
       }));
+
+      // Persiste a mudança no backend
+      try {
+        const token = localStorage.getItem("authenticacao");
+        await axios.patch(
+          `http://localhost:3000/cards/${movedCard.id}`,
+          { listId: destId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        console.log(`Card ${movedCard.title} movido para lista ${destId}`);
+        toast.success("Card movido com sucesso!");
+      } catch (err) {
+        console.error("Erro ao mover card:", err);
+        toast.error("Erro ao mover card. Recarregue a página.");
+        
+        // Reverte a mudança visual em caso de erro
+        const revertSourceCards = Array.from(cards[sourceId]);
+        const revertDestCards = Array.from(cards[destId]);
+        const [revertCard] = revertDestCards.splice(destination.index, 1);
+        revertSourceCards.splice(source.index, 0, revertCard);
+        
+        setCards((prev) => ({
+          ...prev,
+          [sourceId]: revertSourceCards,
+          [destId]: revertDestCards,
+        }));
+      }
     }
   };
 
@@ -836,11 +868,6 @@ export function Escolar() {
         </div>
 
         <ScrollWrapper>
-          <ScrollButton left onClick={scrollLeft}>
-            ⬅
-          </ScrollButton>
-          <ScrollButton onClick={scrollRight}>➡</ScrollButton>
-
           <DragDropContext onDragEnd={onDragEnd}>
             <Grid ref={gridRef}>
               {lists.map((list) => (
