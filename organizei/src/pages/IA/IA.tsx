@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../../Components/Header";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import axios from "axios";
 
@@ -89,6 +90,31 @@ export function IA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  usePageLoading(isInitialLoading);
+
+  // Simular carregamento inicial da IA
+  useEffect(() => {
+    const initializeIA = async () => {
+      setIsInitialLoading(true);
+      
+      // Simular delay de inicialização
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mensagem de boas-vindas da IA
+      const welcomeMessage: Message = {
+        id: Date.now(),
+        text: "Olá! Eu sou a ORGAN.IA, sua assistente de organização. Como posso ajudá-lo hoje?",
+        isUser: false,
+      };
+      
+      setMessages([welcomeMessage]);
+      setIsInitialLoading(false);
+    };
+
+    initializeIA();
+  }, []);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

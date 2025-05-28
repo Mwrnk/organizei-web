@@ -1,5 +1,6 @@
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import config from "../../../assets/Settings.svg";
@@ -146,11 +147,15 @@ export function Perfil() {
   const { user, isLoading, logout } = useAuth();
   const [planoAtual, setPlanoAtual] = useState<Plano | null>(null);
   const [image, setImage] = useState<string | null>(user?.profileImage || null);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  usePageLoading(isDataLoading || isLoading);
 
   useEffect(() => {
     const fetchPlano = async () => {
       if (!user?._id) return;
 
+      setIsDataLoading(true);
       try {
         const res = await axios.get(
           `http://localhost:3000/users/${user._id}/plan`
@@ -162,6 +167,8 @@ export function Perfil() {
         } else {
           console.error("Erro ao buscar plano atual do usuário", err);
         }
+      } finally {
+        setIsDataLoading(false);
       }
     };
 

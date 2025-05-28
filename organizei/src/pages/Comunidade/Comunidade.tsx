@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import { toast } from "react-toastify";
 import { Usuario } from "../../Types/User";
 
@@ -281,9 +282,12 @@ export function Comunidade() {
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
   const [visibleCount, setVisibleCount] = useState(8);
   const [selectedCardId, setSelectedCardId] = useState("");
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  usePageLoading(isDataLoading);
 
   // Função para formatar data
   const formatDate = (dateString: string | undefined) => {
@@ -309,8 +313,16 @@ export function Comunidade() {
   };
 
   useEffect(() => {
-    fetchAllCards();
-    fetchUsers();
+    const loadInitialData = async () => {
+      setIsDataLoading(true);
+      try {
+        await Promise.all([fetchAllCards(), fetchUsers()]);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+    
+    loadInitialData();
   }, []);
 
   useEffect(() => {

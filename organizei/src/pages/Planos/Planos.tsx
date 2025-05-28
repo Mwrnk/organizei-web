@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import { toast } from "react-toastify";
 import { UserRole } from "../../Types/User";
@@ -177,9 +178,13 @@ export function Planos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [planoAtualUsuario, setPlanoAtualUsuario] = useState<Plan | null>(null);
   const [isOn, setIsOn] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  usePageLoading(isDataLoading);
 
   useEffect(() => {
     const fetchPlans = async () => {
+      setIsDataLoading(true);
       try {
         const response = await axios.get("http://localhost:3000/plans");
 
@@ -198,11 +203,14 @@ export function Planos() {
           error.response?.data || error.message
         );
         toast.error("Erro ao carregar planos");
+      } finally {
+        setIsDataLoading(false);
       }
     };
 
     fetchPlans();
   }, []);
+
   useEffect(() => {
     const fetchPlanoAtual = async () => {
       if (!user?._id) return;

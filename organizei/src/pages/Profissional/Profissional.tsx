@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 
 // Tipos locais
@@ -1024,6 +1025,9 @@ export function Profissional() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  usePageLoading(isDataLoading);
 
   // Novo estado para controlar a tela de seleção de jogos
   const [showGameSelection, setShowGameSelection] = useState(true);
@@ -1655,11 +1659,18 @@ export function Profissional() {
   };
 
   useEffect(() => {
-    if (token && user) {
-      loadFlashcards();
-      loadCards();
-      loadTags();
-    }
+    const loadInitialData = async () => {
+      if (token && user) {
+        setIsDataLoading(true);
+        try {
+          await Promise.all([loadFlashcards(), loadCards(), loadTags()]);
+        } finally {
+          setIsDataLoading(false);
+        }
+      }
+    };
+
+    loadInitialData();
   }, [token, user]);
 
   if (isLoading)

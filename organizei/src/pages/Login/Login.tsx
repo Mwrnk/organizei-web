@@ -16,11 +16,13 @@ import {
 import { toast } from "react-toastify";
 import seta from "../../../assets/setaEsquerda.svg";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 
 export function Login() {
   const [login, setLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [etapa, setEtapa] = useState(1);
   const [coduser, setCoduser] = useState("");
@@ -28,6 +30,8 @@ export function Login() {
   const [dateOfBirth, setDateOfBirth] = useState("");
 
   const { login: authLogin } = useAuth();
+  
+  usePageLoading(isLoading);
 
   const onClickBotaoLogin = () => setLogin(true);
   const onClickBotaoRegistrar = () => {
@@ -37,15 +41,19 @@ export function Login() {
 
   const logar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await authLogin(email, password);
     } catch (error) {
       console.error("Falha no login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const registrar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const response = await axios.post("http://localhost:3000/signup", {
         coduser,
@@ -65,6 +73,8 @@ export function Login() {
         error.response?.data || error.message
       );
       toast.error("Erro no registro");
+    } finally {
+      setIsLoading(false);
     }
   };
 

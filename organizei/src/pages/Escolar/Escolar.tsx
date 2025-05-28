@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import { Lista } from "../../Types/Lista";
 import { CardData } from "../../Types/Card";
 import {
@@ -109,10 +110,15 @@ export function Escolar() {
   const [prioridadeSelecionada, setPrioridadeSelecionada] = useState<string>("Baixa");
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  usePageLoading(isDataLoading);
 
   useEffect(() => {
     const fetchListsAndCards = async () => {
       if (!userId) return;
+      
+      setIsDataLoading(true);
       try {
         const res = await axios.get(
           `http://localhost:3000/lists/user/${userId}`
@@ -177,6 +183,8 @@ export function Escolar() {
         setCards(cardsPorLista);
       } catch (err) {
         console.error("Erro ao buscar listas ou cards", err);
+      } finally {
+        setIsDataLoading(false);
       }
     };
 
@@ -839,7 +847,7 @@ export function Escolar() {
                                       {/* Barra horizontal de prioridade */}
                                       <div
                                         style={{
-                                          width: "50px",
+                                          width: "100px",
                                           height: "6px",
                                           backgroundColor: getPriorityColor(card.priority || "Baixa"),
                                           borderRadius: "3px",
