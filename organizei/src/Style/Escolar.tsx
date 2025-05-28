@@ -298,7 +298,33 @@ export const ModalOverlay = styled.div`
 export const ConfirmOverlay = styled(ModalOverlay)`
   z-index: 1100;
 `;
-export const ConfirmBox = styled.div``;
+
+export const ConfirmBox = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.3);
+  text-align: center;
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+  }
+`;
+
 export const ModalContent = styled.div`
   background: white;
   border-radius: 20px;

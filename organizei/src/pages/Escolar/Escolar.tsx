@@ -111,6 +111,8 @@ export function Escolar() {
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(true);
+  const [confirmDeleteList, setConfirmDeleteList] = useState(false);
+  const [listToDelete, setListToDelete] = useState<Lista | null>(null);
 
   usePageLoading(isDataLoading);
 
@@ -504,16 +506,31 @@ export function Escolar() {
   };
 
   const handleDeleteList = async (listId: string) => {
+    const list = lists.find(l => l.id === listId);
+    if (list) {
+      setListToDelete(list);
+      setConfirmDeleteList(true);
+    }
+  };
+
+  const confirmDeleteListAction = async () => {
+    if (!listToDelete) return;
+    
     try {
-      await axios.delete(`http://localhost:3000/lists/${listId}`);
-      setLists((prev) => prev.filter((list) => list.id !== listId));
+      await axios.delete(`http://localhost:3000/lists/${listToDelete.id}`);
+      setLists((prev) => prev.filter((list) => list.id !== listToDelete.id));
       setCards((prev) => {
         const updated = { ...prev };
-        delete updated[listId];
+        delete updated[listToDelete.id];
         return updated;
       });
+      toast.success("Lista excluída com sucesso!");
     } catch (err) {
       console.error("Erro ao excluir lista", err);
+      toast.error("Erro ao excluir lista");
+    } finally {
+      setConfirmDeleteList(false);
+      setListToDelete(null);
     }
   };
 
@@ -1179,6 +1196,38 @@ export function Escolar() {
               </button>
               <button className="confirm" onClick={handleDeleteCard}>
                 Confirmar
+              </button>
+            </ButtonGroup>
+          </ConfirmBox>
+        </ConfirmOverlay>
+      )}
+
+      {confirmDeleteList && (
+        <ConfirmOverlay>
+          <ConfirmBox>
+            <h3>⚠️ Excluir Lista</h3>
+            <p>
+              Tem certeza que deseja excluir a lista <strong>"{listToDelete?.name}"</strong>?
+            </p>
+            <p style={{ color: '#d32f2f', fontWeight: 'bold', marginTop: '16px' }}>
+              ⚠️ ATENÇÃO: Todos os {cards[listToDelete?.id || '']?.length || 0} cards desta lista serão excluídos permanentemente e não poderão ser recuperados!
+            </p>
+            <ButtonGroup>
+              <button
+                className="cancel"
+                onClick={() => {
+                  setConfirmDeleteList(false);
+                  setListToDelete(null);
+                }}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="confirm" 
+                onClick={confirmDeleteListAction}
+                style={{ backgroundColor: '#d32f2f' }}
+              >
+                Excluir Lista
               </button>
             </ButtonGroup>
           </ConfirmBox>
