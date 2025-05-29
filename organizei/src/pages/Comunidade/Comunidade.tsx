@@ -7,6 +7,9 @@ import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import { toast } from "react-toastify";
 import { Usuario } from "../../Types/User";
+import curtidaSvg from "../../../assets/curtida.svg";
+import coracaoCurtidoSvg from "../../../assets/coracaocurtido.svg";
+import chatSvg from "../../../assets/chat.svg";
 
 const Container = styled.div`
   background-color: transparent;
@@ -165,10 +168,16 @@ const Card = styled.div`
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
   
   &:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   }
 `;
 
@@ -213,12 +222,10 @@ const CardCreator = styled.p`
 const CardStats = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 12px;
   font-size: 13px;
   color: #666;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
 `;
 
 const CardCategory = styled.span`
@@ -294,26 +301,29 @@ const PublishButton = styled.button`
   }
 `;
 
-const CardActions = styled.div`
+const IconsContainer = styled.div`
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
 `;
 
-const ActionButton = styled.button<{ primary?: boolean }>`
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: none;
-  background: ${(props) => props.primary ? '#1a1a1a' : '#f5f5f5'};
-  color: ${(props) => props.primary ? '#fff' : '#1a1a1a'};
-  font-weight: 500;
+const IconWrapper = styled.div<{ inModal?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: ${props => props.inModal ? '#fff' : '#1a1a1a'};
+`;
+
+const Icon = styled.img<{ inModal?: boolean }>`
+  width: 24px;
+  height: 24px;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 14px;
-  
+  filter: ${props => props.inModal ? 'brightness(0) invert(1)' : 'brightness(0)'};
+
   &:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
+    transform: scale(1.1);
   }
 `;
 
@@ -877,10 +887,16 @@ export function Comunidade() {
 
   const handleCardClick = async (card: any) => {
     try {
+      setShowDetailsModal(true);
+      setSelectedCard({
+        ...card,
+        comments: card.comments || [] // Usa os comentários já carregados inicialmente
+      });
+
+      // Carrega os detalhes adicionais em background
       const token = localStorage.getItem("authenticacao");
       const cardId = card.id || card._id;
       
-      // Buscar detalhes do card e comentários em paralelo
       const [cardDetailRes, commentsRes] = await Promise.all([
         axios.get(
           `http://localhost:3000/cards/${cardId}`,
@@ -899,17 +915,10 @@ export function Comunidade() {
       const cardDetail = cardDetailRes.data.data;
       const comments = commentsRes.data.data || [];
 
-      // Buscar detalhes do usuário que criou o card
-      const userDetailRes = await axios.get(
-        `http://localhost:3000/users/${cardDetail.userId}`
-      );
-      const userDetail = userDetailRes.data.data;
-
       // Buscar detalhes dos usuários que fizeram comentários
       const commentsWithUserDetails = await Promise.all(
         comments.map(async (comment: any) => {
           try {
-            // Garantir que estamos usando o ID correto do usuário
             const commentUserId = comment.userId?._id || comment.userId;
             if (!commentUserId) {
               throw new Error("ID do usuário não encontrado no comentário");
@@ -936,18 +945,17 @@ export function Comunidade() {
         })
       );
 
+      // Atualiza o card com os detalhes completos
       setSelectedCard({
+        ...card,
         ...cardDetail,
-        id: cardId,
-        _id: cardId,
-        user: userDetail,
         comments: commentsWithUserDetails,
         likes: cardDetail.likes || card.likes || 0
       });
-      setShowDetailsModal(true);
+
     } catch (err) {
       console.error("Erro ao buscar detalhes do card:", err);
-      toast.error("Erro ao carregar detalhes do card");
+      toast.error("Erro ao carregar alguns detalhes do card");
     }
   };
 
@@ -1147,21 +1155,27 @@ export function Comunidade() {
                   {card.user && (
                     <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
                   )}
-                  <CardStats>
-                    <span>👍 {card.likes || 0}</span>
-                    <span>💬 {card.comments?.length || 0}</span>
-                  </CardStats>
-                  <CardActions>
-                    <ActionButton 
-                      primary
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLike(card);
-                      }}
-                    >
-                      {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
-                    </ActionButton>
-                  </CardActions>
+                  <IconsContainer>
+                    <IconWrapper>
+                      <Icon 
+                        src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
+                        alt="Curtir"
+                        isLiked={isCardLiked(card.id || card._id)}
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          handleLike(card);
+                        }}
+                      />
+                      <span>{card.likes || 0}</span>
+                    </IconWrapper>
+                    <IconWrapper>
+                      <Icon 
+                        src={chatSvg}
+                        alt="Comentários"
+                      />
+                      <span>{card.comments?.length || 0}</span>
+                    </IconWrapper>
+                  </IconsContainer>
                 </CardContent>
               </Card>
             ))}
@@ -1196,24 +1210,27 @@ export function Comunidade() {
                     {card.user && (
                       <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
                     )}
-                    <CardCategory>
-                      {card.category || 'Geral'}
-                    </CardCategory>
-                    <CardStats>
-                      <span>👍 {card.likes || 0}</span>
-                      <span>💬 {card.comments?.length || 0}</span>
-                    </CardStats>
-                    <CardActions>
-                      <ActionButton 
-                        primary
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLike(card);
-                        }}
-                      >
-                        {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
-                      </ActionButton>
-                    </CardActions>
+                    <IconsContainer>
+                      <IconWrapper>
+                        <Icon 
+                          src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
+                          alt="Curtir"
+                          isLiked={isCardLiked(card.id || card._id)}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleLike(card);
+                          }}
+                        />
+                        <span>{card.likes || 0}</span>
+                      </IconWrapper>
+                      <IconWrapper>
+                        <Icon 
+                          src={chatSvg}
+                          alt="Comentários"
+                        />
+                        <span>{card.comments?.length || 0}</span>
+                      </IconWrapper>
+                    </IconsContainer>
                   </CardContent>
                 </Card>
               ))}
@@ -1275,10 +1292,31 @@ export function Comunidade() {
                   display: "flex",
                   gap: "16px",
                   color: "white",
-                  fontSize: "14px"
+                  fontSize: "14px",
+                  alignItems: "center"
                 }}>
-                  <span>👍 {selectedCard.likes || 0} curtidas</span>
-                  <span>💬 {selectedCard.comments?.length || 0} comentários</span>
+                  <IconWrapper inModal>
+                    <Icon 
+                      src={isCardLiked(selectedCard.id || selectedCard._id) ? coracaoCurtidoSvg : curtidaSvg}
+                      alt="Curtir"
+                      isLiked={isCardLiked(selectedCard.id || selectedCard._id)}
+                      inModal
+                      onClick={(e: React.MouseEvent) => {
+                        e.stopPropagation();
+                        handleLike(selectedCard);
+                      }}
+                    />
+                    <span>{selectedCard.likes || 0}</span>
+                  </IconWrapper>
+                  <IconWrapper inModal>
+                    <Icon 
+                      src={chatSvg}
+                      alt="Comentários"
+                      isChat
+                      inModal
+                    />
+                    <span>{selectedCard.comments?.length || 0} comentários</span>
+                  </IconWrapper>
                 </div>
               </SidebarCard>
 
