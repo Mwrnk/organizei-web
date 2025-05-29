@@ -420,6 +420,115 @@ const SidebarCard = styled.div`
   }
 `;
 
+const CommentSection = styled.div`
+  margin-top: 32px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+`;
+
+const CommentInput = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  textarea {
+    flex: 1;
+    background: #111;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-size: 14px;
+    resize: none;
+    min-height: 60px;
+    font-family: inherit;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    &:focus {
+      outline: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  button {
+    align-self: flex-end;
+    padding: 8px 16px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #1565c0;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+`;
+
+const CommentList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const Comment = styled.div`
+  background: #111;
+  border-radius: 8px;
+  padding: 16px;
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+
+    img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .info {
+      flex: 1;
+
+      .name {
+        font-weight: 500;
+        color: white;
+        margin: 0;
+      }
+
+      .date {
+        font-size: 12px;
+        color: #666;
+        margin: 0;
+      }
+    }
+  }
+
+  .content {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+`;
+
+// Adicionar constante para imagem de perfil padrão
+const DEFAULT_PROFILE_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+
 export function Comunidade() {
   const [allCards, setAllCards] = useState<any[]>([]);
   const [searchTitle, setSearchTitle] = useState("");
@@ -434,6 +543,8 @@ export function Comunidade() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -724,6 +835,105 @@ export function Comunidade() {
     }
   };
 
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !selectedCard || !user) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado");
+      }
+
+      console.log('Dados sendo enviados:', {
+        description: newComment.trim(),
+        cardId: selectedCard.id,
+        token: token.substring(0, 20) + '...' // Mostra só parte do token por segurança
+      });
+
+      const response = await axios.post(
+        `http://localhost:3000/comments`,
+        { 
+          description: newComment.trim(),
+          cardId: selectedCard.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log('Resposta do servidor:', response.data);
+
+      // Atualizar o card com o novo comentário
+      const updatedCard = {
+        ...selectedCard,
+        comments: [...(selectedCard.comments || []), {
+          id: response.data.data._id,
+          description: newComment,
+          userId: user._id,
+          user: {
+            name: user.name,
+            profileImage: user.profileImage
+          },
+          createdAt: new Date().toISOString()
+        }]
+      };
+
+      console.log('Card atualizado:', updatedCard);
+
+      setSelectedCard(updatedCard);
+      setNewComment("");
+      
+      // Atualizar a lista de cards também
+      setAllCards(prev => prev.map(card => 
+        card.id === selectedCard.id ? updatedCard : card
+      ));
+
+      toast.success("Comentário adicionado com sucesso!");
+    } catch (error: any) {
+      console.log('Detalhes completos do erro:', {
+        message: error.message,
+        code: error.code,
+        response: error.response,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
+      
+      if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
+        console.log('Erro de conexão - Verifique se o servidor está rodando em http://localhost:3000');
+        toast.error("Erro de conexão. Verifique se o servidor está rodando e tente novamente.");
+      } else if (error.response?.status === 401) {
+        console.log('Erro de autenticação - Token inválido ou expirado');
+        toast.error("Sessão expirada. Por favor, faça login novamente.");
+      } else if (error.response?.status === 404) {
+        console.log('Card não encontrado - ID:', selectedCard.id);
+        toast.error("Card não encontrado.");
+      } else {
+        console.log('Erro desconhecido:', error.response?.data || error.message);
+        toast.error(error.response?.data?.message || "Erro ao adicionar comentário. Tente novamente.");
+      }
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const formatCommentDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <>
       <Header />
@@ -823,9 +1033,12 @@ export function Comunidade() {
                   <img
                     src={card.image_url?.[0] ? 
                       `http://localhost:3000${card.image_url[0]}` : 
-                      `https://source.unsplash.com/random/400x160?${index}`
+                      `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'%3E${card.title || 'Sem imagem'}%3C/text%3E%3C/svg%3E`
                     }
                     alt={card.title}
+                    onError={(e) => {
+                      e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'%3E${card.title || 'Erro ao carregar imagem'}%3C/text%3E%3C/svg%3E`;
+                    }}
                   />
                 </CardImage>
                 <CardContent>
@@ -869,9 +1082,12 @@ export function Comunidade() {
                     <img
                       src={card.image_url?.[0] ? 
                         `http://localhost:3000${card.image_url[0]}` : 
-                        `https://source.unsplash.com/random/400x160?${index}`
+                        `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Sem imagem'}</text></svg>`)}`
                       }
                       alt={card.title}
+                      onError={(e) => {
+                        e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Erro ao carregar imagem'}</text></svg>`)}`;
+                      }}
                     />
                   </CardImage>
                   <CardContent>
@@ -919,13 +1135,16 @@ export function Comunidade() {
             <Sidebar>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <img
-                  src={selectedCard.user?.profileImage || "https://via.placeholder.com/40"}
+                  src={selectedCard.user?.profileImage || DEFAULT_PROFILE_IMAGE}
                   alt="Foto de perfil"
                   style={{
                     width: 40,
                     height: 40,
                     borderRadius: "10px",
                     objectFit: "cover",
+                  }}
+                  onError={(e) => {
+                    e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
                   }}
                 />
                 <div>
@@ -950,22 +1169,6 @@ export function Comunidade() {
               </SidebarCard>
 
               <SidebarCard>
-                <h4>#descrição</h4>
-                <div style={{
-                  width: "100%",
-                  minHeight: "100px",
-                  padding: "10px",
-                  borderRadius: "10px",
-                  background: "#111",
-                  color: "white",
-                  fontSize: "14px",
-                  lineHeight: "1.4"
-                }}>
-                  {selectedCard.content || "Sem descrição disponível"}
-                </div>
-              </SidebarCard>
-
-              <SidebarCard>
                 <h4>#estatísticas</h4>
                 <div style={{
                   display: "flex",
@@ -977,6 +1180,59 @@ export function Comunidade() {
                   <span>💬 {selectedCard.comments?.length || 0} comentários</span>
                 </div>
               </SidebarCard>
+
+              {/* Seção de Comentários */}
+              <CommentSection>
+                <h4 style={{ marginTop: 0, marginBottom: 16 }}>#comentários</h4>
+                
+                {user ? (
+                  <CommentInput>
+                    <textarea
+                      placeholder="Adicione um comentário..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      maxLength={500}
+                    />
+                    <button
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim() || isSubmittingComment}
+                    >
+                      {isSubmittingComment ? "..." : "Enviar"}
+                    </button>
+                  </CommentInput>
+                ) : (
+                  <p style={{ color: "#666", fontSize: "14px", textAlign: "center" }}>
+                    Faça login para comentar
+                  </p>
+                )}
+
+                <CommentList>
+                  {selectedCard.comments?.length > 0 ? (
+                    selectedCard.comments.map((comment: any) => (
+                      <Comment key={comment.id || comment._id}>
+                        <div className="header">
+                          <img
+                            src={comment.user?.profileImage || DEFAULT_PROFILE_IMAGE}
+                            alt={comment.user?.name}
+                            onError={(e) => {
+                              e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                            }}
+                          />
+                          <div className="info">
+                            <p className="name">{comment.user?.name || "Usuário"}</p>
+                            <p className="date">{formatCommentDate(comment.createdAt)}</p>
+                          </div>
+                        </div>
+                        <p className="content">{comment.description}</p>
+                      </Comment>
+                    ))
+                  ) : (
+                    <p style={{ color: "#666", textAlign: "center", margin: 0 }}>
+                      Nenhum comentário ainda. Seja o primeiro a comentar!
+                    </p>
+                  )}
+                </CommentList>
+              </CommentSection>
             </Sidebar>
 
             {/* Content */}
