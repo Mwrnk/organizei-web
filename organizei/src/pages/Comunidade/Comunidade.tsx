@@ -8,7 +8,6 @@ import { usePageLoading } from "../../Utils/usePageLoading";
 import { toast } from "react-toastify";
 import { Usuario } from "../../Types/User";
 
-// Styled Components
 const Container = styled.div`
   background-color: transparent;
   min-height: 100vh;
@@ -40,146 +39,136 @@ const Subtitulo = styled.p`
 const BuscaWrapper = styled.div`
   display: flex;
   justify-content: center;
-  margin-bottom: 80px;
+  margin-bottom: 40px;
   position: relative;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  background: white;
+  border-radius: 30px;
+  padding: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 `;
 
 const InputBusca = styled.input`
-  padding: 20px 24px;
-  width: 600px;
-  border-radius: 30px;
-  border: 2px solid #e0e0e0;
-  font-size: 18px;
+  padding: 12px 20px;
+  width: 100%;
+  border-radius: 25px;
+  border: none;
+  font-size: 16px;
   outline: none;
-  transition: all 0.3s ease;
-  
-  &:focus {
-    border-color: #333;
-    box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
-  }
+  background: transparent;
   
   &::placeholder {
     color: #999;
   }
 `;
 
+const BotaoBusca = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+  }
+`;
+
 const ListaResultados = styled.ul`
   position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 600px;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
   background: white;
   border: 1px solid #e0e0e0;
   max-height: 200px;
   overflow-y: auto;
   list-style: none;
-  padding: 0;
-  margin: 8px 0 0 0;
+  padding: 8px 0;
+  margin: 0;
   border-radius: 12px;
   z-index: 10;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
 const ItemResultado = styled.li`
-  padding: 16px 20px;
+  padding: 12px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s ease;
+  font-size: 14px;
+  color: #333;
   
   &:hover {
     background-color: #f8f9fa;
   }
-  
-  &:last-child {
-    border-bottom: none;
-  }
 `;
 
-const BotaoBusca = styled.button`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 16px 20px;
-  border-radius: 25px;
-  border: none;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: #555;
-    transform: translateY(-50%) scale(1.05);
-  }
-`;
-
-// Seção de Publicação
 const PublishSection = styled.div`
-  background: #fff;
-  border-radius: 24px;
+  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  background: transparent;
   padding: 40px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
 `;
 
-const SectionHeader = styled.div`
-  text-align: center;
-  margin-bottom: 40px;
+const PublishHeader = styled.div``;
+
+const PublishTitle = styled.h2`
+  font-size: 48px;
+  font-weight: 800;
+  color: #000;
+  margin-bottom: 24px;
+  line-height: 1.1;
 `;
 
-const SectionTitle = styled.h2`
-  font-size: 32px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 12px;
+const PublishSubtitle = styled.p`
+  font-size: 18px;
+  color: #333;
+  line-height: 1.5;
+  max-width: 400px;
 `;
 
-const SectionSubtitle = styled.p`
-  font-size: 16px;
-  color: #666;
-  max-width: 600px;
-  margin: 0 auto;
+const PublishForm = styled.div`
+  background: white;
+  border-radius: 12px;
+  padding: 50px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  
 `;
 
-// Seção de Cards Mais Curtidos
-const TopCardsSection = styled.div`
-  background: #fff;
-  border-radius: 24px;
-  padding: 40px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-`;
 
 const CardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
   margin-top: 32px;
 `;
 
-// Seção de Todos os Cards
-const AllCardsSection = styled.div`
-  background: #fff;
-  border-radius: 24px;
-  padding: 40px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-`;
-
-// Card Component
 const Card = styled.div`
-  background: #fff;
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #eee;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -196,23 +185,113 @@ const CardImage = styled.div`
 `;
 
 const CardContent = styled.div`
-  padding: 20px;
+  padding: 16px;
 `;
 
 const CardTitle = styled.h3`
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+  line-height: 1.4;
+`;
+
+const CardCreator = styled.p`
+  font-size: 14px;
+  color: #666;
   margin-bottom: 12px;
-  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:before {
+    content: "👤";
+    font-size: 14px;
+  }
 `;
 
 const CardStats = styled.div`
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-  font-size: 14px;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
   color: #666;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+`;
+
+const CardCategory = styled.span`
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: #f0f0f0;
+  color: #666;
+  margin-bottom: 12px;
+  display: inline-block;
+`;
+
+// const TopCardsSection = styled.div`
+//   background: white;
+//   border-radius: 16px;
+//   padding: 32px;
+//   margin-bottom: 40px;
+//   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+// `;
+
+// const AllCardsSection = styled.div`
+//   background: white;
+//   border-radius: 16px;
+//   padding: 32px;
+//   margin-bottom: 40px;
+//   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+// `;
+
+const Select = styled.select`
+  padding: 12px 16px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 14px;
+  margin-bottom: 24px;
+  border: 1px solid #e0e0e0;
+  outline: none;
+  transition: border-color 0.3s ease;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  
+  &:focus {
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+`;
+
+const PublishButton = styled.button`
+  width: 100%;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  background-color: black;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    background-color: #333;
+    transform: scale(1.02);
+  }
+  
+  &:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+  }
 `;
 
 const CardActions = styled.div`
@@ -222,14 +301,15 @@ const CardActions = styled.div`
 
 const ActionButton = styled.button<{ primary?: boolean }>`
   flex: 1;
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 8px;
   border: none;
-  background: ${props => props.primary ? '#1a1a1a' : '#f5f5f5'};
-  color: ${props => props.primary ? '#fff' : '#1a1a1a'};
+  background: ${(props) => props.primary ? '#1a1a1a' : '#f5f5f5'};
+  color: ${(props) => props.primary ? '#fff' : '#1a1a1a'};
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 14px;
   
   &:hover {
     opacity: 0.9;
@@ -237,234 +317,155 @@ const ActionButton = styled.button<{ primary?: boolean }>`
   }
 `;
 
-const PublishTitle = styled.h2`
-  font-size: 48px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 24px;
-  line-height: 1.2;
-`;
-
-const PublishSubtitle = styled.p`
-  font-size: 18px;
-  color: #666;
-  margin-bottom: 60px;
-  line-height: 1.5;
-`;
-
-const PublishCard = styled.div`
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  margin: 0 auto;
-`;
-
-const PublishCardTitle = styled.h3`
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 32px;
-  color: #1a1a1a;
-`;
-
-const RadioGroup = styled.div`
-  display: flex;
-  gap: 32px;
-  margin-bottom: 32px;
-`;
-
-const RadioOption = styled.label`
+const SectionDivider = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
+  gap: 16px;
+  margin: 40px 0;
+`;
+
+const HashTag = styled.span`
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+`;
+
+const DividerLine = styled.div`
+  flex: 1;
+  height: 1px;
+  background-color: #e0e0e0;
+`;
+
+const LoadMoreButton = styled.button`
+  display: block;
+  margin: 40px auto 0;
+  padding: 12px 32px;
+  border-radius: 8px;
+  border: none;
+  background-color: #f5f5f5;
+  color: #333;
   font-size: 16px;
   font-weight: 500;
-  color: #333;
-`;
-
-const RadioInput = styled.input`
-  width: 20px;
-  height: 20px;
   cursor: pointer;
-`;
+  transition: all 0.2s ease;
 
-const Select = styled.select`
-  padding: 20px;
-  border-radius: 16px;
-  width: 100%;
-  font-size: 16px;
-  margin-bottom: 24px;
-  border: 2px solid #e0e0e0;
-  outline: none;
-  transition: border-color 0.3s ease;
-  
-  &:focus {
-    border-color: #333;
-  }
-`;
-
-const PublishButton = styled.button`
-  width: 100%;
-  padding: 20px;
-  border-radius: 16px;
-  border: none;
-  background-color: #1a1a1a;
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  
-  &:hover:not(:disabled) {
-    background-color: #333;
+  &:hover {
+    background-color: #e0e0e0;
     transform: scale(1.02);
   }
-  
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
 `;
 
-const ProfessionalSection = styled.div`
-  margin-top: 80px;
-`;
-
-const ProfessionalGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
-  margin-bottom: 60px;
-`;
-
-const ProfessionalCard = styled.div`
-  background: transparent;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-  
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const ProfessionalBanner = styled.div`
-  width: 100%;
-  height: 160px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
-`;
-
-const ProfessionalContent = styled.div`
-  padding: 24px;
-`;
-
-const ProfessionalTitle = styled.h3`
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: #1a1a1a;
-  line-height: 1.3;
-`;
-
-const ProfessionalMeta = styled.div`
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 16px;
+  z-index: 1000;
 `;
 
-const ProfessionalDate = styled.span`
-  font-size: 14px;
-  color: #999;
+const DetalhesContainer = styled.div`
+  display: flex;
+  gap: 24px;
+  background: #000;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 1200px;
+  height: 90vh;
+  padding: 32px;
+  color: white;
+  position: relative;
 `;
 
-const ProfessionalCategory = styled.span`
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background-color: #e8f4fd;
-  color: #1976d2;
-  font-weight: 500;
+const Sidebar = styled.div`
+  width: 300px;
+  padding-right: 24px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+
+  h2 {
+    margin: 0 0 24px 0;
+    font-size: 24px;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 24px 0;
+  }
+`;
+
+const SidebarCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+  }
 `;
 
 export function Comunidade() {
-  const [cards, setCards] = useState<any[]>([]);
-  const [meusCards, setMeusCards] = useState<any[]>([]);
+  const [allCards, setAllCards] = useState<any[]>([]);
   const [searchTitle, setSearchTitle] = useState("");
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
-  const [visibleCount, setVisibleCount] = useState(8);
-  const [selectedCardId, setSelectedCardId] = useState("");
+  const [selectedListId, setSelectedListId] = useState("");
   const [isDataLoading, setIsDataLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("escolar");
   const [likedCards, setLikedCards] = useState<Set<string>>(new Set());
+  const [visibleCards, setVisibleCards] = useState(10);
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
   
   usePageLoading(isDataLoading);
 
-  // Função para formatar data
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) {
-      return "Data não disponível";
-    }
-    
-    try {
-      const date = new Date(dateString);
-      
-      if (isNaN(date.getTime())) {
-        return "Data inválida";
-      }
-      
-      return date.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-      });
-    } catch (error) {
-      return "Data inválida";
-    }
-  };
-
-  useEffect(() => {
-    const loadInitialData = async () => {
-      setIsDataLoading(true);
-      try {
-        await Promise.all([fetchAllCards(), fetchUsers(), fetchLikedCards()]);
-      } finally {
-        setIsDataLoading(false);
-      }
-    };
-    
-    loadInitialData();
-  }, []);
-
-  useEffect(() => {
-    if (user) fetchMeusCards();
-  }, [user]);
-
+  // Mover a função fetchAllCards para fora do useEffect
   const fetchAllCards = async () => {
+    setIsDataLoading(true);
     try {
       const res = await axios.get("http://localhost:3000/comunidade/cards");
       const cardsData = res.data?.data || [];
       
-      // Buscar detalhes completos de cada card (incluindo imagens)
       const cardsWithDetails = await Promise.all(
         cardsData.map(async (card: any) => {
           try {
-            const cardDetailRes = await axios.get(`http://localhost:3000/cards/${card.id || card._id}`);
+            const cardId = card.id || card._id;
+            const token = localStorage.getItem("authenticacao");
+            const cardDetailRes = await axios.get(
+              `http://localhost:3000/cards/${cardId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
             const cardDetail = cardDetailRes.data.data;
             
             return {
               ...card,
+              id: cardId,
+              _id: cardId,
               image_url: cardDetail.image_url || [],
               pdfs: cardDetail.pdfs || [],
               user: cardDetail.user || card.user,
@@ -476,52 +477,37 @@ export function Comunidade() {
               is_published: cardDetail.is_published !== undefined ? cardDetail.is_published : card.is_published
             };
           } catch (err) {
+            console.error("Erro ao buscar detalhes do card:", err);
             return {
               ...card,
+              id: card.id || card._id,
+              _id: card.id || card._id,
               createdAt: card.createdAt || new Date().toISOString(),
-              updatedAt: card.updatedAt || new Date().toISOString()
+              updatedAt: card.updatedAt || new Date().toISOString(),
+              likes: card.likes || 0
             };
           }
         })
       );
       
-      setCards(cardsWithDetails);
-      setVisibleCount(8);
+      setAllCards(cardsWithDetails);
     } catch (err) {
       console.error("Erro ao buscar cards:", err);
+      toast.error("Erro ao carregar os cards. Por favor, tente novamente.");
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
-  const fetchMeusCards = async () => {
-    try {
-      const token = localStorage.getItem("authenticacao");
-      const res = await axios.get("http://localhost:3000/cards", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const cardsCorrigidos = (res.data.data || []).map((card: any) => ({
-        ...card,
-        _id: card._id || card.id,
-      }));
-      setMeusCards(cardsCorrigidos);
-    } catch (error) {
-      console.error("Erro ao buscar seus cards", error);
-    }
-  };
+  useEffect(() => {
+    fetchAllCards();
+  }, []);
 
-  const buscarCardPorTitulo = async () => {
-    if (!searchTitle.trim()) {
-      fetchAllCards();
-      return;
-    }
-    try {
-      const res = await axios.get(`http://localhost:3000/cards/${searchTitle}`);
-      const card = res.data?.data;
-      setCards(card ? [card] : []);
-      setVisibleCount(1);
-    } catch (error) {
-      console.warn("Card não encontrado");
-      setCards([]);
-    }
+  // Função para obter os cards mais curtidos
+  const getMostLikedCards = () => {
+    return [...allCards]
+      .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+      .slice(0, 6);
   };
 
   const fetchUsers = async () => {
@@ -550,7 +536,7 @@ export function Comunidade() {
     try {
       const token = localStorage.getItem("authenticacao");
 
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:3000/comunidade/publish/${cardId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
@@ -559,11 +545,11 @@ export function Comunidade() {
       toast.success("Card publicado com sucesso!");
       
       // Recarrega os dados
-      await fetchMeusCards();
+      await fetchUsers();
       await fetchAllCards();
       
       // Limpa a seleção
-      setSelectedCardId("");
+      setSelectedListId("");
     } catch (err) {
       console.error("Erro ao publicar card:", err);
       toast.error("Erro ao publicar card.");
@@ -594,13 +580,15 @@ export function Comunidade() {
       );
 
       const updatedLikes = res.data?.data?.likes;
-      setCards((prev) =>
+      
+      // Atualiza os likes em ambas as listas
+      setAllCards((prev) =>
         prev.map((c) =>
           (c.id || c._id) === cardId ? { ...c, likes: updatedLikes } : c
         )
       );
 
-      // Atualizar o estado de cards curtidos
+      // Atualiza o estado de cards curtidos
       setLikedCards(prev => {
         const newSet = new Set(prev);
         if (isAlreadyLiked) {
@@ -628,21 +616,111 @@ export function Comunidade() {
     return likedCards.has(cardId);
   };
 
-  // Função para buscar cards curtidos pelo usuário
-  const fetchLikedCards = async () => {
+  const loadMore = () => {
+    setVisibleCards(prev => prev + 10);
+  };
+
+  const loadPdf = async (cardId: string) => {
+    setPdfLoading(true);
+    setPdfError(null);
     try {
       const token = localStorage.getItem("authenticacao");
-      if (!token) return;
+      if (!token) {
+        throw new Error("Token não encontrado");
+      }
 
-      const res = await axios.get("http://localhost:3000/users/liked-cards", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `http://localhost:3000/cards/${cardId}/pdf/0/view`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: 'blob'
+        }
+      );
+
+      // Verifica se a resposta é um JSON de erro (o backend retorna um objeto quando há erro)
+      const fileType = response.headers['content-type'];
+      if (fileType === 'application/json') {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const errorResponse = JSON.parse(reader.result as string);
+          throw new Error(errorResponse.message || "Erro ao carregar PDF");
+        };
+        reader.readAsText(response.data);
+        return;
+      }
+
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error: any) {
+      console.error("Erro ao carregar PDF:", error);
+      let errorMessage = "Erro ao carregar o PDF";
       
-      const likedCardIds = res.data?.data || [];
-      setLikedCards(new Set(likedCardIds));
-    } catch (error) {
-      console.error("Erro ao buscar cards curtidos", error);
-      // Se der erro, mantém o estado vazio
+      if (error.response) {
+        // Erro da API
+        if (error.response.status === 404) {
+          errorMessage = "PDF não encontrado. O arquivo pode ter sido removido ou não está mais disponível.";
+        } else if (error.response.status === 401) {
+          errorMessage = "Você precisa estar logado para visualizar este PDF.";
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setPdfError(errorMessage);
+      setPdfUrl(null);
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  // Limpar a URL do PDF quando o modal for fechado
+  useEffect(() => {
+    if (!showDetailsModal && pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
+    }
+  }, [showDetailsModal]);
+
+  // Carregar o PDF quando um card for selecionado
+  useEffect(() => {
+    if (selectedCard?.id && showDetailsModal) {
+      loadPdf(selectedCard.id);
+    }
+  }, [selectedCard, showDetailsModal]);
+
+  const handleCardClick = async (card: any) => {
+    try {
+      // Buscar detalhes completos do card
+      const token = localStorage.getItem("authenticacao");
+      const cardDetailRes = await axios.get(
+        `http://localhost:3000/cards/${card.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const cardDetail = cardDetailRes.data.data;
+
+      // Buscar detalhes do usuário que criou o card
+      const userDetailRes = await axios.get(
+        `http://localhost:3000/users/${cardDetail.userId}`
+      );
+      const userDetail = userDetailRes.data.data;
+
+      setSelectedCard({
+        ...cardDetail,
+        user: userDetail
+      });
+      setShowDetailsModal(true);
+    } catch (err) {
+      console.error("Erro ao buscar detalhes do card:", err);
+      toast.error("Erro ao carregar detalhes do card");
     }
   };
 
@@ -661,7 +739,10 @@ export function Comunidade() {
               value={searchTitle}
               onChange={handleUserSearch}
             />
-            <BotaoBusca onClick={buscarCardPorTitulo}>🔍</BotaoBusca>
+            <BotaoBusca onClick={() => {
+              fetchAllCards();
+              setSelectedListId("");
+            }}>🔍</BotaoBusca>
             
             {filteredUsers.length > 0 && (
               <ListaResultados>
@@ -677,102 +758,113 @@ export function Comunidade() {
             )}
           </BuscaWrapper>
 
+          {/* Divisor com #publique */}
+          <SectionDivider>
+            <HashTag>#publique</HashTag>
+            <DividerLine />
+          </SectionDivider>
+
           {/* Seção de Publicação */}
           {user && (
             <PublishSection>
-              <SectionHeader>
-                <SectionTitle>Publique seus cards</SectionTitle>
-                <SectionSubtitle>
-                  Compartilhe seu conhecimento com a comunidade
-                </SectionSubtitle>
-              </SectionHeader>
+              <PublishHeader>
+                <PublishTitle>
+                  Publique os seus{'\n'}
+                  cards mais fácil!
+                </PublishTitle>
+                <PublishSubtitle>
+                  Espalhe o seu método de estudar para ajudar mais pessoas com um só clique.
+                </PublishSubtitle>
+              </PublishHeader>
               
-              <Select
-                value={selectedCardId}
-                onChange={(e) => setSelectedCardId(e.target.value)}
-              >
-                <option value="">Selecionar um card para publicar</option>
-                {meusCards
-                  .filter((card) => !card.is_published)
-                  .map((card) => (
-                    <option key={card.id} value={card.id}>
-                      {card.title}
-                    </option>
-                  ))}
-              </Select>
+              <PublishForm>
+                <Select
+                  value={selectedListId}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedListId(e.target.value)}
+                >
+                  <option value="">Selecionar o card</option>
+                  {allCards
+                    .filter((card) => !card.is_published)
+                    .map((card) => (
+                      <option key={card._id} value={card._id}>
+                        {card.title}
+                      </option>
+                    ))}
+                </Select>
 
-              <PublishButton
-                onClick={() => {
-                  const selectedCard = meusCards.find(
-                    (card) => card._id === selectedCardId
-                  );
-                  if (selectedCard) {
-                    handlePublicar(selectedCard._id);
-                  }
-                }}
-                disabled={!selectedCardId}
-              >
-                Publicar Card
-              </PublishButton>
+                <PublishButton
+                  onClick={() => {
+                    const selectedCard = allCards.find(
+                      (card) => card._id === selectedListId
+                    );
+                    if (selectedCard) {
+                      handlePublicar(selectedCard._id);
+                    }
+                  }}
+                  disabled={!selectedListId}
+                >
+                  Publicar
+                </PublishButton>
+              </PublishForm>
             </PublishSection>
           )}
 
-          {/* Seção de Cards Mais Curtidos */}
-          <TopCardsSection>
-            <SectionHeader>
-              <SectionTitle>Mais Curtidos</SectionTitle>
-              <SectionSubtitle>
-                Os cards mais populares da comunidade
-              </SectionSubtitle>
-            </SectionHeader>
-            
-            <CardsGrid>
-              {cards
-                .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-                .slice(0, 6)
-                .map((card, index) => (
-                  <Card key={card.id || card._id}>
-                    <CardImage>
-                      <img
-                        src={card.image_url?.[0] ? 
-                          `http://localhost:3000${card.image_url[0]}` : 
-                          `https://source.unsplash.com/random/400x160?${index}`
-                        }
-                        alt={card.title}
-                      />
-                    </CardImage>
-                    <CardContent>
-                      <CardTitle>{card.title}</CardTitle>
-                      <CardStats>
-                        <span>👍 {card.likes || 0}</span>
-                        <span>💬 {card.comments?.length || 0}</span>
-                      </CardStats>
-                      <CardActions>
-                        <ActionButton 
-                          primary
-                          onClick={() => handleLike(card)}
-                        >
-                          {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
-                        </ActionButton>
-                      </CardActions>
-                    </CardContent>
-                  </Card>
-                ))}
-            </CardsGrid>
-          </TopCardsSection>
+          {/* Divisor com #curtidos */}
+          <SectionDivider>
+            <HashTag>#curtidos</HashTag>
+            <DividerLine />
+          </SectionDivider>
 
-          {/* Seção de Todos os Cards */}
-          <AllCardsSection>
-            <SectionHeader>
-              <SectionTitle>Todos os Cards</SectionTitle>
-              <SectionSubtitle>
-                Explore todos os cards compartilhados pela comunidade
-              </SectionSubtitle>
-            </SectionHeader>
-            
-            <CardsGrid>
-              {cards.map((card, index) => (
-                <Card key={card.id || card._id}>
+          {/* Grid de Cards Mais Curtidos */}
+          <CardsGrid>
+            {getMostLikedCards().map((card, index) => (
+              <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
+                <CardImage>
+                  <img
+                    src={card.image_url?.[0] ? 
+                      `http://localhost:3000${card.image_url[0]}` : 
+                      `https://source.unsplash.com/random/400x160?${index}`
+                    }
+                    alt={card.title}
+                  />
+                </CardImage>
+                <CardContent>
+                  <CardTitle>{card.title}</CardTitle>
+                  {card.user && (
+                    <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                  )}
+                  <CardStats>
+                    <span>👍 {card.likes || 0}</span>
+                    <span>💬 {card.comments?.length || 0}</span>
+                  </CardStats>
+                  <CardActions>
+                    <ActionButton 
+                      primary
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLike(card);
+                      }}
+                    >
+                      {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
+                    </ActionButton>
+                  </CardActions>
+                </CardContent>
+              </Card>
+            ))}
+          </CardsGrid>
+
+          {/* Divisor com #todos */}
+          <SectionDivider>
+            <HashTag>#todos</HashTag>
+            <DividerLine />
+          </SectionDivider>
+
+          {/* Grid de Todos os Cards */}
+          <CardsGrid>
+            {allCards
+              .slice(0, visibleCards)
+              .map((card, index) => (
+                <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
                   <CardImage>
                     <img
                       src={card.image_url?.[0] ? 
@@ -784,6 +876,12 @@ export function Comunidade() {
                   </CardImage>
                   <CardContent>
                     <CardTitle>{card.title}</CardTitle>
+                    {card.user && (
+                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                    )}
+                    <CardCategory>
+                      {card.category || 'Geral'}
+                    </CardCategory>
                     <CardStats>
                       <span>👍 {card.likes || 0}</span>
                       <span>💬 {card.comments?.length || 0}</span>
@@ -791,7 +889,10 @@ export function Comunidade() {
                     <CardActions>
                       <ActionButton 
                         primary
-                        onClick={() => handleLike(card)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLike(card);
+                        }}
                       >
                         {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
                       </ActionButton>
@@ -799,10 +900,216 @@ export function Comunidade() {
                   </CardContent>
                 </Card>
               ))}
-            </CardsGrid>
-          </AllCardsSection>
+          </CardsGrid>
+
+          {/* Botão Ver Mais */}
+          {visibleCards < allCards.length && (
+            <LoadMoreButton onClick={loadMore}>
+              Ver mais
+            </LoadMoreButton>
+          )}
         </ContentWrapper>
       </Container>
+
+      {/* Modal de Detalhes */}
+      {showDetailsModal && selectedCard && (
+        <ModalOverlay>
+          <DetalhesContainer>
+            {/* Sidebar */}
+            <Sidebar>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <img
+                  src={selectedCard.user?.profileImage || "https://via.placeholder.com/40"}
+                  alt="Foto de perfil"
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "10px",
+                    objectFit: "cover",
+                  }}
+                />
+                <div>
+                  <p style={{ margin: 0, fontWeight: "bold" }}>{selectedCard.user?.name || "Usuário"}</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
+                    Autor do card
+                  </p>
+                </div>
+              </div>
+
+              <SidebarCard>
+                <h4>#titulo</h4>
+                <div style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  background: "#111",
+                  color: "white",
+                }}>
+                  {selectedCard.title}
+                </div>
+              </SidebarCard>
+
+              <SidebarCard>
+                <h4>#descrição</h4>
+                <div style={{
+                  width: "100%",
+                  minHeight: "100px",
+                  padding: "10px",
+                  borderRadius: "10px",
+                  background: "#111",
+                  color: "white",
+                  fontSize: "14px",
+                  lineHeight: "1.4"
+                }}>
+                  {selectedCard.content || "Sem descrição disponível"}
+                </div>
+              </SidebarCard>
+
+              <SidebarCard>
+                <h4>#estatísticas</h4>
+                <div style={{
+                  display: "flex",
+                  gap: "16px",
+                  color: "white",
+                  fontSize: "14px"
+                }}>
+                  <span>👍 {selectedCard.likes || 0} curtidas</span>
+                  <span>💬 {selectedCard.comments?.length || 0} comentários</span>
+                </div>
+              </SidebarCard>
+            </Sidebar>
+
+            {/* Content */}
+            <ContentArea>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2>{selectedCard.title}</h2>
+                <button
+                  onClick={() => setShowDetailsModal(false)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    fontSize: "24px",
+                    cursor: "pointer",
+                    color: "white",
+                  }}
+                >
+                  ❌
+                </button>
+              </div>
+
+              <hr />
+
+              {/* Visualização do PDF */}
+              {selectedCard.pdfs && selectedCard.pdfs.length > 0 ? (
+                <div style={{
+                  width: "100%",
+                  height: "500px",
+                  background: "#eaeaea",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                }}>
+                  {pdfLoading ? (
+                    <div style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: "16px"
+                    }}>
+                      <div className="loading-spinner" style={{
+                        width: "40px",
+                        height: "40px",
+                        border: "4px solid #f3f3f3",
+                        borderTop: "4px solid #3498db",
+                        borderRadius: "50%",
+                        animation: "spin 1s linear infinite"
+                      }} />
+                      <p>Carregando PDF...</p>
+                    </div>
+                  ) : pdfError ? (
+                    <div style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: "16px",
+                      padding: "20px",
+                      textAlign: "center"
+                    }}>
+                      <div style={{
+                        background: "rgba(211, 47, 47, 0.1)",
+                        padding: "20px",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(211, 47, 47, 0.3)",
+                        maxWidth: "400px"
+                      }}>
+                        <p style={{ color: "#d32f2f", marginBottom: "8px" }}>❌ {pdfError}</p>
+                        <p style={{ 
+                          fontSize: "14px", 
+                          color: "#666",
+                          marginBottom: "16px" 
+                        }}>
+                          Tente novamente ou entre em contato com o autor do card.
+                        </p>
+                        <button
+                          onClick={() => loadPdf(selectedCard.id)}
+                          style={{
+                            padding: "8px 16px",
+                            background: "#1976d2",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            transition: "background 0.2s ease"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "#1565c0";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "#1976d2";
+                          }}
+                        >
+                          🔄 Tentar novamente
+                        </button>
+                      </div>
+                    </div>
+                  ) : pdfUrl ? (
+                    <iframe
+                      src={pdfUrl}
+                      title={selectedCard.pdfs[0].filename}
+                      width="100%"
+                      height="100%"
+                      style={{ border: "none" }}
+                    />
+                  ) : null}
+                </div>
+              ) : (
+                <div style={{
+                  width: "100%",
+                  height: "500px",
+                  background: "#eaeaea",
+                  borderRadius: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  gap: "16px",
+                  color: "#666"
+                }}>
+                  <p>📄 Nenhum PDF disponível para este card</p>
+                  <p style={{ fontSize: "14px", color: "#999" }}>
+                    O autor não anexou nenhum arquivo PDF a este card.
+                  </p>
+                </div>
+              )}
+            </ContentArea>
+          </DetalhesContainer>
+        </ModalOverlay>
+      )}
     </>
   );
 }
