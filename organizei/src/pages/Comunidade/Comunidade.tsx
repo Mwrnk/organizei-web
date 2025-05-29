@@ -18,7 +18,7 @@ const Container = styled.div`
 const ContentWrapper = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 20px;
 `;
 
 const Titulo = styled.h1`
@@ -63,155 +63,6 @@ const InputBusca = styled.input`
   }
 `;
 
-const BotaoBusca = styled.button`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 16px 20px;
-  border-radius: 25px;
-  border: none;
-  background-color: #333;
-  color: white;
-  cursor: pointer;
-  font-size: 18px;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: #555;
-    transform: translateY(-50%) scale(1.05);
-  }
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 28px;
-  font-weight: 600;
-  color: #666;
-  margin-bottom: 40px;
-  text-transform: lowercase;
-`;
-
-const RecommendedGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
-  margin-bottom: 60px;
-`;
-
-const RecommendedCard = styled.div`
-  background: transparent;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-  
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-  }
-`;
-
-const CardBanner = styled.div`
-  width: 100%;
-  height: 160px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
-`;
-
-const CardContent = styled.div`
-  padding: 24px;
-`;
-
-const CardTitle = styled.h3`
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  color: #1a1a1a;
-  line-height: 1.3;
-`;
-
-const CardMeta = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const CardDate = styled.span`
-  font-size: 14px;
-  color: #999;
-`;
-
-const CardCategory = styled.span`
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background-color: #f0f0f0;
-  color: #666;
-  font-weight: 500;
-`;
-
-const CardStats = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin: 16px 0;
-  font-size: 14px;
-  color: #666;
-`;
-
-const StatItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const LikeButton = styled.button<{ isLiked?: boolean }>`
-  width: 100%;
-  padding: 14px 20px;
-  border-radius: 12px;
-  border: none;
-  background-color: ${props => props.isLiked ? '#e74c3c' : '#1a1a1a'};
-  color: white;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  
-  &:hover {
-    background-color: ${props => props.isLiked ? '#c0392b' : '#333'};
-    transform: scale(1.02);
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
-`;
-
-const VerMais = styled.button`
-  margin: 60px auto 0;
-  display: block;
-  background-color: #f0f0f0;
-  border: none;
-  padding: 20px 40px;
-  border-radius: 30px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 18px;
-  color: #333;
-  transition: all 0.3s ease;
-  
-  &:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.05);
-  }
-`;
-
 const ListaResultados = styled.ul`
   position: absolute;
   top: 100%;
@@ -245,10 +96,145 @@ const ItemResultado = styled.li`
   }
 `;
 
+const BotaoBusca = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 16px 20px;
+  border-radius: 25px;
+  border: none;
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #555;
+    transform: translateY(-50%) scale(1.05);
+  }
+`;
+
+// Seção de Publicação
 const PublishSection = styled.div`
-  margin-top: 80px;
-  padding-top: 60px;
-  border-top: 2px solid #f0f0f0;
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const SectionHeader = styled.div`
+  text-align: center;
+  margin-bottom: 40px;
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+`;
+
+const SectionSubtitle = styled.p`
+  font-size: 16px;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+`;
+
+// Seção de Cards Mais Curtidos
+const TopCardsSection = styled.div`
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+`;
+
+// Seção de Todos os Cards
+const AllCardsSection = styled.div`
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+// Card Component
+const Card = styled.div`
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #eee;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+`;
+
+const CardImage = styled.div`
+  height: 160px;
+  background: #f5f5f5;
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const CardContent = styled.div`
+  padding: 20px;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+`;
+
+const CardStats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #666;
+`;
+
+const CardActions = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
+const ActionButton = styled.button<{ primary?: boolean }>`
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: ${props => props.primary ? '#1a1a1a' : '#f5f5f5'};
+  color: ${props => props.primary ? '#fff' : '#1a1a1a'};
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
 `;
 
 const PublishTitle = styled.h2`
@@ -691,248 +677,130 @@ export function Comunidade() {
             )}
           </BuscaWrapper>
 
-          <SectionTitle>#recomendados</SectionTitle>
-          <RecommendedGrid>
-            {cards.slice(0, 4).map((card, index) => {
-              const cardImages = [
-                "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=160&fit=crop",
-                "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=160&fit=crop",
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=160&fit=crop",
-                "https://images.unsplash.com/photo-1589149098258-3e9102cd63d3?w=400&h=160&fit=crop"
-              ];
-              
-              return (
-                <RecommendedCard key={index}>
-                  <CardBanner>
-                    <img
-                      src={card.image_url && card.image_url.length > 0 
-                        ? `http://localhost:3000${card.image_url[0]}` 
-                        : cardImages[index % cardImages.length]
-                      }
-                      alt="Card banner"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                      onError={(e) => {
-                        e.currentTarget.src = cardImages[index % cardImages.length];
-                      }}
-                    />
-                  </CardBanner>
-                  <CardContent>
-                    <CardTitle>
-                      {card.title.length > 40
-                        ? card.title.slice(0, 40) + "..."
-                        : card.title}
-                    </CardTitle>
-
-                    <CardMeta>
-                      <CardDate>
-                        {formatDate(card.createdAt)}
-                      </CardDate>
-                      <CardCategory>
-                        Escolar
-                      </CardCategory>
-                    </CardMeta>
-
-                    <CardStats>
-                      <StatItem>
-                        <span>👍</span>
-                        <span>{card.likes || 0}</span>
-                      </StatItem>
-                      <StatItem>
-                        <span>❤️</span>
-                        <span>{card.likes || 2}</span>
-                      </StatItem>
-                      <StatItem>
-                        <span>💬</span>
-                        <span>{card.comments?.length ?? 0}</span>
-                      </StatItem>
-                    </CardStats>
-                    
-                    <LikeButton isLiked={isCardLiked(card.id || card._id)} onClick={() => handleLike(card)}>
-                      {isCardLiked(card.id || card._id) ? (
-                        <>
-                          <span>❤️</span>
-                          Curtido
-                        </>
-                      ) : (
-                        <>
-                          <span>🤍</span>
-                          Curtir
-                        </>
-                      )}
-                    </LikeButton>
-                  </CardContent>
-                </RecommendedCard>
-              );
-            })}
-          </RecommendedGrid>
-
-          {cards.length > 4 && (
-            <VerMais
-              onClick={() =>
-                setVisibleCount((prev) =>
-                  prev < cards.length ? cards.length : 8
-                )
-              }
-            >
-              Ver mais
-            </VerMais>
-          )}
-
+          {/* Seção de Publicação */}
           {user && (
             <PublishSection>
-              <PublishTitle>Publique os seus cards mais fácil!</PublishTitle>
-              <PublishSubtitle>
-                Espalhe o seu método de estudar/trabalhar para ajudar mais pessoas com um só clique.
-              </PublishSubtitle>
+              <SectionHeader>
+                <SectionTitle>Publique seus cards</SectionTitle>
+                <SectionSubtitle>
+                  Compartilhe seu conhecimento com a comunidade
+                </SectionSubtitle>
+              </SectionHeader>
+              
+              <Select
+                value={selectedCardId}
+                onChange={(e) => setSelectedCardId(e.target.value)}
+              >
+                <option value="">Selecionar um card para publicar</option>
+                {meusCards
+                  .filter((card) => !card.is_published)
+                  .map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.title}
+                    </option>
+                  ))}
+              </Select>
 
-              <PublishCard>
-                <PublishCardTitle>Selecionar o card</PublishCardTitle>
-
-                <RadioGroup>
-                  <RadioOption>
-                    <RadioInput
-                      type="radio"
-                      name="category"
-                      value="escolar"
-                      checked={selectedCategory === "escolar"}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    />
-                    Escolar
-                  </RadioOption>
-                  <RadioOption>
-                    <RadioInput
-                      type="radio"
-                      name="category"
-                      value="profissional"
-                      checked={selectedCategory === "profissional"}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                    />
-                    Profissional
-                  </RadioOption>
-                </RadioGroup>
-
-                <Select
-                  value={selectedCardId}
-                  onChange={(e) => setSelectedCardId(e.target.value)}
-                >
-                  <option value="">Selecionar o card</option>
-                  {meusCards
-                    .filter((card) => !card.is_published)
-                    .map((card) => (
-                      <option key={card.id} value={card.id}>
-                        {card.title}
-                      </option>
-                    ))}
-                </Select>
-
-                <PublishButton
-                  onClick={() => {
-                    const selectedCard = meusCards.find(
-                      (card) => card._id === selectedCardId
-                    );
-
-                    if (selectedCard) {
-                      handlePublicar(selectedCard._id);
-                    } else {
-                      toast.error("Selecione um card válido.");
-                    }
-                  }}
-                  disabled={!selectedCardId}
-                >
-                  Publicar
-                </PublishButton>
-              </PublishCard>
+              <PublishButton
+                onClick={() => {
+                  const selectedCard = meusCards.find(
+                    (card) => card._id === selectedCardId
+                  );
+                  if (selectedCard) {
+                    handlePublicar(selectedCard._id);
+                  }
+                }}
+                disabled={!selectedCardId}
+              >
+                Publicar Card
+              </PublishButton>
             </PublishSection>
           )}
 
-          <ProfessionalSection>
-            <SectionTitle>#profissional</SectionTitle>
-            <ProfessionalGrid>
-              {cards.slice(0, 8).map((card, index) => {
-                const professionalImages = [
-                  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1589149098258-3e9102cd63d3?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=160&fit=crop",
-                  "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=400&h=160&fit=crop"
-                ];
-                
-                return (
-                  <ProfessionalCard key={index}>
-                    <ProfessionalBanner>
+          {/* Seção de Cards Mais Curtidos */}
+          <TopCardsSection>
+            <SectionHeader>
+              <SectionTitle>Mais Curtidos</SectionTitle>
+              <SectionSubtitle>
+                Os cards mais populares da comunidade
+              </SectionSubtitle>
+            </SectionHeader>
+            
+            <CardsGrid>
+              {cards
+                .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+                .slice(0, 6)
+                .map((card, index) => (
+                  <Card key={card.id || card._id}>
+                    <CardImage>
                       <img
-                        src={card.image_url && card.image_url.length > 0 
-                          ? `http://localhost:3000${card.image_url[0]}` 
-                          : professionalImages[index % professionalImages.length]
+                        src={card.image_url?.[0] ? 
+                          `http://localhost:3000${card.image_url[0]}` : 
+                          `https://source.unsplash.com/random/400x160?${index}`
                         }
-                        alt="Professional card banner"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.src = professionalImages[index % professionalImages.length];
-                        }}
+                        alt={card.title}
                       />
-                    </ProfessionalBanner>
-                    <ProfessionalContent>
-                      <ProfessionalTitle>
-                        {card.title.length > 40
-                          ? card.title.slice(0, 40) + "..."
-                          : card.title}
-                      </ProfessionalTitle>
-
-                      <ProfessionalMeta>
-                        <ProfessionalDate>
-                          {formatDate(card.createdAt)}
-                        </ProfessionalDate>
-                        <ProfessionalCategory>
-                          Profissional
-                        </ProfessionalCategory>
-                      </ProfessionalMeta>
-
+                    </CardImage>
+                    <CardContent>
+                      <CardTitle>{card.title}</CardTitle>
                       <CardStats>
-                        <StatItem>
-                          <span>👍</span>
-                          <span>{card.likes || 0}</span>
-                        </StatItem>
-                        <StatItem>
-                          <span>❤️</span>
-                          <span>{card.likes || 2}</span>
-                        </StatItem>
-                        <StatItem>
-                          <span>💬</span>
-                          <span>{card.comments?.length ?? 0}</span>
-                        </StatItem>
+                        <span>👍 {card.likes || 0}</span>
+                        <span>💬 {card.comments?.length || 0}</span>
                       </CardStats>
-                      
-                      <LikeButton isLiked={isCardLiked(card.id || card._id)} onClick={() => handleLike(card)}>
-                        {isCardLiked(card.id || card._id) ? (
-                          <>
-                            <span>❤️</span>
-                            Curtido
-                          </>
-                        ) : (
-                          <>
-                            <span>🤍</span>
-                            Curtir
-                          </>
-                        )}
-                      </LikeButton>
-                    </ProfessionalContent>
-                  </ProfessionalCard>
-                );
-              })}
-            </ProfessionalGrid>
-          </ProfessionalSection>
+                      <CardActions>
+                        <ActionButton 
+                          primary
+                          onClick={() => handleLike(card)}
+                        >
+                          {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
+                        </ActionButton>
+                      </CardActions>
+                    </CardContent>
+                  </Card>
+                ))}
+            </CardsGrid>
+          </TopCardsSection>
+
+          {/* Seção de Todos os Cards */}
+          <AllCardsSection>
+            <SectionHeader>
+              <SectionTitle>Todos os Cards</SectionTitle>
+              <SectionSubtitle>
+                Explore todos os cards compartilhados pela comunidade
+              </SectionSubtitle>
+            </SectionHeader>
+            
+            <CardsGrid>
+              {cards.map((card, index) => (
+                <Card key={card.id || card._id}>
+                  <CardImage>
+                    <img
+                      src={card.image_url?.[0] ? 
+                        `http://localhost:3000${card.image_url[0]}` : 
+                        `https://source.unsplash.com/random/400x160?${index}`
+                      }
+                      alt={card.title}
+                    />
+                  </CardImage>
+                  <CardContent>
+                    <CardTitle>{card.title}</CardTitle>
+                    <CardStats>
+                      <span>👍 {card.likes || 0}</span>
+                      <span>💬 {card.comments?.length || 0}</span>
+                    </CardStats>
+                    <CardActions>
+                      <ActionButton 
+                        primary
+                        onClick={() => handleLike(card)}
+                      >
+                        {isCardLiked(card.id || card._id) ? '❤️ Curtido' : '🤍 Curtir'}
+                      </ActionButton>
+                    </CardActions>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardsGrid>
+          </AllCardsSection>
         </ContentWrapper>
       </Container>
     </>
