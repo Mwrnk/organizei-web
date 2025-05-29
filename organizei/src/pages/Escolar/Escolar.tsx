@@ -3,6 +3,7 @@ import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 import { Lista } from "../../Types/Lista";
 import { CardData } from "../../Types/Card";
 import {
@@ -846,6 +847,10 @@ export function Escolar() {
       toast.error("Erro ao publicar card.");
     }
   };
+
+  if (isDataLoading) {
+    return <LoadingScreen isVisible={true} />;
+  }
 
   return (
     <>

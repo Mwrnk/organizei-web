@@ -26,6 +26,48 @@ const PerfilBox = styled.div`
   display: flex;
   align-items: center;
   margin-top: -50px;
+  background: transparent;
+  padding: 0 0 24px 0;
+  gap: 28px;
+`;
+
+const PerfilHeaderInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  margin-top: 32px;
+`;
+
+const PerfilName = styled.h2`
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
+  text-transform: none;
+  color: #111;
+`;
+
+const PerfilPontos = styled.div`
+  color: #222;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+`;
+
+const PerfilPlano = styled.div<{ plano?: string }>`
+  background: ${({ plano }) =>
+    plano === 'Gratuito' || plano === 'Free' ? '#007bff' : '#764ba2'};
+  color: white;
+  border-radius: 20px;
+  padding: 6px 22px;
+  font-weight: 500;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
 `;
 
 const Avatar = styled.div`
@@ -47,11 +89,6 @@ const Avatar = styled.div`
 
 const UserInfo = styled.div`
   margin-left: 20px;
-`;
-
-const UserName = styled.h2`
-  margin-top: 50px;
-  font-size: 24px;
 `;
 
 const InfoSection = styled.div`
@@ -138,6 +175,49 @@ const PontosBox = styled(InfoBox)`
   }
 `;
 
+const EstatisticasSection = styled.div`
+  margin-top: 32px;
+  background: #f7f7fb;
+  border-radius: 12px;
+  padding: 24px 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+`;
+
+const EstatisticasTitle = styled.h3`
+  font-size: 20px;
+  margin-bottom: 18px;
+  color: #333;
+`;
+
+const EstatisticasGrid = styled.div`
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+`;
+
+const EstatisticaBox = styled.div`
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  padding: 18px 28px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const EstatisticaValor = styled.div`
+  font-size: 28px;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 6px;
+`;
+
+const EstatisticaLabel = styled.div`
+  font-size: 15px;
+  color: #666;
+`;
+
 type Plano = {
   name: string;
   price: number;
@@ -148,6 +228,7 @@ export function Perfil() {
   const [planoAtual, setPlanoAtual] = useState<Plano | null>(null);
   const [image, setImage] = useState<string | null>(user?.profileImage || null);
   const [isDataLoading, setIsDataLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
 
   usePageLoading(isDataLoading || isLoading);
 
@@ -180,6 +261,19 @@ export function Perfil() {
       setImage(user.profileImage);
     }
   }, [user?.profileImage]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user?._id) return;
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user._id}/stats`);
+        setStats(res.data.data.stats);
+      } catch (err) {
+        setStats(null);
+      }
+    };
+    fetchStats();
+  }, [user?._id]);
 
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -219,7 +313,7 @@ export function Perfil() {
       <Container>
         <Banner />
         <PerfilBox>
-          <label htmlFor="upload-photo">
+          <label htmlFor="upload-photo" style={{ margin: 0 }}>
             <Avatar>
               {image ? (
                 <img
@@ -239,9 +333,18 @@ export function Perfil() {
             style={{ display: "none" }}
             onChange={handleImageChange}
           />
-          <UserInfo>
-            <UserName>{user.name}</UserName>
-          </UserInfo>
+          <PerfilHeaderInfo>
+            <PerfilName>{user.name}</PerfilName>
+            <PerfilPontos>
+              <span style={{ fontSize: '1.2em', marginRight: 4 }}>⚡</span>
+              +{(user.orgPoints || 0).toLocaleString()}pts
+            </PerfilPontos>
+            {planoAtual && (
+              <PerfilPlano plano={planoAtual.price === 0 ? 'Free' : planoAtual.name}>
+                {planoAtual.price === 0 ? 'Free' : planoAtual.name}
+              </PerfilPlano>
+            )}
+          </PerfilHeaderInfo>
         </PerfilBox>
 
         <InfoSection>
@@ -294,6 +397,24 @@ export function Perfil() {
 
           <BotaoSair onClick={logout}>Sair</BotaoSair>
         </InfoSection>
+
+        <EstatisticasSection>
+          <EstatisticasTitle>Estatísticas</EstatisticasTitle>
+          <EstatisticasGrid>
+            <EstatisticaBox>
+              <EstatisticaValor>{stats ? stats.totalLikes : '--'}</EstatisticaValor>
+              <EstatisticaLabel>Total de Curtidas Recebidas</EstatisticaLabel>
+            </EstatisticaBox>
+            <EstatisticaBox>
+              <EstatisticaValor>{stats ? stats.totalDownloads : '--'}</EstatisticaValor>
+              <EstatisticaLabel>Downloads dos Meus Cards</EstatisticaLabel>
+            </EstatisticaBox>
+            <EstatisticaBox>
+              <EstatisticaValor>{stats ? stats.orgPoints : (user.orgPoints || 0)}</EstatisticaValor>
+              <EstatisticaLabel>Meus Pontos</EstatisticaLabel>
+            </EstatisticaBox>
+          </EstatisticasGrid>
+        </EstatisticasSection>
       </Container>
     </>
   );

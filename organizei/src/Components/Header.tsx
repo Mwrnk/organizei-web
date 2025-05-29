@@ -12,7 +12,7 @@ import IconIa from "../../assets/bot.svg";
 
 export function Header() {
   const location = useLocation();
-  const { currentPlan, isLoading } = useAuth();
+  const { currentPlan, isLoading, user } = useAuth();
 
   if (isLoading) return null;
   const canUseAI = currentPlan === "premium" || currentPlan === "enterprise";
@@ -20,7 +20,7 @@ export function Header() {
   return (
     <HeaderContainer>
       <div className="logo">
-        <Link to="/perfil" style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to="/escolar" style={{ textDecoration: "none", color: "inherit" }}>
           Organiz.ei
         </Link>
       </div>
@@ -105,9 +105,41 @@ export function Header() {
           <li className={location.pathname === "/perfil" ? "active" : ""}>
             <Link
               to="/perfil"
-              style={{ textDecoration: "none", color: "inherit" }}
+              style={{ textDecoration: "none", color: "inherit", display: 'flex', alignItems: 'center' }}
             >
-              Perfil
+              {user?.profileImage ? (
+                <img
+                  src={user.profileImage}
+                  alt="Perfil"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: 'none',
+                    boxShadow: 'none',
+                    background: 'none',
+                    transition: 'border 0.2s',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: '#eee',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: '#888',
+                    fontSize: 16,
+                  }}
+                >
+                  {user?.name ? user.name[0].toUpperCase() : 'P'}
+                </div>
+              )}
             </Link>
           </li>
         </ul>
