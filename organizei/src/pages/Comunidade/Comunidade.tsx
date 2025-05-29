@@ -425,12 +425,72 @@ const CommentSection = styled.div`
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 500px);
+  min-height: 300px;
+  position: relative;
+`;
+
+const CommentHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  h4 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    span {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #fff;
+    }
+  }
+`;
+
+const CommentList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 16px;
+  flex: 1;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  mask-image: linear-gradient(to bottom, transparent, black 10px, black 90%, transparent);
 `;
 
 const CommentInput = styled.div`
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 8px;
+  position: sticky;
+  bottom: 0;
 
   textarea {
     flex: 1;
@@ -463,8 +523,9 @@ const CommentInput = styled.div`
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s ease;
+    min-width: 100px;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: #1565c0;
       transform: translateY(-1px);
     }
@@ -477,16 +538,15 @@ const CommentInput = styled.div`
   }
 `;
 
-const CommentList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
 const Comment = styled.div`
   background: #111;
   border-radius: 8px;
   padding: 16px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #191919;
+  }
 
   .header {
     display: flex;
@@ -523,6 +583,7 @@ const Comment = styled.div`
     font-size: 14px;
     line-height: 1.5;
     margin: 0;
+    word-break: break-word;
   }
 `;
 
@@ -1223,29 +1284,13 @@ export function Comunidade() {
 
               {/* Seção de Comentários */}
               <CommentSection>
-                <h4 style={{ marginTop: 0, marginBottom: 16 }}>#comentários</h4>
+                <CommentHeader>
+                  <h4>
+                    #comentários
+                    <span>{selectedCard.comments?.length || 0}</span>
+                  </h4>
+                </CommentHeader>
                 
-                {user ? (
-                  <CommentInput>
-                    <textarea
-                      placeholder="Adicione um comentário..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      maxLength={500}
-                    />
-                    <button
-                      onClick={handleAddComment}
-                      disabled={!newComment.trim() || isSubmittingComment}
-                    >
-                      {isSubmittingComment ? "..." : "Enviar"}
-                    </button>
-                  </CommentInput>
-                ) : (
-                  <p style={{ color: "#666", fontSize: "14px", textAlign: "center" }}>
-                    Faça login para comentar
-                  </p>
-                )}
-
                 <CommentList>
                   {selectedCard.comments?.length > 0 ? (
                     selectedCard.comments.map((comment: any) => (
@@ -1272,6 +1317,27 @@ export function Comunidade() {
                     </p>
                   )}
                 </CommentList>
+
+                {user ? (
+                  <CommentInput>
+                    <textarea
+                      placeholder="Adicione um comentário..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      maxLength={500}
+                    />
+                    <button
+                      onClick={handleAddComment}
+                      disabled={!newComment.trim() || isSubmittingComment}
+                    >
+                      {isSubmittingComment ? "Enviando..." : "Enviar"}
+                    </button>
+                  </CommentInput>
+                ) : (
+                  <p style={{ color: "#666", fontSize: "14px", textAlign: "center" }}>
+                    Faça login para comentar
+                  </p>
+                )}
               </CommentSection>
             </Sidebar>
 
