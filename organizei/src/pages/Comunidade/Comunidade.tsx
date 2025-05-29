@@ -219,24 +219,7 @@ const CardCreator = styled.p`
   }
 `;
 
-const CardStats = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: #666;
-`;
 
-const CardCategory = styled.span`
-  font-size: 12px;
-  padding: 4px 12px;
-  border-radius: 12px;
-  background: #f0f0f0;
-  color: #666;
-  margin-bottom: 12px;
-  display: inline-block;
-`;
 
 // const TopCardsSection = styled.div`
 //   background: white;
@@ -1160,7 +1143,6 @@ export function Comunidade() {
                       <Icon 
                         src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
                         alt="Curtir"
-                        isLiked={isCardLiked(card.id || card._id)}
                         onClick={(e: React.MouseEvent) => {
                           e.stopPropagation();
                           handleLike(card);
@@ -1215,7 +1197,6 @@ export function Comunidade() {
                         <Icon 
                           src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
                           alt="Curtir"
-                          isLiked={isCardLiked(card.id || card._id)}
                           onClick={(e: React.MouseEvent) => {
                             e.stopPropagation();
                             handleLike(card);
@@ -1299,7 +1280,6 @@ export function Comunidade() {
                     <Icon 
                       src={isCardLiked(selectedCard.id || selectedCard._id) ? coracaoCurtidoSvg : curtidaSvg}
                       alt="Curtir"
-                      isLiked={isCardLiked(selectedCard.id || selectedCard._id)}
                       inModal
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
@@ -1312,7 +1292,6 @@ export function Comunidade() {
                     <Icon 
                       src={chatSvg}
                       alt="Comentários"
-                      isChat
                       inModal
                     />
                     <span>{selectedCard.comments?.length || 0} comentários</span>
