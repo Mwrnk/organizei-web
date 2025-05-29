@@ -551,10 +551,10 @@ export function Comunidade() {
   
   usePageLoading(isDataLoading);
 
-  // Mover a função fetchAllCards para fora do useEffect
   const fetchAllCards = async () => {
     setIsDataLoading(true);
     try {
+      const token = localStorage.getItem("authenticacao");
       const res = await axios.get("http://localhost:3000/comunidade/cards");
       const cardsData = res.data?.data || [];
       
@@ -562,16 +562,25 @@ export function Comunidade() {
         cardsData.map(async (card: any) => {
           try {
             const cardId = card.id || card._id;
-            const token = localStorage.getItem("authenticacao");
-            const cardDetailRes = await axios.get(
-              `http://localhost:3000/cards/${cardId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+
+            // Buscar detalhes do card incluindo comentários
+            const [cardDetailRes, commentsRes] = await Promise.all([
+              axios.get(
+                `http://localhost:3000/cards/${cardId}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              ),
+              axios.get(
+                `http://localhost:3000/comments/${cardId}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              )
+            ]);
+
             const cardDetail = cardDetailRes.data.data;
+            const comments = commentsRes.data.data || [];
             
             return {
               ...card,
@@ -584,7 +593,7 @@ export function Comunidade() {
               updatedAt: cardDetail.updatedAt || card.updatedAt || new Date().toISOString(),
               likes: cardDetail.likes || card.likes || 0,
               downloads: cardDetail.downloads || card.downloads || 0,
-              comments: cardDetail.comments || card.comments || [],
+              comments: comments,
               is_published: cardDetail.is_published !== undefined ? cardDetail.is_published : card.is_published
             };
           } catch (err) {
@@ -595,7 +604,8 @@ export function Comunidade() {
               _id: card.id || card._id,
               createdAt: card.createdAt || new Date().toISOString(),
               updatedAt: card.updatedAt || new Date().toISOString(),
-              likes: card.likes || 0
+              likes: card.likes || 0,
+              comments: []
             };
           }
         })
@@ -806,19 +816,27 @@ export function Comunidade() {
 
   const handleCardClick = async (card: any) => {
     try {
-      // Buscar detalhes completos do card
       const token = localStorage.getItem("authenticacao");
       const cardId = card.id || card._id;
       
-      const cardDetailRes = await axios.get(
-        `http://localhost:3000/cards/${cardId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Buscar detalhes do card e comentários em paralelo
+      const [cardDetailRes, commentsRes] = await Promise.all([
+        axios.get(
+          `http://localhost:3000/cards/${cardId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        ),
+        axios.get(
+          `http://localhost:3000/comments/${cardId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        )
+      ]);
+
       const cardDetail = cardDetailRes.data.data;
+      const comments = commentsRes.data.data || [];
 
       // Buscar detalhes do usuário que criou o card
       const userDetailRes = await axios.get(
@@ -826,11 +844,44 @@ export function Comunidade() {
       );
       const userDetail = userDetailRes.data.data;
 
+      // Buscar detalhes dos usuários que fizeram comentários
+      const commentsWithUserDetails = await Promise.all(
+        comments.map(async (comment: any) => {
+          try {
+            // Garantir que estamos usando o ID correto do usuário
+            const commentUserId = comment.userId?._id || comment.userId;
+            if (!commentUserId) {
+              throw new Error("ID do usuário não encontrado no comentário");
+            }
+
+            const commentUserRes = await axios.get(
+              `http://localhost:3000/users/${commentUserId}`
+            );
+            return {
+              ...comment,
+              user: commentUserRes.data.data
+            };
+          } catch (err) {
+            console.error("Erro ao buscar detalhes do usuário do comentário:", err);
+            return {
+              ...comment,
+              user: {
+                name: "Usuário não encontrado",
+                email: "",
+                profileImage: null
+              }
+            };
+          }
+        })
+      );
+
       setSelectedCard({
         ...cardDetail,
         id: cardId,
         _id: cardId,
-        user: userDetail
+        user: userDetail,
+        comments: commentsWithUserDetails,
+        likes: cardDetail.likes || card.likes || 0
       });
       setShowDetailsModal(true);
     } catch (err) {
@@ -849,17 +900,11 @@ export function Comunidade() {
         throw new Error("Token de autenticação não encontrado");
       }
 
-      // Garantir que estamos usando o ID correto
       const cardId = selectedCard._id || selectedCard.id;
 
       if (!cardId) {
         throw new Error("ID do card não encontrado");
       }
-
-      console.log('Dados sendo enviados:', {
-        description: newComment.trim(),
-        cardId,
-      });
 
       const response = await axios.post(
         `http://localhost:3000/comments`,
@@ -874,16 +919,15 @@ export function Comunidade() {
         }
       );
 
-      console.log('Resposta do servidor:', response.data);
-
       // Atualizar o card com o novo comentário
       const updatedCard = {
         ...selectedCard,
         comments: [...(selectedCard.comments || []), {
           _id: response.data.data._id,
           description: response.data.data.description,
-          userId: response.data.data.userId,
+          userId: user._id,
           user: {
+            _id: user._id,
             name: user.name,
             email: user.email,
             profileImage: user.profileImage
@@ -891,8 +935,6 @@ export function Comunidade() {
           createdAt: response.data.data.createdAt
         }]
       };
-
-      console.log('Card atualizado:', updatedCard);
 
       setSelectedCard(updatedCard);
       setNewComment("");
@@ -1207,7 +1249,7 @@ export function Comunidade() {
                 <CommentList>
                   {selectedCard.comments?.length > 0 ? (
                     selectedCard.comments.map((comment: any) => (
-                      <Comment key={comment.id || comment._id}>
+                      <Comment key={comment._id}>
                         <div className="header">
                           <img
                             src={comment.user?.profileImage || DEFAULT_PROFILE_IMAGE}
