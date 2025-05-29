@@ -734,9 +734,31 @@ export function Escolar() {
     }
 
     try {
-      const response = await axios.patch(`http://localhost:3000/lists/${listToEdit.id}`, {
-        name: newListName.trim()
+      const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        toast.error("Sessão expirada. Por favor, faça login novamente.");
+        return;
+      }
+
+      console.log("Token:", token);
+      console.log("Dados da requisição:", {
+        listId: listToEdit.id,
+        newName: newListName.trim()
       });
+
+      const response = await axios.put(
+        `http://localhost:3000/lists/${listToEdit.id}`,
+        {
+          name: newListName.trim()
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Resposta do servidor:", response.data);
 
       // Atualizar a lista no estado
       setLists((prev) => 
@@ -751,9 +773,14 @@ export function Escolar() {
       setShowEditListModal(false);
       setListToEdit(null);
       setNewListName("");
-    } catch (err) {
-      console.error("Erro ao editar lista", err);
-      toast.error("Erro ao editar lista");
+    } catch (err: any) {
+      console.error("Erro ao editar lista:", {
+        error: err,
+        response: err.response?.data,
+        status: err.response?.status,
+        headers: err.response?.headers
+      });
+      toast.error(err.response?.data?.message || "Erro ao editar lista");
     }
   };
 
