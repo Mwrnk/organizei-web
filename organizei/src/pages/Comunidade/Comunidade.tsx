@@ -808,8 +808,10 @@ export function Comunidade() {
     try {
       // Buscar detalhes completos do card
       const token = localStorage.getItem("authenticacao");
+      const cardId = card.id || card._id;
+      
       const cardDetailRes = await axios.get(
-        `http://localhost:3000/cards/${card.id}`,
+        `http://localhost:3000/cards/${cardId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -826,6 +828,8 @@ export function Comunidade() {
 
       setSelectedCard({
         ...cardDetail,
+        id: cardId,
+        _id: cardId,
         user: userDetail
       });
       setShowDetailsModal(true);
@@ -845,17 +849,23 @@ export function Comunidade() {
         throw new Error("Token de autenticação não encontrado");
       }
 
+      // Garantir que estamos usando o ID correto
+      const cardId = selectedCard._id || selectedCard.id;
+
+      if (!cardId) {
+        throw new Error("ID do card não encontrado");
+      }
+
       console.log('Dados sendo enviados:', {
         description: newComment.trim(),
-        cardId: selectedCard.id,
-        token: token.substring(0, 20) + '...' // Mostra só parte do token por segurança
+        cardId,
       });
 
       const response = await axios.post(
         `http://localhost:3000/comments`,
-        { 
+        {
           description: newComment.trim(),
-          cardId: selectedCard.id,
+          cardId,
         },
         {
           headers: {
@@ -870,14 +880,15 @@ export function Comunidade() {
       const updatedCard = {
         ...selectedCard,
         comments: [...(selectedCard.comments || []), {
-          id: response.data.data._id,
-          description: newComment,
-          userId: user._id,
+          _id: response.data.data._id,
+          description: response.data.data.description,
+          userId: response.data.data.userId,
           user: {
             name: user.name,
+            email: user.email,
             profileImage: user.profileImage
           },
-          createdAt: new Date().toISOString()
+          createdAt: response.data.data.createdAt
         }]
       };
 
@@ -887,36 +898,23 @@ export function Comunidade() {
       setNewComment("");
       
       // Atualizar a lista de cards também
-      setAllCards(prev => prev.map(card => 
-        card.id === selectedCard.id ? updatedCard : card
+      setAllCards(prev => prev.map(c => 
+        (c.id === cardId || c._id === cardId) ? updatedCard : c
       ));
 
       toast.success("Comentário adicionado com sucesso!");
     } catch (error: any) {
-      console.log('Detalhes completos do erro:', {
-        message: error.message,
-        code: error.code,
-        response: error.response,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          headers: error.config?.headers,
-          data: error.config?.data
-        }
-      });
+      console.error("Erro completo:", error);
       
-      if (error.code === 'ERR_NETWORK' || error.code === 'ERR_CONNECTION_REFUSED') {
-        console.log('Erro de conexão - Verifique se o servidor está rodando em http://localhost:3000');
-        toast.error("Erro de conexão. Verifique se o servidor está rodando e tente novamente.");
-      } else if (error.response?.status === 401) {
-        console.log('Erro de autenticação - Token inválido ou expirado');
-        toast.error("Sessão expirada. Por favor, faça login novamente.");
-      } else if (error.response?.status === 404) {
-        console.log('Card não encontrado - ID:', selectedCard.id);
-        toast.error("Card não encontrado.");
+      if (error.response) {
+        console.error("Erro do servidor:", error.response.data);
+        toast.error(error.response.data.message || "Erro ao adicionar comentário");
+      } else if (error.request) {
+        console.error("Sem resposta do servidor");
+        toast.error("Servidor não respondeu. Tente novamente.");
       } else {
-        console.log('Erro desconhecido:', error.response?.data || error.message);
-        toast.error(error.response?.data?.message || "Erro ao adicionar comentário. Tente novamente.");
+        console.error("Erro na requisição:", error.message);
+        toast.error("Erro ao fazer requisição. Tente novamente.");
       }
     } finally {
       setIsSubmittingComment(false);
