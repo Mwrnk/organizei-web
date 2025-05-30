@@ -30,7 +30,8 @@ const CarouselContainer = styled.div`
   height: 400px;
   overflow: hidden;
   backdrop-filter: blur(10px);
-  width: 100%;
+  width: 90%;
+  margin: 40px auto 0;
 `;
 
 interface ProgressContainerProps {
@@ -42,7 +43,7 @@ interface ProgressContainerProps {
 const ProgressContainer = styled.div<ProgressContainerProps>`
   display: flex;
   height: 100%;
-  width: 500%;  // 100% * number of cards
+  width: 500%;
   transition: ${props => props.$isDragging ? 'none' : 'transform 0.5s ease'};
   transform: translateX(calc(${props => {
     const baseTransform = (-20 * props.$currentIndex);
@@ -124,7 +125,6 @@ const LightningIcon = styled.div<{ locked?: boolean }>`
   justify-content: center;
   font-size: 40px;
   box-shadow: ${props => props.locked ? '0 8px 24px rgba(0,0,0,0.05)' : '0 8px 24px rgba(0,0,0,0.1)'};
-  opacity: ${props => props.locked ? 0.7 : 1};
 `;
 
 const LockedBadge = styled.div`
@@ -142,7 +142,7 @@ const LockedBadge = styled.div`
 const NavigationButton = styled.button<{ direction: 'left' | 'right' }>`
   position: absolute;
   top: 50%;
-  ${props => props.direction === 'left' ? 'left: 20px;' : 'right: 20px;'}
+  ${props => props.direction === 'left' ? 'left: 5px;' : 'right: 5px;'}
   transform: translateY(-50%);
   background: rgba(255, 255, 255, 0.1);
   border: none;
