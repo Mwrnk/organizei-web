@@ -73,7 +73,7 @@ import { PontosView } from '../../Components/PontosView/PontosView';
 import nuvemBaixar from "../../../assets/nuvemBaixar.svg";
 import baixarBranco from "../../../assets/baixarBranco.svg";
 import coracaocurtido from "../../../assets/coracaocurtido.svg";
-import styled from "styled-components";
+
 
 interface UserStats {
   publishedCards: number;
@@ -82,30 +82,6 @@ interface UserStats {
   totalLikes: number;
 }
 
-const HeaderInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const PointsDisplay = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 16px;
-  border-radius: 12px;
-  font-weight: 500;
-  color: #007AFF;
-  font-size: 16px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  
-  span {
-    font-size: 1.2em;
-    margin-right: 4px;
-  }
-`;
 
 export function Escolar() {
   const { user } = useAuth();
@@ -912,6 +888,26 @@ export function Escolar() {
       return;
     }
 
+    // Verifica se o card tem PDF
+    if (!cardSelecionado.pdfs || cardSelecionado.pdfs.length === 0) {
+      toast.error("⚠️ Não é possível publicar cards sem PDF. Adicione um PDF antes de publicar!", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        style: {
+          background: "#ff4757",
+          color: "white",
+          borderRadius: "10px",
+          boxShadow: "0 4px 12px rgba(255, 71, 87, 0.2)",
+        },
+      });
+      return;
+    }
+
     try {
       const token = localStorage.getItem("authenticacao");
       const res = await axios.post(
@@ -925,7 +921,7 @@ export function Escolar() {
       );
 
       console.log("Card publicado com sucesso:", res.data.data);
-      toast.success("Card publicado na comunidade com sucesso!");
+      toast.success("✨ Card publicado na comunidade com sucesso!");
 
       // Recarregar os dados da lista
       try {
