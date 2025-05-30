@@ -1,6 +1,6 @@
 import { Header } from "../../Components/Header";
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContexts";
@@ -10,7 +10,6 @@ import { Usuario } from "../../Types/User";
 import curtidaSvg from "../../../assets/curtida.svg";
 import coracaoCurtidoSvg from "../../../assets/coracaocurtido.svg";
 import chatSvg from "../../../assets/chat.svg";
-import { LoadingScreen } from "../../Components/LoadingScreen";
 
 const Container = styled.div`
   background-color: transparent;
@@ -52,6 +51,12 @@ const BuscaWrapper = styled.div`
   border-radius: 30px;
   padding: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:focus-within {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
 `;
 
 const InputBusca = styled.input`
@@ -65,6 +70,11 @@ const InputBusca = styled.input`
   
   &::placeholder {
     color: #999;
+    transition: color 0.2s ease;
+  }
+
+  &:focus::placeholder {
+    color: #666;
   }
 `;
 
@@ -94,25 +104,47 @@ const ListaResultados = styled.ul`
   right: 0;
   background: white;
   border: 1px solid #e0e0e0;
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
   list-style: none;
   padding: 8px 0;
   margin: 0;
   border-radius: 12px;
-  z-index: 10;
+  z-index: 100;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 `;
 
 const ItemResultado = styled.li`
   padding: 12px 16px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
-  font-size: 14px;
-  color: #333;
+  transition: all 0.2s ease;
   
   &:hover {
     background-color: #f8f9fa;
+    transform: translateX(5px);
+  }
+
+  &:active {
+    background-color: #f0f0f0;
+    transform: translateX(2px);
   }
 `;
 
@@ -600,7 +632,7 @@ export function Comunidade() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  
 
   const { user } = useAuth();
   const navigate = useNavigate();
