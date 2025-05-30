@@ -624,14 +624,14 @@ export const PageWrapper = styled.div`
 `;
 
 export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
-  width: ${props => props.isOpen ? '180px' : '64px'};
+  width: ${props => props.isOpen ? '130px' : '64px'};
   background: transparent;
   box-shadow: none;
   transition: width 0.3s ease;
-  padding: 10px 8px;
+  padding: 10px 2px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   height: calc(100vh - 120px);
   position: fixed;
   left: 24px;
@@ -645,11 +645,11 @@ export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
 export const SidebarToggle = styled.button<{ isOpen: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: ${props => props.isOpen ? '10px 12px' : '10px'};
+  padding: ${props => props.isOpen ? '10px 6px' : '10px'};
   color: #666;
   width: 100%;
   transition: all 0.3s ease;
@@ -666,7 +666,7 @@ export const SidebarToggle = styled.button<{ isOpen: boolean }>`
   }
 
   span {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
   }
 
@@ -682,8 +682,8 @@ export const SidebarToggle = styled.button<{ isOpen: boolean }>`
 export const SidebarItem = styled.div<{ isOpen: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: ${props => props.isOpen ? '10px 12px' : '10px'};
+  gap: 6px;
+  padding: ${props => props.isOpen ? '10px 6px' : '10px'};
   cursor: pointer;
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -704,7 +704,7 @@ export const SidebarItem = styled.div<{ isOpen: boolean }>`
   }
 
   .text {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
     opacity: ${props => props.isOpen ? 1 : 0};
@@ -734,7 +734,59 @@ export const MainContent = styled.div<{ isOpen: boolean }>`
   flex: 1;
   padding: 0 24px 24px 24px;
   background: transparent;
-  margin-left: ${props => props.isOpen ? '204px' : '88px'};
+  margin-left: ${props => props.isOpen ? '154px' : '88px'};
   transition: margin-left 0.3s ease;
   margin-top: 10px;
+`;
+
+export const DashboardStats = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+`;
+
+export const StatCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+export const StatIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #007AFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+`;
+
+export const StatValue = styled.div`
+  font-size: 36px;
+  font-weight: 700;
+  color: #333;
+`;
+
+export const StatLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+  text-align: center;
 `;

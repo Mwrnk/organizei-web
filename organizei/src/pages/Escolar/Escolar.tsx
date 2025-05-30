@@ -47,6 +47,11 @@ import {
   SidebarToggle,
   SidebarItem,
   MainContent,
+  DashboardStats,
+  StatCard,
+  StatValue,
+  StatLabel,
+  StatIcon,
 } from "../../Style/Escolar";
 
 import {
@@ -63,7 +68,44 @@ import setaDireita from "../../../assets/setaDireita.svg";
 import setaEsquerda from "../../../assets/setaEsquerda.svg";
 import pontosIcon from "../../../assets/pontos.svg";
 import dashboardIcon from "../../../assets/dashboard.svg";
+import cardsIcon from "../../../assets/cards.svg";
 import { PontosView } from '../../Components/PontosView/PontosView';
+import nuvemBaixar from "../../../assets/nuvemBaixar.svg";
+import baixarBranco from "../../../assets/baixarBranco.svg";
+import coracaocurtido from "../../../assets/coracaocurtido.svg";
+import styled from "styled-components";
+
+interface UserStats {
+  publishedCards: number;
+  downloadedCards: number;
+  totalDownloads: number;
+  totalLikes: number;
+}
+
+const HeaderInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const PointsDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+  color: #007AFF;
+  font-size: 16px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  span {
+    font-size: 1.2em;
+    margin-right: 4px;
+  }
+`;
 
 export function Escolar() {
   const { user } = useAuth();
@@ -71,7 +113,7 @@ export function Escolar() {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   usePageLoading(isLoading);
-  const [currentView, setCurrentView] = useState('lists');
+  const [currentView, setCurrentView] = useState('cards');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Função auxiliar para formatar data
@@ -137,6 +179,81 @@ export function Escolar() {
   const [showEditListModal, setShowEditListModal] = useState(false);
   const [listToEdit, setListToEdit] = useState<Lista | null>(null);
   const [newListName, setNewListName] = useState("");
+
+  const [userStats, setUserStats] = useState<UserStats>({
+    publishedCards: 0,
+    downloadedCards: 0,
+    totalDownloads: 0,
+    totalLikes: 0
+  });
+
+  console.log("Initial userStats:", userStats);
+
+  const fetchUserStats = async () => {
+    console.log("=== fetchUserStats started ===");
+    console.log("Current userId:", userId);
+    
+    if (!userId) {
+      console.log("❌ fetchUserStats: No userId available");
+      return;
+    }
+    
+    const token = localStorage.getItem("authenticacao");
+    console.log("Auth token available:", !!token);
+    
+    try {
+      // Buscar todos os cards do usuário
+      console.log("🔍 Fetching user cards...");
+      const cardsResponse = await axios.get(
+        `http://localhost:3000/cards/user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const userCards = cardsResponse.data.data;
+      console.log("📊 User cards:", userCards);
+
+      // Calcular estatísticas
+      const stats = {
+        publishedCards: userCards.filter((card: any) => card.is_published).length,
+        downloadedCards: userCards.filter((card: any) => card.downloads?.length > 0).length,
+        totalDownloads: userCards.reduce((total: number, card: any) => total + (card.downloads?.length || 0), 0),
+        totalLikes: userCards.reduce((total: number, card: any) => total + (card.likes?.length || 0), 0)
+      };
+
+      console.log("📈 Calculated stats:", stats);
+      setUserStats(stats);
+
+    } catch (error: any) {
+      console.error("❌ Error fetching stats:", error);
+      console.log("Error response:", error.response?.data);
+      console.log("Error status:", error.response?.status);
+      toast.error("Não foi possível carregar as estatísticas");
+      
+      // Set default values in case of error
+      setUserStats({
+        publishedCards: 0,
+        downloadedCards: 0,
+        totalDownloads: 0,
+        totalLikes: 0
+      });
+    }
+    console.log("=== fetchUserStats finished ===");
+  };
+
+  useEffect(() => {
+    console.log("🔄 View changed effect triggered");
+    console.log("Current view:", currentView);
+    console.log("Current userId:", userId);
+    
+    if (currentView === 'dashboard') {
+      console.log("📊 Dashboard view detected, fetching stats...");
+      fetchUserStats();
+    }
+  }, [currentView, userId]);
 
   useEffect(() => {
     const fetchListsAndCards = async () => {
@@ -864,6 +981,11 @@ export function Escolar() {
     }
   };
 
+  // Adicione este useEffect para logar as mudanças no userStats
+  useEffect(() => {
+    console.log("🔄 userStats updated:", userStats);
+  }, [userStats]);
+
   if (isLoading) {
     return <LoadingScreen isVisible={true} />;
   }
@@ -875,15 +997,35 @@ export function Escolar() {
         <SidebarWrapper isOpen={isSidebarOpen}>
           <SidebarToggle 
             isOpen={isSidebarOpen} 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsSidebarOpen(!isSidebarOpen);
+            }}
           >
             <img 
               src={isSidebarOpen ? setaEsquerda : setaDireita} 
               alt="Toggle menu"
               style={{ width: '24px', height: '24px' }}
             />
-            {isSidebarOpen && <span>Fechar menu</span>}
+            {isSidebarOpen && <span>Fechar</span>}
           </SidebarToggle>
+
+          <SidebarItem 
+            isOpen={isSidebarOpen}
+            className={currentView === 'cards' ? "active" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('cards');
+            }}
+          >
+            <img 
+              src={cardsIcon} 
+              alt="Cards"
+              className="icon"
+              style={{ width: '20px', height: '20px' }}
+            />
+            {isSidebarOpen && <span className="text">Cards</span>}
+          </SidebarItem>
 
           <SidebarItem 
             isOpen={isSidebarOpen}
@@ -904,10 +1046,10 @@ export function Escolar() {
 
           <SidebarItem 
             isOpen={isSidebarOpen}
-            className={currentView === 'lists' ? "active" : ""}
+            className={currentView === 'dashboard' ? "active" : ""}
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('lists');
+              setCurrentView('dashboard');
             }}
           >
             <img 
@@ -923,7 +1065,7 @@ export function Escolar() {
         <MainContent isOpen={isSidebarOpen}>
           {currentView === 'points' ? (
             <PontosView />
-          ) : (
+          ) : currentView === 'cards' ? (
             <Container>
               {lists.length === 0 ? (
                 <PrimeirosPassosContainer>
@@ -1201,7 +1343,50 @@ export function Escolar() {
                 </>
               )}
             </Container>
-          )}
+          ) : currentView === 'dashboard' ? (
+            <Container>
+              <HeaderContainer>
+                <div>
+                  <Subtitle>#dashboard</Subtitle>
+                  <Title>Visão geral do seu progresso</Title>
+                </div>
+              </HeaderContainer>
+
+              <DashboardStats>
+                <StatCard>
+                  <StatIcon>
+                    <img src={comunidadeIcon} alt="Cards publicados" />
+                  </StatIcon>
+                  <StatValue>{userStats.publishedCards}</StatValue>
+                  <StatLabel>Cards Publicados</StatLabel>
+                </StatCard>
+
+                <StatCard>
+                  <StatIcon>
+                    <img src={nuvemBaixar} alt="Cards baixados" />
+                  </StatIcon>
+                  <StatValue>{userStats.downloadedCards}</StatValue>
+                  <StatLabel>Cards Baixados</StatLabel>
+                </StatCard>
+
+                <StatCard>
+                  <StatIcon>
+                    <img src={baixarBranco} alt="Total de downloads" />
+                  </StatIcon>
+                  <StatValue>{userStats.totalDownloads}</StatValue>
+                  <StatLabel>Downloads Recebidos</StatLabel>
+                </StatCard>
+
+                <StatCard>
+                  <StatIcon>
+                    <img src={coracaocurtido} alt="Total de likes" />
+                  </StatIcon>
+                  <StatValue>{userStats.totalLikes}</StatValue>
+                  <StatLabel>Likes Recebidos</StatLabel>
+                </StatCard>
+              </DashboardStats>
+            </Container>
+          ) : null}
 
           {cardSelecionado && (
             <ModalOverlay>
