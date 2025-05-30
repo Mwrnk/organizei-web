@@ -1446,7 +1446,8 @@ export function Games() {
     });
   };
 
-  const resetCreationFlow = () => {
+  const resetPartialCreationFlow = () => {
+    // Reset all fields to start a new flashcard from the beginning
     setCreationStep(0);
     setSelectedCardId("");
     setSelectedCardTitle("");
@@ -1538,9 +1539,9 @@ export function Games() {
       };
 
       setCreatedFlashcard(newFlashcard);
-      setCreationStep(5);
       loadFlashcards();
-      showFeedback("Flashcard criado com sucesso!", "success");
+      showFeedback("Flashcard criado com sucesso! Você pode criar outro flashcard.", "success");
+      resetPartialCreationFlow();
     } catch (error: unknown) {
       console.error("Erro ao criar flashcard manualmente:", error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -1610,9 +1611,9 @@ export function Games() {
       };
 
       setCreatedFlashcard(newFlashcard);
-      setCreationStep(5);
       loadFlashcards();
-      showFeedback("Flashcard criado com sucesso usando IA!", "success");
+      showFeedback("Flashcard criado com sucesso usando IA! Você pode criar outro flashcard.", "success");
+      resetPartialCreationFlow();
     } catch (error: unknown) {
       console.error("Erro ao criar flashcard com IA:", error);
       if (error && typeof error === 'object' && 'response' in error) {
@@ -2410,7 +2411,7 @@ export function Games() {
           <BackButton onClick={() => {
             setShowGameSelection(true);
             setSelectedGame(null);
-            resetCreationFlow();
+            resetPartialCreationFlow();
           }}>
             ← Voltar para seleção de jogos
           </BackButton>
