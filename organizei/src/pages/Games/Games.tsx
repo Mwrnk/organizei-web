@@ -3,7 +3,7 @@ import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import { LoadingScreen } from "../../Components/LoadingScreen";
 
 // Tipos locais
@@ -16,12 +16,23 @@ type Flashcard = {
   _id: string;
   front: string;
   back: string;
-  tags: Tag[] | string[];
+  tags: Tag[];
 };
 
 type CardType = {
   _id: string;
   title: string;
+};
+
+type QuizQuestion = {
+  question: string;
+  options: string[];
+};
+
+type QuizSession = {
+  sessionId: string;
+  question: QuizQuestion;
+  cardTitle: string;
 };
 
 // Styled Components
@@ -30,8 +41,6 @@ const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
 `;
-
-
 
 const FlashcardContainer = styled.div`
   perspective: 1000px;
@@ -129,13 +138,53 @@ const FlipInstruction = styled.p`
   font-style: italic;
 `;
 
+// Novos Styled Components para seleção de tipo de criação
+const CreationTypeContainer = styled.div`
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+`;
 
+const CreationTypeButton = styled.button<{ variant: 'ai' | 'manual' }>`
+  flex: 1;
+  padding: 30px;
+  border-radius: 15px;
+  border: 2px solid ${({ variant }) => variant === 'ai' ? '#667eea' : '#4facfe'};
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    background: ${({ variant }) => 
+      variant === 'ai' 
+        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+        : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'};
+    color: white;
+  }
+`;
 
+const CreationTypeIcon = styled.div`
+  font-size: 40px;
+`;
 
+const CreationTypeTitle = styled.h3`
+  font-size: 20px;
+  margin: 0;
+`;
 
+const CreationTypeDescription = styled.p`
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  text-align: center;
+`;
 
-// Styled Components para o fluxo de criação
 const CreationFlowContainer = styled.div`
   display: flex;
   min-height: 70vh;
@@ -439,7 +488,6 @@ const CreateFirstCardButton = styled(StepButton)`
   margin: 0 auto;
 `;
 
-// Styled Components para Tags
 const TagsContainer = styled.div`
   margin-bottom: 20px;
 `;
@@ -470,10 +518,25 @@ const TagItem = styled.div<{ selected: boolean }>`
   transition: all 0.3s ease;
   font-size: 14px;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   &:hover {
     border-color: #667eea;
     background: ${({ selected }) => (selected ? "#5a67d8" : "#f7fafc")};
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &::before {
+    content: "${({ selected }) => (selected ? '✓' : '')}";
+    font-size: 12px;
+    opacity: ${({ selected }) => (selected ? 1 : 0)};
+    transition: opacity 0.3s ease;
   }
 `;
 
@@ -615,7 +678,6 @@ const SelectedTagsCount = styled.span`
   font-weight: 600;
 `;
 
-// Styled Components para a seção de todos os flashcards
 const AllFlashcardsSection = styled.div`
   margin-top: 40px;
 `;
@@ -827,7 +889,6 @@ const CreateFirstFlashcardButton = styled(StepButton)`
   margin: 0 auto;
 `;
 
-// Styled Components para a tela de seleção de jogos
 const GameSelectionContainer = styled.div`
   min-height: calc(100vh - 80px);
   display: flex;
@@ -953,14 +1014,12 @@ const LightningIcon = styled.span`
   }
 `;
 
-// Styled Components para área de seleção de cards com scroll
 const CardsSelectionArea = styled.div`
   max-height: 300px;
   overflow-y: auto;
   padding-right: 10px;
   margin-bottom: 20px;
 
-  /* Estilização da barra de rolagem */
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -986,36 +1045,218 @@ const CardsContainer = styled.div`
   gap: 12px;
 `;
 
-// FlashcardView
-// const FlashcardView = ({ flashcard }: { flashcard: Flashcard }) => {
-//   const [showBack, setShowBack] = useState(false);
+// Mensagem visual de feedback
+const FeedbackMessage = styled.div<{ type: 'success' | 'error' | 'warning' }>`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideInRight 0.3s ease-out;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
-//   return (
-//     <Card>
-//       <FlashText>
-//         <strong>Frente:</strong> {flashcard.front}
-//       </FlashText>
-//       {showBack && (
-//         <FlashText>
-//           <strong>Verso:</strong> {flashcard.back}
-//         </FlashText>
-//       )}
-//       {!showBack && (
-//         <GradeButton onClick={() => setShowBack(true)}>
-//           Mostrar Resposta
-//         </GradeButton>
-//       )}
-//       {flashcard.tags?.length > 0 && (
-//         <p>
-//           <strong>Tags:</strong>{" "}
-//           {flashcard.tags
-//             .map((tag) => (typeof tag === "object" ? tag.name : tag))
-//             .join(", ")}
-//         </p>
-//       )}
-//     </Card>
-//   );
-// };
+  background: ${({ type }) => {
+    switch (type) {
+      case 'success':
+        return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+      case 'error':
+        return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+      case 'warning':
+        return 'linear-gradient(135deg, #ed8936 0%, #dd6b20 100%)';
+    }
+  }};
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`;
+
+// Novos Styled Components para o Jogo do Milhão
+const QuizContainer = styled.div`
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+  border-radius: 20px;
+  padding: 40px;
+  min-height: 600px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: rotate 30s linear infinite;
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const QuizHeader = styled.div`
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+`;
+
+const QuizTitle = styled.h1`
+  font-size: 48px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const QuizCardTitle = styled.h3`
+  font-size: 20px;
+  color: #cbd5e0;
+  font-weight: 400;
+`;
+
+const QuizQuestion = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+`;
+
+const QuestionText = styled.h2`
+  font-size: 24px;
+  line-height: 1.5;
+  text-align: center;
+`;
+
+const OptionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+`;
+
+const OptionButton = styled.button<{ isSelected?: boolean; isCorrect?: boolean; isWrong?: boolean }>`
+  padding: 20px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: ${({ isSelected, isCorrect, isWrong }) => {
+    if (isCorrect) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+    if (isWrong) return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+    if (isSelected) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    return 'rgba(255, 255, 255, 0.1)';
+  }};
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: #667eea;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  &::before {
+    content: "${({ isSelected }) => isSelected ? '✓' : ''}";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 24px;
+  }
+`;
+
+const QuizResult = styled.div`
+  text-align: center;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+`;
+
+const ResultTitle = styled.h2<{ isSuccess: boolean }>`
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  ${props => css`
+    background: ${props.isSuccess 
+      ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)' 
+      : 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)'};
+  `}
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+`;
+
+const ResultMessage = styled.p`
+  font-size: 20px;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+`;
+
+const PlayAgainButton = styled(StepButton)`
+  margin: 0 auto;
+`;
+
+const QuizLoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: white;
+`;
+
+const QuizLoadingSpinner = styled.div`
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+`;
+
+const QuizLoadingText = styled.p`
+  font-size: 18px;
+  color: #cbd5e0;
+`;
 
 export function Games() {
   const { user } = useAuth();
@@ -1030,20 +1271,19 @@ export function Games() {
 
   usePageLoading(isDataLoading);
 
-  // Novo estado para controlar a tela de seleção de jogos
   const [showGameSelection, setShowGameSelection] = useState(true);
+  const [selectedGame, setSelectedGame] = useState<'flashcards' | 'quiz' | null>(null);
 
   const [selectedCardId, setSelectedCardId] = useState("");
-  // const [front, setFront] = useState("");
-  // const [back, setBack] = useState("");
-  // const [amount, setAmount] = useState("3");
+  const [creationType, setCreationType] = useState<'ai' | 'manual' | null>(null);
+  const [front, setFront] = useState("");
+  const [back, setBack] = useState("");
 
   const [tagList, setTagList] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
 
-  // Estados para o fluxo de criação
-  const [creationStep, setCreationStep] = useState(0); // 0=inicial, 1=card, 2=nome, 3=tags, 4=pronto
+  const [creationStep, setCreationStep] = useState(0);
   const [newFlashcardName, setNewFlashcardName] = useState("");
   const [createdFlashcard, setCreatedFlashcard] = useState<Flashcard | null>(
     null
@@ -1053,6 +1293,31 @@ export function Games() {
   const [selectedCardTitle, setSelectedCardTitle] = useState("");
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
 
+  // Estado para mensagens de feedback
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    text: string;
+    type: 'success' | 'error' | 'warning';
+  } | null>(null);
+
+  // Estados para o Jogo do Milhão
+  const [quizSession, setQuizSession] = useState<QuizSession | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showQuizResult, setShowQuizResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [correctAnswerIndex, setCorrectAnswerIndex] = useState<number | null>(null);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  const [quizStats, setQuizStats] = useState({
+    totalQuestions: 0,
+    correctAnswers: 0,
+    pointsEarned: 0
+  });
+
+  // Função para mostrar mensagem de feedback
+  const showFeedback = (text: string, type: 'success' | 'error' | 'warning') => {
+    setFeedbackMessage({ text, type });
+    setTimeout(() => setFeedbackMessage(null), 5000);
+  };
+
   const loadFlashcards = async () => {
     try {
       const res = await axios.get("http://localhost:3000/flashcards", {
@@ -1061,6 +1326,7 @@ export function Games() {
       setFlashcards(res.data.data);
     } catch (err) {
       console.error("Erro ao carregar flashcards", err);
+      showFeedback("Erro ao carregar flashcards", "error");
     } finally {
       setIsLoading(false);
     }
@@ -1080,41 +1346,30 @@ export function Games() {
       );
     } catch (err) {
       console.error("Erro ao carregar cards do usuário", err);
+      showFeedback("Erro ao carregar cards", "error");
     }
   };
 
   const loadTags = async () => {
     try {
+      console.log('Carregando tags...');
       const res = await axios.get("http://localhost:3000/tags", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setTagList(
-        res.data.tags.map((tag: Tag) => ({ _id: tag._id, name: tag.name }))
-      );
+      console.log('Tags recebidas:', res.data);
+      
+      const formattedTags = res.data.tags.map((tag: Tag) => ({ 
+        _id: tag._id, 
+        name: tag.name 
+      }));
+      console.log('Tags formatadas:', formattedTags);
+      
+      setTagList(formattedTags);
     } catch (err) {
-      console.error("Erro ao carregar tags", err);
+      console.error("Erro ao carregar tags:", err);
+      showFeedback("Erro ao carregar tags. Por favor, recarregue a página.", "error");
     }
   };
-
-  // const createTag = async () => {
-  //   if (!newTag.trim()) return alert("Digite um nome para a tag.");
-  //   try {
-  //     await axios.post(
-  //       "http://localhost:3000/tags",
-  //       { name: newTag.trim() },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-  //     alert("Tag criada com sucesso.");
-  //     setNewTag("");
-  //     loadTags();
-  //   } catch (err: any) {
-  //     console.error("Erro ao criar tag", err);
-  //     alert(
-  //       "Erro ao criar tag: " +
-  //         (err.response?.data?.message || "Erro desconhecido")
-  //     );
-  //   }
-  // };
 
   const createTagFromModal = async () => {
     if (!newTag.trim()) return;
@@ -1125,11 +1380,11 @@ export function Games() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Atualize a lista de tags após criar uma nova
       await loadTags();
 
       setNewTag("");
       setShowCreateTagModal(false);
+      showFeedback("Tag criada com sucesso!", "success");
     } catch (err: unknown) {
       console.error("Erro ao criar tag", err);
       let message = "Erro desconhecido";
@@ -1137,138 +1392,28 @@ export function Games() {
         const errorObj = err as { response?: { data?: { message?: string } } };
         message = errorObj.response?.data?.message || message;
       }
-      alert("Erro ao criar tag: " + message);
+      showFeedback(`Erro ao criar tag: ${message}`, "error");
     }
   };
 
   const toggleTagSelection = (tagId: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tagId)
-        ? prev.filter((id) => id !== tagId)
-        : [...prev, tagId]
-    );
-  };
-
-  // const createFlashcard = async () => {
-  //   if (!selectedCardId || front.trim().length < 1 || back.trim().length < 1) {
-  //     alert("Preencha todos os campos obrigatórios.");
-  //     return;
-  //   }
-
-  //   if (selectedTags.length === 0) {
-  //     alert("Selecione pelo menos uma tag.");
-  //     return;
-  //   }
-
-  //   try {
-  //     await axios.post(
-  //       "http://localhost:3000/flashcards",
-  //       {
-  //         cardId: selectedCardId,
-  //         front,
-  //         back,
-  //         tags: selectedTags,
-  //       },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-  //     alert("Flashcard criado com sucesso");
-  //     setFront("");
-  //     setBack("");
-  //     setSelectedTags([]);
-  //     loadFlashcards();
-  //   } catch (err: any) {
-  //     console.error("Erro ao criar flashcard", err);
-  //     alert(
-  //       "Erro ao criar flashcard: " +
-  //         (err.response?.data?.message || "Erro desconhecido")
-  //     );
-  //   }
-  // };
-
-  const createFlashcardFromFlow = async () => {
-    if (
-      !selectedCardId ||
-      !newFlashcardName.trim() ||
-      selectedTags.length === 0
-    ) {
-      alert(
-        "Preencha todos os campos obrigatórios e selecione pelo menos uma tag."
-      );
+    if (!tagId) {
+      console.error('Invalid tagId:', tagId);
       return;
     }
 
-    setIsCreating(true);
-
-    try {
-      await axios.post(
-        `http://localhost:3000/flashcards/withAI`,
-        {
-          cardId: selectedCardId,
-          amount: 1,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // Simular flashcard criado para preview baseado na resposta da IA
-      const newFlashcard: Flashcard = {
-        _id: Date.now().toString(),
-        front: newFlashcardName,
-        back: "Resposta gerada pela IA baseada no conteúdo do card selecionado",
-        tags: selectedTags.map((tagId) => {
-          const tag = tagList.find((t) => t._id === tagId);
-          return tag ? tag.name : tagId;
-        }),
-      };
-
-      // Delay para mostrar loading
-      setTimeout(() => {
-        setCreatedFlashcard(newFlashcard);
-        setCreationStep(4);
-        setIsCreating(false);
-        loadFlashcards();
-      }, 2000);
-    } catch (err: unknown) {
-      console.error("Erro ao criar flashcard com IA:", err);
-
-      let errorMessage = "Erro desconhecido";
-
-      if (typeof err === "object" && err !== null && "response" in err) {
-        // Erro de resposta do servidor (4xx, 5xx)
-        const errorObj = err as { response?: { status?: number; data?: { message?: string }; statusText?: string; headers?: unknown }; request?: unknown; message?: string };
-        console.error("Status:", errorObj.response?.status);
-        console.error("Data:", errorObj.response?.data);
-        console.error("Headers:", errorObj.response?.headers);
-
-        if (errorObj.response?.status === 404) {
-          errorMessage =
-            "Endpoint não encontrado. Verifique se a API está rodando.";
-        } else if (errorObj.response?.status === 401) {
-          errorMessage =
-            "Token de autenticação inválido. Faça login novamente.";
-        } else if (errorObj.response?.status === 500) {
-          errorMessage =
-            "Erro interno do servidor. Tente novamente mais tarde.";
-        } else {
-          errorMessage =
-            errorObj.response?.data?.message ||
-            `Erro ${errorObj.response?.status}: ${errorObj.response?.statusText}`;
-        }
-      } else if (typeof err === "object" && err !== null && "request" in err) {
-        // Erro de rede (sem resposta do servidor)
-        const errorObj = err as { request?: unknown; message?: string };
-        console.error("Request:", errorObj.request);
-        errorMessage =
-          "Erro de conexão. Verifique se a API está rodando na porta 3000.";
-      } else if (typeof err === "object" && err !== null && "message" in err) {
-        // Erro na configuração da requisição
-        const errorObj = err as { message?: string };
-        console.error("Error:", errorObj.message);
-        errorMessage = `Erro na requisição: ${errorObj.message}`;
-      }
-
-      alert(`Erro ao criar flashcard com IA: ${errorMessage}`);
-      setIsCreating(false);
-    }
+    console.log('Toggling tag:', tagId);
+    console.log('Current selected tags:', selectedTags);
+    
+    setSelectedTags((prev: string[]) => {
+      const isSelected = prev.includes(tagId);
+      const newTags = isSelected
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId];
+      
+      console.log('New selected tags:', newTags);
+      return newTags;
+    });
   };
 
   const resetCreationFlow = () => {
@@ -1279,26 +1424,238 @@ export function Games() {
     setCreatedFlashcard(null);
     setSearchTerm("");
     setIsCreating(false);
+    setSelectedTags([]);
+    setCreationType(null);
+    setFront("");
+    setBack("");
   };
-
-  const filteredCards = cards.filter((card) =>
-    card.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const getProgressPercentage = () => {
     switch (creationStep) {
       case 0:
         return 0;
       case 1:
-        return 25;
+        return 20;
       case 2:
-        return 50;
+        return 40;
       case 3:
-        return 75;
+        return 60;
       case 4:
+        return 80;
+      case 5:
         return 100;
       default:
         return 0;
+    }
+  };
+
+  const createManualFlashcard = async () => {
+    console.log('Creating manual flashcard with:', {
+      selectedCardId,
+      front,
+      back,
+      selectedTags,
+      tagList,
+      token
+    });
+
+    // Validação detalhada
+    if (!selectedCardId) {
+      showFeedback("Por favor, selecione um card", "warning");
+      return;
+    }
+    if (!front.trim()) {
+      showFeedback("Por favor, preencha a frente do flashcard", "warning");
+      return;
+    }
+    if (!back.trim()) {
+      showFeedback("Por favor, preencha o verso do flashcard", "warning");
+      return;
+    }
+    if (selectedTags.length === 0) {
+      showFeedback("Por favor, selecione pelo menos uma tag", "warning");
+      return;
+    }
+    if (!token) {
+      showFeedback("Erro de autenticação. Por favor, faça login novamente", "error");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/flashcards",
+        {
+          cardId: selectedCardId,
+          front: front.trim(),
+          back: back.trim(),
+          tags: selectedTags,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log('Manual flashcard creation response:', response.data);
+
+      const newFlashcard: Flashcard = {
+        _id: response.data.data._id || Date.now().toString(),
+        front: front.trim(),
+        back: back.trim(),
+        tags: selectedTags.map((tagId) => {
+          const tag = tagList.find((t) => t._id === tagId);
+          return tag ? tag : { _id: tagId, name: tagId };
+        }),
+      };
+
+      setCreatedFlashcard(newFlashcard);
+      setCreationStep(5);
+      loadFlashcards();
+      showFeedback("Flashcard criado com sucesso!", "success");
+    } catch (error: unknown) {
+      console.error("Erro ao criar flashcard manualmente:", error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        console.error('Response error:', axiosError.response?.data);
+        showFeedback(`Erro ao criar flashcard: ${axiosError.response?.data?.message || 'Erro desconhecido'}`, "error");
+      } else {
+        showFeedback("Erro ao criar flashcard. Por favor, tente novamente.", "error");
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const createFlashcardFromFlow = async () => {
+    console.log('Creating AI flashcard with:', {
+      selectedCardId,
+      newFlashcardName,
+      selectedTags,
+      tagList,
+      token
+    });
+
+    // Validação detalhada
+    if (!selectedCardId) {
+      showFeedback("Por favor, selecione um card", "warning");
+      return;
+    }
+    if (!newFlashcardName.trim()) {
+      showFeedback("Por favor, preencha o nome do flashcard", "warning");
+      return;
+    }
+    if (selectedTags.length === 0) {
+      showFeedback("Por favor, selecione pelo menos uma tag", "warning");
+      return;
+    }
+    if (!token) {
+      showFeedback("Erro de autenticação. Por favor, faça login novamente", "error");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/flashcards/withAI`,
+        {
+          cardId: selectedCardId,
+          amount: 1,
+          tags: selectedTags,
+          title: newFlashcardName.trim()
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log('AI flashcard creation response:', response.data);
+
+      const flashcardData = response.data.data[0] || response.data.data;
+      const newFlashcard: Flashcard = {
+        _id: flashcardData._id || Date.now().toString(),
+        front: flashcardData.front || newFlashcardName.trim(),
+        back: flashcardData.back || "Resposta gerada pela IA",
+        tags: selectedTags.map((tagId) => {
+          const tag = tagList.find((t) => t._id === tagId);
+          return tag ? tag : { _id: tagId, name: tagId };
+        }),
+      };
+
+      setCreatedFlashcard(newFlashcard);
+      setCreationStep(5);
+      loadFlashcards();
+      showFeedback("Flashcard criado com sucesso usando IA!", "success");
+    } catch (error: unknown) {
+      console.error("Erro ao criar flashcard com IA:", error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        console.error('Response error:', axiosError.response?.data);
+        showFeedback(`Erro ao criar flashcard: ${axiosError.response?.data?.message || 'Erro desconhecido'}`, "error");
+      } else {
+        showFeedback("Erro ao criar flashcard. Por favor, tente novamente.", "error");
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Funções do Jogo do Milhão
+  const startQuiz = async (cardId: string) => {
+    setIsLoadingQuiz(true);
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/quiz/start/${cardId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log('Quiz started:', response.data);
+      setQuizSession(response.data.data);
+      setSelectedAnswer(null);
+      setShowQuizResult(false);
+      setIsCorrect(false);
+      setCorrectAnswerIndex(null);
+    } catch (error) {
+      console.error('Erro ao iniciar quiz:', error);
+      showFeedback("Erro ao iniciar quiz. Verifique se o card possui PDF.", "error");
+    } finally {
+      setIsLoadingQuiz(false);
+    }
+  };
+
+  const answerQuestion = async () => {
+    if (selectedAnswer === null || !quizSession) return;
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/quiz/answer/${quizSession.sessionId}`,
+        {
+          answer: selectedAnswer,
+          timeSpent: 30
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log('Answer response:', response.data);
+      const result = response.data.data;
+      
+      setIsCorrect(result.isCorrect);
+      setCorrectAnswerIndex(result.correctAnswer);
+      setShowQuizResult(true);
+      
+      // Atualizar estatísticas
+      setQuizStats(prev => ({
+        totalQuestions: prev.totalQuestions + 1,
+        correctAnswers: prev.correctAnswers + (result.isCorrect ? 1 : 0),
+        pointsEarned: prev.pointsEarned + (result.pointsEarned || 0)
+      }));
+
+      if (result.isCorrect) {
+        showFeedback(`Resposta correta! +${result.pointsEarned} pontos`, "success");
+      } else {
+        showFeedback(`Resposta incorreta. A resposta correta era: ${result.correctOption}`, "error");
+      }
+    } catch (error) {
+      console.error('Erro ao responder pergunta:', error);
+      showFeedback("Erro ao processar resposta", "error");
     }
   };
 
@@ -1315,8 +1672,11 @@ export function Games() {
             </GameSubtitle>
             
             <GamesGrid>
-              <GameCard onClick={() => setShowGameSelection(false)}>
-                <GameIcon>?</GameIcon>
+              <GameCard onClick={() => {
+                setShowGameSelection(false);
+                setSelectedGame('flashcards');
+              }}>
+                <GameIcon>🎴</GameIcon>
                 <GameCardTitle>Flash Cards</GameCardTitle>
                 <GameCardDescription>
                   Perguntas geradas por IA com o tema da matéria escolhida...
@@ -1330,8 +1690,11 @@ export function Games() {
                 </PointsIndicator>
               </GameCard>
 
-              <GameCard>
-                <GameIcon>?</GameIcon>
+              <GameCard onClick={() => {
+                setShowGameSelection(false);
+                setSelectedGame('quiz');
+              }}>
+                <GameIcon>💰</GameIcon>
                 <GameCardTitle>Jogo do milhão</GameCardTitle>
                 <GameCardDescription>
                   Inúmeras perguntas com temas diversos.
@@ -1351,6 +1714,150 @@ export function Games() {
     );
   };
 
+  const renderQuiz = () => {
+    if (!quizSession && !isLoadingQuiz) {
+      // Seleção de card para o quiz
+      return (
+        <Container>
+          <Header />
+          <BackButton onClick={() => {
+            setSelectedGame(null);
+            setShowGameSelection(true);
+          }}>
+            ← Voltar
+          </BackButton>
+          
+          <StepTitle>Escolha um Card para o Quiz</StepTitle>
+          <StepSubtitle>
+            Selecione um card que tenha PDF para gerar perguntas
+          </StepSubtitle>
+
+          <SearchInput
+            placeholder="🔍 Pesquisar cards..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          {cards.length === 0 ? (
+            <EmptyState>
+              <EmptyStateText>
+                Você precisa criar pelo menos um card com PDF na seção Escolar.
+              </EmptyStateText>
+              <CreateFirstCardButton onClick={() => window.location.href = "/escolar"}>
+                Ir para Escolar
+              </CreateFirstCardButton>
+            </EmptyState>
+          ) : (
+            <CardsSelectionArea>
+              <CardsContainer>
+                {cards
+                  .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                  .map((card) => (
+                    <CardOption
+                      key={card._id}
+                      onClick={() => startQuiz(card._id)}
+                    >
+                      <CardOptionTitle>{card.title}</CardOptionTitle>
+                      <CardOptionSubtitle>
+                        Clique para iniciar o quiz
+                      </CardOptionSubtitle>
+                    </CardOption>
+                  ))}
+              </CardsContainer>
+            </CardsSelectionArea>
+          )}
+        </Container>
+      );
+    }
+
+    return (
+      <Container>
+        <Header />
+        <BackButton onClick={() => {
+          setQuizSession(null);
+          setSelectedAnswer(null);
+          setShowQuizResult(false);
+        }}>
+          ← Voltar
+        </BackButton>
+
+        <QuizContainer>
+          {isLoadingQuiz ? (
+            <QuizLoadingContainer>
+              <QuizLoadingSpinner />
+              <QuizLoadingText>Gerando pergunta...</QuizLoadingText>
+            </QuizLoadingContainer>
+          ) : (
+            <>
+              <QuizHeader>
+                <QuizTitle>Jogo do Milhão</QuizTitle>
+                <QuizCardTitle>{quizSession?.cardTitle}</QuizCardTitle>
+              </QuizHeader>
+
+              {!showQuizResult ? (
+                <>
+                  <QuizQuestion>
+                    <QuestionText>{quizSession?.question.question}</QuestionText>
+                  </QuizQuestion>
+
+                  <OptionsGrid>
+                    {quizSession?.question.options.map((option, index) => (
+                      <OptionButton
+                        key={index}
+                        isSelected={selectedAnswer === index}
+                        onClick={() => setSelectedAnswer(index)}
+                        disabled={showQuizResult}
+                      >
+                        {String.fromCharCode(65 + index)}. {option}
+                      </OptionButton>
+                    ))}
+                  </OptionsGrid>
+
+                  <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                    <StepButton
+                      onClick={answerQuestion}
+                      disabled={selectedAnswer === null}
+                    >
+                      Confirmar Resposta
+                    </StepButton>
+                  </div>
+                </>
+              ) : (
+                <QuizResult>
+                  <ResultTitle isSuccess={isCorrect}>
+                    {isCorrect ? '🎉 Parabéns!' : '😔 Que pena!'}
+                  </ResultTitle>
+                  <ResultMessage>
+                    {isCorrect 
+                      ? 'Você acertou! Continue assim!' 
+                      : `A resposta correta era a opção ${String.fromCharCode(65 + (correctAnswerIndex || 0))}`
+                    }
+                  </ResultMessage>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <p>📊 Estatísticas:</p>
+                    <p>Total de perguntas: {quizStats.totalQuestions}</p>
+                    <p>Acertos: {quizStats.correctAnswers}</p>
+                    <p>Taxa de acerto: {quizStats.totalQuestions > 0 ? Math.round((quizStats.correctAnswers / quizStats.totalQuestions) * 100) : 0}%</p>
+                    <p>Pontos ganhos: {quizStats.pointsEarned}</p>
+                  </div>
+
+                  <PlayAgainButton onClick={() => {
+                    setQuizSession(null);
+                    setSelectedAnswer(null);
+                    setShowQuizResult(false);
+                  }}>
+                    Jogar Novamente
+                  </PlayAgainButton>
+                </QuizResult>
+              )}
+            </>
+          )}
+        </QuizContainer>
+      </Container>
+    );
+  };
+
   const renderCreationStep = () => {
     switch (creationStep) {
       case 0:
@@ -1363,7 +1870,7 @@ export function Games() {
               <ProgressBar>
                 <ProgressFill progress={getProgressPercentage()} />
               </ProgressBar>
-              <StepIndicator>Passo 1 de 4</StepIndicator>
+              <StepIndicator>Passo 1 de 5</StepIndicator>
               <StepTitle>
                 Uma nova forma de{" "}
                 <span style={{ color: "#667eea" }}>aprender</span>!
@@ -1397,16 +1904,84 @@ export function Games() {
         return (
           <CreationFlowContainer>
             <FlashcardPreview>
+              <PreviewCard>🤔</PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 2 de 5</StepIndicator>
+              <BackButton onClick={() => setCreationStep(0)}>← Voltar</BackButton>
+              <StepTitle>Como deseja criar?</StepTitle>
+              <StepSubtitle>Escolha o método de criação dos flashcards</StepSubtitle>
+              
+              <div style={{ display: 'flex', gap: '20px', marginBottom: '30px' }}>
+                <button
+                  onClick={() => setCreationType('ai')}
+                  style={{
+                    flex: 1,
+                    padding: '30px',
+                    borderRadius: '15px',
+                    border: '2px solid #667eea',
+                    background: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '15px',
+                  }}
+                >
+                  <div style={{ fontSize: '40px' }}>🤖</div>
+                  <h3 style={{ fontSize: '20px', margin: 0 }}>Criar com IA</h3>
+                  <p style={{ fontSize: '14px', color: '#666', margin: 0, textAlign: 'center' }}>
+                    Deixe a IA gerar perguntas e respostas automaticamente baseadas no seu card
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => setCreationType('manual')}
+                  style={{
+                    flex: 1,
+                    padding: '30px',
+                    borderRadius: '15px',
+                    border: '2px solid #4facfe',
+                    background: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '15px',
+                  }}
+                >
+                  <div style={{ fontSize: '40px' }}>✍️</div>
+                  <h3 style={{ fontSize: '20px', margin: 0 }}>Criar Manualmente</h3>
+                  <p style={{ fontSize: '14px', color: '#666', margin: 0, textAlign: 'center' }}>
+                    Crie suas próprias perguntas e respostas personalizadas
+                  </p>
+                </button>
+              </div>
+
+              {creationType && (
+                <StepButton onClick={() => setCreationStep(2)}>
+                  Próximo: Selecionar Card
+                </StepButton>
+              )}
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 2:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
               <PreviewCard>{selectedCardTitle ? "📋" : "?"}</PreviewCard>
             </FlashcardPreview>
             <CreationContent>
               <ProgressBar>
                 <ProgressFill progress={getProgressPercentage()} />
               </ProgressBar>
-              <StepIndicator>Passo 2 de 4</StepIndicator>
-              <BackButton onClick={() => setCreationStep(0)}>
-                ← Voltar
-              </BackButton>
+              <StepIndicator>Passo 3 de 5</StepIndicator>
+              <BackButton onClick={() => setCreationStep(1)}>← Voltar</BackButton>
               <StepTitle>Qual card?</StepTitle>
               <StepSubtitle>
                 Escolha o card que irá servir de base para as perguntas.
@@ -1416,7 +1991,7 @@ export function Games() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              {filteredCards.length === 0 ? (
+              {cards.length === 0 ? (
                 <EmptyState>
                   <EmptyStateText>
                     {searchTerm
@@ -1427,67 +2002,26 @@ export function Games() {
               ) : (
                 <CardsSelectionArea>
                   <CardsContainer>
-                    {filteredCards.map((card) => (
-                      <CardOption
-                        key={card._id}
-                        onClick={() => {
-                          setSelectedCardId(card._id);
-                          setSelectedCardTitle(card.title);
-                          setCreationStep(2);
-                        }}
-                      >
-                        <CardOptionTitle>{card.title}</CardOptionTitle>
-                        <CardOptionSubtitle>
-                          Clique para selecionar este card
-                        </CardOptionSubtitle>
-                      </CardOption>
-                    ))}
+                    {cards
+                      .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                      .map((card) => (
+                        <CardOption
+                          key={card._id}
+                          onClick={() => {
+                            setSelectedCardId(card._id);
+                            setSelectedCardTitle(card.title);
+                            setCreationStep(3);
+                          }}
+                        >
+                          <CardOptionTitle>{card.title}</CardOptionTitle>
+                          <CardOptionSubtitle>
+                            Clique para selecionar este card
+                          </CardOptionSubtitle>
+                        </CardOption>
+                      ))}
                   </CardsContainer>
                 </CardsSelectionArea>
               )}
-            </CreationContent>
-          </CreationFlowContainer>
-        );
-
-      case 2:
-        return (
-          <CreationFlowContainer>
-            <FlashcardPreview>
-              <PreviewCard
-                style={{
-                  fontSize: "24px",
-                  textAlign: "center",
-                  fontWeight: "600",
-                }}
-              >
-                {newFlashcardName || "Digite o nome..."}
-              </PreviewCard>
-            </FlashcardPreview>
-            <CreationContent>
-              <ProgressBar>
-                <ProgressFill progress={getProgressPercentage()} />
-              </ProgressBar>
-              <StepIndicator>Passo 3 de 4</StepIndicator>
-              <BackButton onClick={() => setCreationStep(1)}>
-                ← Voltar
-              </BackButton>
-              <StepTitle>Qual o nome?</StepTitle>
-              <StepSubtitle>
-                Defina o nome do seu flashcard baseado em:{" "}
-                <strong>{selectedCardTitle}</strong>
-              </StepSubtitle>
-              <NameInput
-                placeholder="✏️ Ex: Conceitos de Matemática"
-                value={newFlashcardName}
-                onChange={(e) => setNewFlashcardName(e.target.value)}
-                maxLength={50}
-              />
-              <StepButton
-                onClick={() => setCreationStep(3)}
-                disabled={!newFlashcardName.trim()}
-              >
-                📝 Próximo: Selecionar Tags
-              </StepButton>
             </CreationContent>
           </CreationFlowContainer>
         );
@@ -1503,21 +2037,99 @@ export function Games() {
                   fontWeight: "600",
                 }}
               >
-                🏷️
+                {creationType === 'manual' ? (
+                  <div style={{ fontSize: '18px' }}>
+                    <div>Frente: {front || "Digite a pergunta..."}</div>
+                    <div style={{ marginTop: '10px' }}>Verso: {back || "Digite a resposta..."}</div>
+                  </div>
+                ) : (
+                  newFlashcardName || "Digite o nome..."
+                )}
               </PreviewCard>
             </FlashcardPreview>
             <CreationContent>
               <ProgressBar>
                 <ProgressFill progress={getProgressPercentage()} />
               </ProgressBar>
-              <StepIndicator>Passo 4 de 4</StepIndicator>
-              <BackButton onClick={() => setCreationStep(2)}>
-                ← Voltar
-              </BackButton>
+              <StepIndicator>Passo 4 de 5</StepIndicator>
+              <BackButton onClick={() => setCreationStep(2)}>← Voltar</BackButton>
+              
+              {creationType === 'manual' ? (
+                <>
+                  <StepTitle>Criar Flashcard Manual</StepTitle>
+                  <StepSubtitle>
+                    Digite a pergunta e a resposta do seu flashcard
+                  </StepSubtitle>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <ContentLabel>Frente (Pergunta)</ContentLabel>
+                    <TagModalInput
+                      placeholder="Digite a pergunta..."
+                      value={front}
+                      onChange={(e) => setFront(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <ContentLabel>Verso (Resposta)</ContentLabel>
+                    <TagModalInput
+                      placeholder="Digite a resposta..."
+                      value={back}
+                      onChange={(e) => setBack(e.target.value)}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <StepTitle>Nome do Flashcard</StepTitle>
+                  <StepSubtitle>
+                    Digite um nome ou tema para gerar o flashcard com IA
+                  </StepSubtitle>
+                  <NameInput
+                    placeholder="Ex: O que é fotossíntese?"
+                    value={newFlashcardName}
+                    onChange={(e) => setNewFlashcardName(e.target.value)}
+                  />
+                </>
+              )}
+
+              <StepButton
+                onClick={() => setCreationStep(4)}
+                disabled={creationType === 'manual' ? !front.trim() || !back.trim() : !newFlashcardName.trim()}
+              >
+                {creationType === 'manual' 
+                  ? ((!front.trim() || !back.trim()) ? '⚠️ Preencha todos os campos' : 'Próximo: Selecionar Tags')
+                  : (!newFlashcardName.trim() ? '⚠️ Digite um nome' : 'Próximo: Selecionar Tags')
+                }
+              </StepButton>
+            </CreationContent>
+          </CreationFlowContainer>
+        );
+
+      case 4:
+        return (
+          <CreationFlowContainer>
+            <FlashcardPreview>
+              <PreviewCard>
+                {creationType === 'manual' ? (
+                  <div style={{ fontSize: '18px' }}>
+                    <div>Frente: {front}</div>
+                    <div style={{ marginTop: '10px' }}>Verso: {back}</div>
+                  </div>
+                ) : (
+                  newFlashcardName
+                )}
+              </PreviewCard>
+            </FlashcardPreview>
+            <CreationContent>
+              <ProgressBar>
+                <ProgressFill progress={getProgressPercentage()} />
+              </ProgressBar>
+              <StepIndicator>Passo 5 de 5</StepIndicator>
+              <BackButton onClick={() => setCreationStep(3)}>← Voltar</BackButton>
               <StepTitle>Selecionar Tags</StepTitle>
               <StepSubtitle>
-                Escolha as tags que melhor descrevem seu flashcard:{" "}
-                <strong>{newFlashcardName}</strong>
+                Escolha as tags que melhor descrevem seu flashcard
               </StepSubtitle>
 
               <TagsContainer>
@@ -1542,13 +2154,16 @@ export function Games() {
                           onClick={() => toggleTagSelection(tag._id)}
                         >
                           {tag.name}
+                          {selectedTags.includes(tag._id) && (
+                            <span style={{ fontSize: '12px', marginLeft: 'auto' }}>✓</span>
+                          )}
                         </TagItem>
                       ))}
                     </TagsList>
                   </>
                 )}
 
-                {selectedTags.length > 0 && (
+                {selectedTags.length > 0 ? (
                   <SelectedTagsPreview>
                     <SelectedTagsTitle>
                       <SelectedTagsCount>
@@ -1562,61 +2177,51 @@ export function Games() {
                         return tag ? (
                           <TagItem key={tagId} selected={true}>
                             {tag.name}
+                            <span style={{ fontSize: '12px', marginLeft: 'auto' }}>✓</span>
                           </TagItem>
                         ) : null;
                       })}
                     </TagsList>
                   </SelectedTagsPreview>
+                ) : (
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#FEF2F2', 
+                    border: '1px solid #FCA5A5',
+                    borderRadius: '8px',
+                    color: '#991B1B',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginTop: '12px'
+                  }}>
+                    ⚠️ Selecione pelo menos uma tag para continuar
+                  </div>
                 )}
               </TagsContainer>
 
               <StepButton
-                onClick={createFlashcardFromFlow}
+                onClick={creationType === 'manual' ? createManualFlashcard : createFlashcardFromFlow}
                 disabled={selectedTags.length === 0 || isCreating}
+                style={{
+                  opacity: selectedTags.length === 0 ? 0.6 : 1,
+                  cursor: selectedTags.length === 0 ? 'not-allowed' : 'pointer'
+                }}
               >
                 {isCreating ? (
                   <>
                     <LoadingSpinner />
-                    Criando com IA...
+                    {creationType === 'manual' ? 'Criando...' : 'Criando com IA...'}
                   </>
                 ) : (
-                  "🤖 Finalizar e Gerar com IA"
+                  <>
+                    {selectedTags.length === 0 ? '⚠️ Selecione pelo menos uma tag' : (
+                      creationType === 'manual' ? '✍️ Finalizar Criação Manual' : '🤖 Finalizar e Gerar com IA'
+                    )}
+                  </>
                 )}
               </StepButton>
-            </CreationContent>
-          </CreationFlowContainer>
-        );
-
-      case 4:
-        return (
-          <CreationFlowContainer>
-            <FlashcardPreview>
-              <FlashcardContainer>
-                <FlashcardInner isFlipped={false}>
-                  <FlashcardFront>
-                    <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
-                    <FlashText>{createdFlashcard?.front}</FlashText>
-                  </FlashcardFront>
-                  <FlashcardBack>
-                    <FlashcardStepTitle>Resposta</FlashcardStepTitle>
-                    <FlashText>{createdFlashcard?.back}</FlashText>
-                  </FlashcardBack>
-                </FlashcardInner>
-              </FlashcardContainer>
-            </FlashcardPreview>
-            <CreationContent>
-              <ProgressBar>
-                <ProgressFill progress={getProgressPercentage()} />
-              </ProgressBar>
-              <StepIndicator>✅ Concluído!</StepIndicator>
-              <StepTitle>🎉 Pronto!</StepTitle>
-              <StepSubtitle>
-                Seu flashcard foi criado com sucesso! Agora você pode estudar e
-                ganhar pontos.
-              </StepSubtitle>
-              <SuccessButton onClick={resetCreationFlow}>
-                📚 Criar Outro
-              </SuccessButton>
             </CreationContent>
           </CreationFlowContainer>
         );
@@ -1625,27 +2230,6 @@ export function Games() {
         return null;
     }
   };
-
-  // const createFlashcardWithAI = async () => {
-  //   if (!selectedCardId) {
-  //     alert("Selecione um card válido.");
-  //     return;
-  //   }
-
-  //   try {
-  //     await axios.post(
-  //       `http://localhost:3000/flashcards/withAI/${selectedCardId}`,
-  //       { amount: parseInt(amount) },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-  //     alert("Flashcards com IA gerados com sucesso");
-  //     setAmount("3");
-  //     loadFlashcards();
-  //   } catch (err) {
-  //     console.error("Erro ao gerar flashcards por IA", err);
-  //     alert("Erro ao gerar flashcards por IA");
-  //   }
-  // };
 
   const handleGrade = async (grade: number) => {
     const current = flashcards[currentIndex];
@@ -1657,8 +2241,10 @@ export function Games() {
       );
       setShowBack(false);
       setCurrentIndex((prev) => prev + 1);
+      showFeedback(`Flashcard avaliado com nota ${grade}`, "success");
     } catch (err) {
       console.error("Erro ao avaliar", err);
+      showFeedback("Erro ao avaliar flashcard", "error");
     }
   };
 
@@ -1667,7 +2253,13 @@ export function Games() {
       if (token && user) {
         setIsDataLoading(true);
         try {
-          await Promise.all([loadFlashcards(), loadCards(), loadTags()]);
+          await Promise.all([
+            loadFlashcards(),
+            loadCards(),
+            loadTags()
+          ]);
+        } catch (error) {
+          console.error('Erro ao carregar dados iniciais:', error);
         } finally {
           setIsDataLoading(false);
         }
@@ -1686,17 +2278,38 @@ export function Games() {
 
   const current = flashcards[currentIndex];
 
+  // Renderizar o Jogo do Milhão se estiver selecionado
+  if (selectedGame === 'quiz') {
+    return renderQuiz();
+  }
+
   return (
     <>
+      {feedbackMessage && (
+        <FeedbackMessage type={feedbackMessage.type}>
+          {feedbackMessage.type === 'success' && '✅'}
+          {feedbackMessage.type === 'error' && '❌'}
+          {feedbackMessage.type === 'warning' && '⚠️'}
+          {feedbackMessage.text}
+        </FeedbackMessage>
+      )}
+
       {showGameSelection ? (
         renderGameSelection()
       ) : (
         <Container>
           <Header />
+          
+          <BackButton onClick={() => {
+            setShowGameSelection(true);
+            setSelectedGame(null);
+            resetCreationFlow();
+          }}>
+            ← Voltar para seleção de jogos
+          </BackButton>
 
           {renderCreationStep()}
 
-          {/* Modal para criar nova tag */}
           {showCreateTagModal && (
             <TagModal onClick={() => setShowCreateTagModal(false)}>
               <TagModalContent onClick={(e) => e.stopPropagation()}>
