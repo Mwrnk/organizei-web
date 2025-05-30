@@ -3,9 +3,11 @@ import { Header } from "../../Components/Header";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import axios from "axios";
+import { useAuth } from "../../Contexts/AuthContexts";
+import { Usuario } from "../../Types/User";
 
 const ChatContainer = styled.div`
-  width: 100%;
+  width: 80%;
   max-width: 1500px;
   margin: 40px auto;
   padding: 40px 32px 32px 32px;
@@ -27,8 +29,8 @@ const ChatHeader = styled.div`
 
 const ChatMessages = styled.div`
   flex: 1;
-  min-height: 480px;
-  max-height: 65vh;
+  min-height: 400px;
+  max-height: 40vh;
   overflow-y: auto;
   padding: 18px 0;
   background-color: #f5f5f5;
@@ -65,6 +67,12 @@ const Avatar = styled.div<{ isUser: boolean }>`
   font-size: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   margin-bottom: 8px;
+  overflow: hidden;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const MessageBubble = styled.div<{ isUser: boolean }>`
@@ -158,6 +166,7 @@ export function IA() {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const { user } = useAuth();
 
   usePageLoading(isInitialLoading);
 
@@ -234,7 +243,15 @@ export function IA() {
           {messages.map((message) => (
             <MessageRow key={message.id} isUser={message.isUser}>
               <Avatar isUser={message.isUser}>
-                {message.isUser ? 'T' : 'IA'}
+                {message.isUser ? (
+                  user?.profileImage ? (
+                    <img src={user.profileImage} alt="User" />
+                  ) : (
+                    'M'
+                  )
+                ) : (
+                  'IA'
+                )}
               </Avatar>
               <MessageBubble isUser={message.isUser}>
                 {message.text}

@@ -1123,6 +1123,32 @@ const QuizHeader = styled.div`
   z-index: 1;
 `;
 
+const QuizProgress = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  color: #cbd5e0;
+  font-size: 14px;
+`;
+
+const QuizProgressBar = styled.div`
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+`;
+
+const QuizProgressFill = styled.div<{ progress: number }>`
+  height: 100%;
+  width: ${({ progress }) => progress}%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+`;
+
 const QuizTitle = styled.h1`
   font-size: 48px;
   font-weight: 800;
@@ -1292,6 +1318,7 @@ export function Games() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCardTitle, setSelectedCardTitle] = useState("");
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
+  const [quizQuestionsAmount, setQuizQuestionsAmount] = useState(5); // Default 5 questions
 
   // Estado para mensagens de feedback
   const [feedbackMessage, setFeedbackMessage] = useState<{
@@ -1311,6 +1338,9 @@ export function Games() {
     correctAnswers: 0,
     pointsEarned: 0
   });
+
+  // Modificar o estado para o número da questão atual
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
 
   // Função para mostrar mensagem de feedback
   const showFeedback = (text: string, type: 'success' | 'error' | 'warning') => {
@@ -1603,7 +1633,9 @@ export function Games() {
     try {
       const response = await axios.post(
         `http://localhost:3000/quiz/start/${cardId}`,
-        {},
+        {
+          amount: quizQuestionsAmount
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -1624,11 +1656,17 @@ export function Games() {
   const answerQuestion = async () => {
     if (selectedAnswer === null || !quizSession) return;
 
+    // Validar se a resposta está no intervalo correto
+    if (selectedAnswer < 0 || selectedAnswer > 3) {
+      showFeedback("Resposta inválida. Escolha uma opção entre 1 e 4.", "error");
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:3000/quiz/answer/${quizSession.sessionId}`,
         {
-          answer: selectedAnswer,
+          answer: selectedAnswer, // Garantido que é um número entre 0-3
           timeSpent: 30
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -1657,6 +1695,15 @@ export function Games() {
       console.error('Erro ao responder pergunta:', error);
       showFeedback("Erro ao processar resposta", "error");
     }
+  };
+
+  const resetQuiz = () => {
+    setQuizSession(null);
+    setSelectedAnswer(null);
+    setShowQuizResult(false);
+    setIsCorrect(false);
+    setCorrectAnswerIndex(null);
+    setCurrentQuestionNumber(1);
   };
 
   const renderGameSelection = () => {
@@ -1714,9 +1761,41 @@ export function Games() {
     );
   };
 
+  const renderOptions = () => {
+    if (!quizSession?.question.options) return null;
+
+    return (
+      <OptionsGrid>
+        {quizSession.question.options.map((option, index) => (
+          <OptionButton
+            key={index}
+            isSelected={selectedAnswer === index}
+            onClick={() => setSelectedAnswer(index)}
+            disabled={showQuizResult}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ 
+                minWidth: '24px',
+                height: '24px',
+                borderRadius: '12px',
+                background: selectedAnswer === index ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px'
+              }}>
+                {String.fromCharCode(65 + index)}
+              </span>
+              {option}
+            </div>
+          </OptionButton>
+        ))}
+      </OptionsGrid>
+    );
+  };
+
   const renderQuiz = () => {
     if (!quizSession && !isLoadingQuiz) {
-      // Seleção de card para o quiz
       return (
         <Container>
           <Header />
@@ -1731,6 +1810,43 @@ export function Games() {
           <StepSubtitle>
             Selecione um card que tenha PDF para gerar perguntas
           </StepSubtitle>
+
+          <div style={{ 
+            marginBottom: '20px',
+            background: '#f7fafc',
+            padding: '20px',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              marginBottom: '10px',
+              color: '#2d3748'
+            }}>
+              Quantidade de Perguntas
+            </div>
+            <select
+              value={quizQuestionsAmount}
+              onChange={(e) => setQuizQuestionsAmount(Number(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                border: '2px solid #e2e8f0',
+                fontSize: '16px',
+                color: '#4a5568',
+                background: 'white',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value={5}>5 Perguntas</option>
+              <option value={10}>10 Perguntas</option>
+              <option value={15}>15 Perguntas</option>
+              <option value={20}>20 Perguntas</option>
+            </select>
+          </div>
 
           <SearchInput
             placeholder="🔍 Pesquisar cards..."
@@ -1759,7 +1875,7 @@ export function Games() {
                     >
                       <CardOptionTitle>{card.title}</CardOptionTitle>
                       <CardOptionSubtitle>
-                        Clique para iniciar o quiz
+                        Clique para iniciar o quiz com {quizQuestionsAmount} perguntas
                       </CardOptionSubtitle>
                     </CardOption>
                   ))}
@@ -1774,9 +1890,7 @@ export function Games() {
       <Container>
         <Header />
         <BackButton onClick={() => {
-          setQuizSession(null);
-          setSelectedAnswer(null);
-          setShowQuizResult(false);
+          resetQuiz();
         }}>
           ← Voltar
         </BackButton>
@@ -1792,6 +1906,14 @@ export function Games() {
               <QuizHeader>
                 <QuizTitle>Jogo do Milhão</QuizTitle>
                 <QuizCardTitle>{quizSession?.cardTitle}</QuizCardTitle>
+                <QuizProgress>
+                  <span>Pergunta {currentQuestionNumber} de {quizQuestionsAmount}</span>
+                  <QuizProgressBar>
+                    <QuizProgressFill 
+                      progress={(currentQuestionNumber / quizQuestionsAmount) * 100} 
+                    />
+                  </QuizProgressBar>
+                </QuizProgress>
               </QuizHeader>
 
               {!showQuizResult ? (
@@ -1800,25 +1922,14 @@ export function Games() {
                     <QuestionText>{quizSession?.question.question}</QuestionText>
                   </QuizQuestion>
 
-                  <OptionsGrid>
-                    {quizSession?.question.options.map((option, index) => (
-                      <OptionButton
-                        key={index}
-                        isSelected={selectedAnswer === index}
-                        onClick={() => setSelectedAnswer(index)}
-                        disabled={showQuizResult}
-                      >
-                        {String.fromCharCode(65 + index)}. {option}
-                      </OptionButton>
-                    ))}
-                  </OptionsGrid>
+                  {renderOptions()}
 
                   <div style={{ textAlign: 'center', marginTop: '30px' }}>
                     <StepButton
                       onClick={answerQuestion}
                       disabled={selectedAnswer === null}
                     >
-                      Confirmar Resposta
+                      {selectedAnswer === null ? 'Escolha uma opção' : 'Confirmar Resposta'}
                     </StepButton>
                   </div>
                 </>
@@ -1842,11 +1953,7 @@ export function Games() {
                     <p>Pontos ganhos: {quizStats.pointsEarned}</p>
                   </div>
 
-                  <PlayAgainButton onClick={() => {
-                    setQuizSession(null);
-                    setSelectedAnswer(null);
-                    setShowQuizResult(false);
-                  }}>
+                  <PlayAgainButton onClick={resetQuiz}>
                     Jogar Novamente
                   </PlayAgainButton>
                 </QuizResult>
