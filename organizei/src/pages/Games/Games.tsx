@@ -139,51 +139,10 @@ const FlipInstruction = styled.p`
 `;
 
 // Novos Styled Components para seleção de tipo de criação
-const CreationTypeContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-`;
 
-const CreationTypeButton = styled.button<{ variant: 'ai' | 'manual' }>`
-  flex: 1;
-  padding: 30px;
-  border-radius: 15px;
-  border: 2px solid ${({ variant }) => variant === 'ai' ? '#667eea' : '#4facfe'};
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    background: ${({ variant }) => 
-      variant === 'ai' 
-        ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
-        : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'};
-    color: white;
-  }
-`;
 
-const CreationTypeIcon = styled.div`
-  font-size: 40px;
-`;
 
-const CreationTypeTitle = styled.h3`
-  font-size: 20px;
-  margin: 0;
-`;
-
-const CreationTypeDescription = styled.p`
-  font-size: 14px;
-  color: #666;
-  margin: 0;
-  text-align: center;
-`;
 
 const CreationFlowContainer = styled.div`
   display: flex;
@@ -420,13 +379,7 @@ const NameInput = styled.input`
   }
 `;
 
-const SuccessButton = styled(StepButton)`
-  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
 
-  &:hover {
-    box-shadow: 0 10px 30px rgba(66, 153, 225, 0.3);
-  }
-`;
 
 const PreviewCard = styled.div`
   width: 300px;
@@ -1189,18 +1142,24 @@ const OptionsGrid = styled.div`
   z-index: 1;
 `;
 
-const OptionButton = styled.button<{ isSelected?: boolean; isCorrect?: boolean; isWrong?: boolean }>`
+const OptionButton = styled.button<{
+  isSelected?: boolean;
+  isCorrect?: boolean;
+  isWrong?: boolean;
+  showResult?: boolean;
+}>`
   padding: 20px;
   border: 2px solid transparent;
   border-radius: 12px;
-  background: ${({ isSelected, isCorrect, isWrong }) => {
-    if (isCorrect) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
-    if (isWrong) return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+  background: ${({ isSelected, isCorrect, isWrong, showResult }) => {
+    if (showResult) {
+      if (isCorrect) return 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+      if (isWrong) return 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)';
+    }
     if (isSelected) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     return 'rgba(255, 255, 255, 0.1)';
   }};
-  backdrop-filter: blur(10px);
-  color: white;
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -1216,17 +1175,18 @@ const OptionButton = styled.button<{ isSelected?: boolean; isCorrect?: boolean; 
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.8;
+    opacity: ${({ showResult }) => showResult ? 1 : 0.8};
   }
+`;
 
-  &::before {
-    content: "${({ isSelected }) => isSelected ? '✓' : ''}";
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 24px;
-  }
+const AnswerExplanation = styled.div`
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #cbd5e0;
+  font-size: 16px;
+  line-height: 1.6;
 `;
 
 const QuizResult = styled.div`
@@ -1766,203 +1726,230 @@ export function Games() {
     if (!quizSession?.question.options) return null;
 
     return (
-      <OptionsGrid>
-        {quizSession.question.options.map((option, index) => (
-          <OptionButton
-            key={index}
-            isSelected={selectedAnswer === index}
-            onClick={() => setSelectedAnswer(index)}
-            disabled={showQuizResult}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ 
-                minWidth: '24px',
-                height: '24px',
-                borderRadius: '12px',
-                background: selectedAnswer === index ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px'
-              }}>
-                {String.fromCharCode(65 + index)}
-              </span>
-              {option}
-            </div>
-          </OptionButton>
-        ))}
-      </OptionsGrid>
+      <>
+        <OptionsGrid>
+          {quizSession.question.options.map((option, index) => (
+            <OptionButton
+              key={index}
+              isSelected={selectedAnswer === index}
+              isCorrect={showQuizResult && correctAnswerIndex === index}
+              isWrong={showQuizResult && selectedAnswer === index && selectedAnswer !== correctAnswerIndex}
+              showResult={showQuizResult}
+              onClick={() => !showQuizResult && setSelectedAnswer(index)}
+              disabled={showQuizResult}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ 
+                  minWidth: '24px',
+                  height: '24px',
+                  borderRadius: '12px',
+                  background: selectedAnswer === index ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px'
+                }}>
+                  {String.fromCharCode(65 + index)}
+                </span>
+                {option}
+              </div>
+            </OptionButton>
+          ))}
+        </OptionsGrid>
+        
+        {showQuizResult && (
+          <AnswerExplanation>
+            <p style={{ marginBottom: '10px' }}>
+              {isCorrect ? (
+                <span style={{ color: '#48bb78' }}>✓ Parabéns! Você acertou!</span>
+              ) : (
+                <>
+                  <span style={{ color: '#f56565' }}>✗ Resposta incorreta.</span>
+                  <br />
+                  <strong>A resposta correta era:</strong>
+                  <br />
+                  Alternativa {String.fromCharCode(65 + (correctAnswerIndex || 0))}: {quizSession.question.options[correctAnswerIndex || 0]}
+                </>
+              )}
+            </p>
+          </AnswerExplanation>
+        )}
+      </>
     );
   };
 
   const renderQuiz = () => {
     if (!quizSession && !isLoadingQuiz) {
       return (
-        <Container>
+        <>
           <Header />
-          <BackButton onClick={() => {
-            setSelectedGame(null);
-            setShowGameSelection(true);
-          }}>
-            ← Voltar
-          </BackButton>
-          
-          <StepTitle>Escolha um Card para o Quiz</StepTitle>
-          <StepSubtitle>
-            Selecione um card que tenha PDF para gerar perguntas
-          </StepSubtitle>
-
-          <div style={{ 
-            marginBottom: '20px',
-            background: '#f7fafc',
-            padding: '20px',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div style={{ 
-              fontSize: '16px', 
-              fontWeight: 600, 
-              marginBottom: '10px',
-              color: '#2d3748'
+          <Container style={{ padding: '0 20px' }}>
+            <BackButton onClick={() => {
+              setSelectedGame(null);
+              setShowGameSelection(true);
             }}>
-              Quantidade de Perguntas
+              ← Voltar
+            </BackButton>
+            
+            <StepTitle>Escolha um Card para o Quiz</StepTitle>
+            <StepSubtitle>
+              Selecione um card que tenha PDF para gerar perguntas
+            </StepSubtitle>
+
+            <div style={{ 
+              marginBottom: '20px',
+              background: '#f7fafc',
+              padding: '20px',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ 
+                fontSize: '16px', 
+                fontWeight: 600, 
+                marginBottom: '10px',
+                color: '#2d3748'
+              }}>
+                Quantidade de Perguntas
+              </div>
+              <select
+                value={quizQuestionsAmount}
+                onChange={(e) => setQuizQuestionsAmount(Number(e.target.value))}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: '2px solid #e2e8f0',
+                  fontSize: '16px',
+                  color: '#4a5568',
+                  background: 'white',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value={5}>5 Perguntas</option>
+                <option value={10}>10 Perguntas</option>
+                <option value={15}>15 Perguntas</option>
+                <option value={20}>20 Perguntas</option>
+              </select>
             </div>
-            <select
-              value={quizQuestionsAmount}
-              onChange={(e) => setQuizQuestionsAmount(Number(e.target.value))}
-              style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '8px',
-                border: '2px solid #e2e8f0',
-                fontSize: '16px',
-                color: '#4a5568',
-                background: 'white',
-                cursor: 'pointer',
-                outline: 'none'
-              }}
-            >
-              <option value={5}>5 Perguntas</option>
-              <option value={10}>10 Perguntas</option>
-              <option value={15}>15 Perguntas</option>
-              <option value={20}>20 Perguntas</option>
-            </select>
-          </div>
 
-          <SearchInput
-            placeholder="🔍 Pesquisar cards..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+            <SearchInput
+              placeholder="🔍 Pesquisar cards..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
-          {cards.length === 0 ? (
-            <EmptyState>
-              <EmptyStateText>
-                Você precisa criar pelo menos um card com PDF na seção Escolar.
-              </EmptyStateText>
-              <CreateFirstCardButton onClick={() => window.location.href = "/escolar"}>
-                Ir para Escolar
-              </CreateFirstCardButton>
-            </EmptyState>
-          ) : (
-            <CardsSelectionArea>
-              <CardsContainer>
-                {cards
-                  .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .map((card) => (
-                    <CardOption
-                      key={card._id}
-                      onClick={() => startQuiz(card._id)}
-                    >
-                      <CardOptionTitle>{card.title}</CardOptionTitle>
-                      <CardOptionSubtitle>
-                        Clique para iniciar o quiz com {quizQuestionsAmount} perguntas
-                      </CardOptionSubtitle>
-                    </CardOption>
-                  ))}
-              </CardsContainer>
-            </CardsSelectionArea>
-          )}
-        </Container>
+            {cards.length === 0 ? (
+              <EmptyState>
+                <EmptyStateText>
+                  Você precisa criar pelo menos um card com PDF na seção Escolar.
+                </EmptyStateText>
+                <CreateFirstCardButton onClick={() => window.location.href = "/escolar"}>
+                  Ir para Escolar
+                </CreateFirstCardButton>
+              </EmptyState>
+            ) : (
+              <CardsSelectionArea>
+                <CardsContainer>
+                  {cards
+                    .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map((card) => (
+                      <CardOption
+                        key={card._id}
+                        onClick={() => startQuiz(card._id)}
+                      >
+                        <CardOptionTitle>{card.title}</CardOptionTitle>
+                        <CardOptionSubtitle>
+                          Clique para iniciar o quiz com {quizQuestionsAmount} perguntas
+                        </CardOptionSubtitle>
+                      </CardOption>
+                    ))}
+                </CardsContainer>
+              </CardsSelectionArea>
+            )}
+          </Container>
+        </>
       );
     }
 
     return (
-      <Container>
+      <>
         <Header />
-        <BackButton onClick={() => {
-          resetQuiz();
-        }}>
-          ← Voltar
-        </BackButton>
+        <Container style={{ padding: '0 20px' }}>
+          <BackButton onClick={() => {
+            resetQuiz();
+          }}>
+            ← Voltar
+          </BackButton>
 
-        <QuizContainer>
-          {isLoadingQuiz ? (
-            <QuizLoadingContainer>
-              <QuizLoadingSpinner />
-              <QuizLoadingText>Gerando pergunta...</QuizLoadingText>
-            </QuizLoadingContainer>
-          ) : (
-            <>
-              <QuizHeader>
-                <QuizTitle>Jogo do Milhão</QuizTitle>
-                <QuizCardTitle>{quizSession?.cardTitle}</QuizCardTitle>
-                <QuizProgress>
-                  <span>Pergunta {currentQuestionNumber} de {quizQuestionsAmount}</span>
-                  <QuizProgressBar>
-                    <QuizProgressFill 
-                      progress={(currentQuestionNumber / quizQuestionsAmount) * 100} 
-                    />
-                  </QuizProgressBar>
-                </QuizProgress>
-              </QuizHeader>
+          <QuizContainer>
+            {isLoadingQuiz ? (
+              <QuizLoadingContainer>
+                <QuizLoadingSpinner />
+                <QuizLoadingText>Gerando pergunta...</QuizLoadingText>
+              </QuizLoadingContainer>
+            ) : (
+              <>
+                <QuizHeader>
+                  <QuizTitle>Jogo do Milhão</QuizTitle>
+                  <QuizCardTitle>{quizSession?.cardTitle}</QuizCardTitle>
+                  <QuizProgress>
+                    <span>Pergunta {currentQuestionNumber} de {quizQuestionsAmount}</span>
+                    <QuizProgressBar>
+                      <QuizProgressFill 
+                        progress={(currentQuestionNumber / quizQuestionsAmount) * 100} 
+                      />
+                    </QuizProgressBar>
+                  </QuizProgress>
+                </QuizHeader>
 
-              {!showQuizResult ? (
-                <>
-                  <QuizQuestion>
-                    <QuestionText>{quizSession?.question.question}</QuestionText>
-                  </QuizQuestion>
+                {!showQuizResult ? (
+                  <>
+                    <QuizQuestion>
+                      <QuestionText>{quizSession?.question.question}</QuestionText>
+                    </QuizQuestion>
 
-                  {renderOptions()}
+                    {renderOptions()}
 
-                  <div style={{ textAlign: 'center', marginTop: '30px' }}>
-                    <StepButton
-                      onClick={answerQuestion}
-                      disabled={selectedAnswer === null}
-                    >
-                      {selectedAnswer === null ? 'Escolha uma opção' : 'Confirmar Resposta'}
-                    </StepButton>
-                  </div>
-                </>
-              ) : (
-                <QuizResult>
-                  <ResultTitle isSuccess={isCorrect}>
-                    {isCorrect ? '🎉 Parabéns!' : '😔 Que pena!'}
-                  </ResultTitle>
-                  <ResultMessage>
-                    {isCorrect 
-                      ? 'Você acertou! Continue assim!' 
-                      : `A resposta correta era a opção ${String.fromCharCode(65 + (correctAnswerIndex || 0))}`
-                    }
-                  </ResultMessage>
-                  
-                  <div style={{ marginBottom: '20px' }}>
-                    <p>📊 Estatísticas:</p>
-                    <p>Total de perguntas: {quizStats.totalQuestions}</p>
-                    <p>Acertos: {quizStats.correctAnswers}</p>
-                    <p>Taxa de acerto: {quizStats.totalQuestions > 0 ? Math.round((quizStats.correctAnswers / quizStats.totalQuestions) * 100) : 0}%</p>
-                    <p>Pontos ganhos: {quizStats.pointsEarned}</p>
-                  </div>
+                    <div style={{ textAlign: 'center', marginTop: '30px' }}>
+                      <StepButton
+                        onClick={answerQuestion}
+                        disabled={selectedAnswer === null}
+                      >
+                        {selectedAnswer === null ? 'Escolha uma opção' : 'Confirmar Resposta'}
+                      </StepButton>
+                    </div>
+                  </>
+                ) : (
+                  <QuizResult>
+                    <ResultTitle isSuccess={isCorrect}>
+                      {isCorrect ? '🎉 Parabéns!' : '😔 Que pena!'}
+                    </ResultTitle>
+                    <ResultMessage>
+                      {isCorrect 
+                        ? 'Você acertou! Continue assim!' 
+                        : `A resposta correta era a opção ${String.fromCharCode(65 + (correctAnswerIndex || 0))}`
+                      }
+                    </ResultMessage>
+                    
+                    <div style={{ marginBottom: '20px' }}>
+                      <p>📊 Estatísticas:</p>
+                      <p>Total de perguntas: {quizStats.totalQuestions}</p>
+                      <p>Acertos: {quizStats.correctAnswers}</p>
+                      <p>Taxa de acerto: {quizStats.totalQuestions > 0 ? Math.round((quizStats.correctAnswers / quizStats.totalQuestions) * 100) : 0}%</p>
+                      <p>Pontos ganhos: {quizStats.pointsEarned}</p>
+                    </div>
 
-                  <PlayAgainButton onClick={resetQuiz}>
-                    Jogar Novamente
-                  </PlayAgainButton>
-                </QuizResult>
-              )}
-            </>
-          )}
-        </QuizContainer>
-      </Container>
+                    <PlayAgainButton onClick={resetQuiz}>
+                      Jogar Novamente
+                    </PlayAgainButton>
+                  </QuizResult>
+                )}
+              </>
+            )}
+          </QuizContainer>
+        </Container>
+      </>
     );
   };
 
@@ -2405,142 +2392,143 @@ export function Games() {
       {showGameSelection ? (
         renderGameSelection()
       ) : (
-        <Container>
+        <>
           <Header />
-          
-          <BackButton onClick={() => {
-            setShowGameSelection(true);
-            setSelectedGame(null);
-            resetPartialCreationFlow();
-          }}>
-            ← Voltar para seleção de jogos
-          </BackButton>
+          <Container style={{ padding: '0 20px' }}>
+            <BackButton onClick={() => {
+              setShowGameSelection(true);
+              setSelectedGame(null);
+              resetPartialCreationFlow();
+            }}>
+              ← Voltar para seleção de jogos
+            </BackButton>
 
-          {renderCreationStep()}
+            {renderCreationStep()}
 
-          {showCreateTagModal && (
-            <TagModal onClick={() => setShowCreateTagModal(false)}>
-              <TagModalContent onClick={(e) => e.stopPropagation()}>
-                <TagModalTitle>Criar Nova Tag</TagModalTitle>
-                <TagModalInput
-                  placeholder="Digite o nome da nova tag..."
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
-                />
-                <TagModalButtons>
-                  <TagModalButton
-                    variant="secondary"
-                    onClick={() => setShowCreateTagModal(false)}
-                  >
-                    Cancelar
-                  </TagModalButton>
-                  <TagModalButton variant="primary" onClick={createTagFromModal}>
-                    Criar Tag
-                  </TagModalButton>
-                </TagModalButtons>
-              </TagModalContent>
-            </TagModal>
-          )}
-
-          {flashcards.length === 0 ? (
-            <p>Você ainda não possui flashcards.</p>
-          ) : currentIndex >= flashcards.length ? (
-            <p>Parabéns! Você revisou todos os flashcards.</p>
-          ) : (
-            <div>
-              <FlashcardContainer>
-                <FlashcardInner
-                  isFlipped={showBack}
-                  onClick={() => setShowBack(!showBack)}
-                >
-                  <FlashcardFront>
-                    <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
-                    <FlashText>{current.front}</FlashText>
-                  </FlashcardFront>
-                  <FlashcardBack>
-                    <FlashcardStepTitle>Resposta</FlashcardStepTitle>
-                    <FlashText>{current.back}</FlashText>
-                  </FlashcardBack>
-                </FlashcardInner>
-              </FlashcardContainer>
-
-              <FlipInstruction>
-                {!showBack
-                  ? "Clique no cartão para ver a resposta"
-                  : "Clique no cartão para voltar à pergunta"}
-              </FlipInstruction>
-
-              {showBack && (
-                <GradeContainer>
-                  <GradeText>Como você se saiu? (0 a 5)</GradeText>
-                  {[0, 1, 2, 3, 4, 5].map((n) => (
-                    <GradeButton key={n} onClick={() => handleGrade(n)}>
-                      {n}
-                    </GradeButton>
-                  ))}
-                </GradeContainer>
-              )}
-            </div>
-          )}
-
-          <AllFlashcardsSection>
-            <SectionHeader>
-              <SectionTitle>
-                📚 Seus Flashcards
-                <FlashcardCount>{flashcards.length}</FlashcardCount>
-              </SectionTitle>
-            </SectionHeader>
+            {showCreateTagModal && (
+              <TagModal onClick={() => setShowCreateTagModal(false)}>
+                <TagModalContent onClick={(e) => e.stopPropagation()}>
+                  <TagModalTitle>Criar Nova Tag</TagModalTitle>
+                  <TagModalInput
+                    placeholder="Digite o nome da nova tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
+                  />
+                  <TagModalButtons>
+                    <TagModalButton
+                      variant="secondary"
+                      onClick={() => setShowCreateTagModal(false)}
+                    >
+                      Cancelar
+                    </TagModalButton>
+                    <TagModalButton variant="primary" onClick={createTagFromModal}>
+                      Criar Tag
+                    </TagModalButton>
+                  </TagModalButtons>
+                </TagModalContent>
+              </TagModal>
+            )}
 
             {flashcards.length === 0 ? (
-              <EmptyFlashcardsState>
-                <EmptyIcon>🎴</EmptyIcon>
-                <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
-                <EmptyDescription>
-                  Crie seu primeiro flashcard usando o fluxo step-by-step acima.
-                  <br />
-                  Organize seus estudos de forma inteligente e ganhe pontos!
-                </EmptyDescription>
-                <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
-                  🚀 Criar Primeiro Flashcard
-                </CreateFirstFlashcardButton>
-              </EmptyFlashcardsState>
+              <p>Você ainda não possui flashcards.</p>
+            ) : currentIndex >= flashcards.length ? (
+              <p>Parabéns! Você revisou todos os flashcards.</p>
             ) : (
-              <FlashcardsGrid>
-                {flashcards.map((fc) => (
-                  <FlashcardCard key={fc._id}>
-                    <FlashcardHeader>
-                      <FlashcardTitle>{fc.front}</FlashcardTitle>
-                      <FlashcardDate>Criado recentemente</FlashcardDate>
-                    </FlashcardHeader>
+              <div>
+                <FlashcardContainer>
+                  <FlashcardInner
+                    isFlipped={showBack}
+                    onClick={() => setShowBack(!showBack)}
+                  >
+                    <FlashcardFront>
+                      <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
+                      <FlashText>{current.front}</FlashText>
+                    </FlashcardFront>
+                    <FlashcardBack>
+                      <FlashcardStepTitle>Resposta</FlashcardStepTitle>
+                      <FlashText>{current.back}</FlashText>
+                    </FlashcardBack>
+                  </FlashcardInner>
+                </FlashcardContainer>
 
-                    <FlashcardContent>
-                      <ContentSection>
-                        <ContentLabel>Pergunta</ContentLabel>
-                        <ContentText>{fc.front}</ContentText>
-                      </ContentSection>
-                    </FlashcardContent>
+                <FlipInstruction>
+                  {!showBack
+                    ? "Clique no cartão para ver a resposta"
+                    : "Clique no cartão para voltar à pergunta"}
+                </FlipInstruction>
 
-                    {fc.tags && fc.tags.length > 0 && (
-                      <FlashcardTags>
-                        {fc.tags.map((tag, index) => (
-                          <FlashcardTag key={index}>
-                            {typeof tag === "object" ? tag.name : tag}
-                          </FlashcardTag>
-                        ))}
-                      </FlashcardTags>
-                    )}
-
-                    <FlashcardActions>
-                      <StudyButton>📖 Estudar</StudyButton>
-                      <PreviewButton>👁️ Preview</PreviewButton>
-                    </FlashcardActions>
-                  </FlashcardCard>
-                ))}
-              </FlashcardsGrid>
+                {showBack && (
+                  <GradeContainer>
+                    <GradeText>Como você se saiu? (0 a 5)</GradeText>
+                    {[0, 1, 2, 3, 4, 5].map((n) => (
+                      <GradeButton key={n} onClick={() => handleGrade(n)}>
+                        {n}
+                      </GradeButton>
+                    ))}
+                  </GradeContainer>
+                )}
+              </div>
             )}
-          </AllFlashcardsSection>
-        </Container>
+
+            <AllFlashcardsSection>
+              <SectionHeader>
+                <SectionTitle>
+                  📚 Seus Flashcards
+                  <FlashcardCount>{flashcards.length}</FlashcardCount>
+                </SectionTitle>
+              </SectionHeader>
+
+              {flashcards.length === 0 ? (
+                <EmptyFlashcardsState>
+                  <EmptyIcon>🎴</EmptyIcon>
+                  <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
+                  <EmptyDescription>
+                    Crie seu primeiro flashcard usando o fluxo step-by-step acima.
+                    <br />
+                    Organize seus estudos de forma inteligente e ganhe pontos!
+                  </EmptyDescription>
+                  <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
+                    🚀 Criar Primeiro Flashcard
+                  </CreateFirstFlashcardButton>
+                </EmptyFlashcardsState>
+              ) : (
+                <FlashcardsGrid>
+                  {flashcards.map((fc) => (
+                    <FlashcardCard key={fc._id}>
+                      <FlashcardHeader>
+                        <FlashcardTitle>{fc.front}</FlashcardTitle>
+                        <FlashcardDate>Criado recentemente</FlashcardDate>
+                      </FlashcardHeader>
+
+                      <FlashcardContent>
+                        <ContentSection>
+                          <ContentLabel>Pergunta</ContentLabel>
+                          <ContentText>{fc.front}</ContentText>
+                        </ContentSection>
+                      </FlashcardContent>
+
+                      {fc.tags && fc.tags.length > 0 && (
+                        <FlashcardTags>
+                          {fc.tags.map((tag, index) => (
+                            <FlashcardTag key={index}>
+                              {typeof tag === "object" ? tag.name : tag}
+                            </FlashcardTag>
+                          ))}
+                        </FlashcardTags>
+                      )}
+
+                      <FlashcardActions>
+                        <StudyButton>📖 Estudar</StudyButton>
+                        <PreviewButton>👁️ Preview</PreviewButton>
+                      </FlashcardActions>
+                    </FlashcardCard>
+                  ))}
+                </FlashcardsGrid>
+              )}
+            </AllFlashcardsSection>
+          </Container>
+        </>
       )}
     </>
   );
