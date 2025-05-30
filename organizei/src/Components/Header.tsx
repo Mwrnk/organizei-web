@@ -39,11 +39,11 @@ export function Header() {
           </li>
           <li
             className={
-              location.pathname.includes("/profissional") ? "active" : ""
+              location.pathname.includes("/games") ? "active" : ""
             }
           >
             <Link
-              to="/profissional"
+              to="/games"
               style={{ textDecoration: "none", color: "inherit" }}
             >
               Games

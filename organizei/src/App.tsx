@@ -14,7 +14,7 @@ import { LoadingProvider, useLoading } from "./Contexts/LoadingContext";
 import { LoadingScreen } from "./Components/LoadingScreen";
 import { PrivateRoute, PublicRoute, PremiumRoute } from "./Routes/Rotas";
 import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
-import { Profissional } from "./pages/Profissional/Profissional";
+import { Games } from "./pages/Games/Games";
 
 function AppContent() {
   const { isLoading } = useLoading();
@@ -34,7 +34,7 @@ function AppContent() {
           <Route path="/configuracoes" element={<Configuracoes />} />
           <Route path="/planos" element={<Planos />} />
           <Route path="/escolar" element={<Escolar />} />
-          <Route path="/profissional" element={<Profissional />} />
+          <Route path="/games" element={<Games />} />
           <Route path="/comunidade" element={<Comunidade />} />
           <Route path="/perfilbusca/:id" element={<PerfilBusca />} />
 
