@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import config from "../../../assets/Settings.svg";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 
 const Container = styled.div`
   max-width: 1000px;
@@ -304,7 +305,7 @@ export function Perfil() {
     }
   };
 
-  if (isLoading) return <p>Carregando perfil...</p>;
+  if (isLoading) return <LoadingScreen isVisible={true} />;
   if (!user) return <p>Usuário não encontrado.</p>;
 
   return (
@@ -398,7 +399,7 @@ export function Perfil() {
           <BotaoSair onClick={logout}>Sair</BotaoSair>
         </InfoSection>
 
-        <EstatisticasSection>
+        {/* <EstatisticasSection>
           <EstatisticasTitle>Estatísticas</EstatisticasTitle>
           <EstatisticasGrid>
             <EstatisticaBox>
@@ -414,7 +415,7 @@ export function Perfil() {
               <EstatisticaLabel>Meus Pontos</EstatisticaLabel>
             </EstatisticaBox>
           </EstatisticasGrid>
-        </EstatisticasSection>
+        </EstatisticasSection> */}
       </Container>
     </>
   );

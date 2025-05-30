@@ -10,6 +10,7 @@ import { Usuario } from "../../Types/User";
 import curtidaSvg from "../../../assets/curtida.svg";
 import coracaoCurtidoSvg from "../../../assets/coracaocurtido.svg";
 import chatSvg from "../../../assets/chat.svg";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 
 const Container = styled.div`
   background-color: transparent;
@@ -599,6 +600,7 @@ export function Comunidade() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { user } = useAuth();
   const navigate = useNavigate();

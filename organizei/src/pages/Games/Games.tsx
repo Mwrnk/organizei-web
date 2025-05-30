@@ -4,6 +4,7 @@ import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 
 // Tipos locais
 type Tag = {
@@ -1679,7 +1680,7 @@ export function Games() {
   if (isLoading)
     return (
       <Container>
-        <p>Carregando flashcards...</p>
+        <LoadingScreen isVisible={true} />
       </Container>
     );
 

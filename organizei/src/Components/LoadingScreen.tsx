@@ -1,8 +1,19 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import loadingVideo from '../../assets/Ativo 2.mp4';
 
-const LoadingContainer = styled.div`
+const GlobalStyle = createGlobalStyle`
+  body:has(.loading-container) {
+    &::before {
+      display: none !important;
+    }
+    &::after {
+      display: none !important;
+    }
+  }
+`;
+
+const LoadingContainer = styled.div.attrs({ className: 'loading-container' })`
   position: fixed;
   top: 0;
   left: 0;
@@ -20,6 +31,18 @@ const LoadingVideo = styled.video`
   width: 400px;
   height: 400px;
   object-fit: contain;
+  &::-webkit-media-controls-timeline {
+    display: none;
+  }
+  &::-webkit-media-controls {
+    display: none !important;
+  }
+  &::-webkit-media-controls-start-playback-button {
+    display: none !important;
+  }
+  &::-webkit-loading-indicator {
+    display: none !important;
+  }
 `;
 
 interface LoadingScreenProps {
@@ -30,16 +53,21 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible }) => {
   if (!isVisible) return null;
 
   return (
-    <LoadingContainer>
-      <LoadingVideo
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        <source src={loadingVideo} type="video/mp4" />
-        Seu navegador não suporta vídeos.
-      </LoadingVideo>
-    </LoadingContainer>
+    <>
+      <GlobalStyle />
+      <LoadingContainer>
+        <LoadingVideo
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          loading="eager"
+        >
+          <source src={loadingVideo} type="video/mp4" priority="high" />
+          Seu navegador não suporta vídeos.
+        </LoadingVideo>
+      </LoadingContainer>
+    </>
   );
 }; 

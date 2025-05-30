@@ -4,6 +4,7 @@ import axios from "axios";
 import { Header } from "../../Components/Header";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 
 // ESTILOS
 const Container = styled.div`
@@ -142,9 +143,7 @@ export function PerfilBusca() {
 
   if (!usuario) {
     return (
-      <div>
-        <h1>Carregando usuário...</h1>
-      </div>
+      <LoadingScreen isVisible={true} />
     );
   }
 

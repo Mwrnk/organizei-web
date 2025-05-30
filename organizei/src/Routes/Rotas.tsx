@@ -2,14 +2,15 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContexts";
 import { getUserPermissions } from "../Types/User";
 import { ReactNode } from "react";
+import { LoadingScreen } from "../Components/LoadingScreen";
 
 // Componente para rotas protegidas que requerem autenticação
 export const PrivateRoute = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Se estiver carregando, mostra um indicador de carregamento
+  // Se estiver carregando, mostra o LoadingScreen
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <LoadingScreen isVisible={true} />;
   }
 
   // Se não estiver autenticado, redireciona para login
@@ -25,9 +26,9 @@ export const PrivateRoute = () => {
 export const PublicRoute = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Se estiver carregando, mostra um indicador de carregamento
+  // Se estiver carregando, mostra o LoadingScreen
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <LoadingScreen isVisible={true} />;
   }
 
   // Se estiver autenticado, redireciona para o perfil
@@ -53,9 +54,9 @@ export const PermissionRoute = ({
 }: PermissionRouteProps) => {
   const { user, isLoading } = useAuth();
 
-  // Se estiver carregando, mostra um indicador de carregamento
+  // Se estiver carregando, mostra o LoadingScreen
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <LoadingScreen isVisible={true} />;
   }
 
   // Se não tiver usuário ou não tiver a permissão requerida
@@ -72,7 +73,7 @@ export const PremiumRoute = ({ children }: { children: ReactNode }) => {
   const { currentPlan, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Carregando...</div>;
+    return <LoadingScreen isVisible={true} />;
   }
 
   const isPremium = currentPlan === "premium" || currentPlan === "enterprise";
