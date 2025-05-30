@@ -52,6 +52,7 @@ import {
   StatValue,
   StatLabel,
   StatIcon,
+  ContainerTotal,
 } from "../../Style/Escolar";
 
 import {
@@ -982,12 +983,42 @@ export function Escolar() {
     console.log("🔄 userStats updated:", userStats);
   }, [userStats]);
 
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [dragScrollLeft, setDragScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    const grid = e.currentTarget;
+    const rect = grid.getBoundingClientRect();
+    setStartX(e.pageX - rect.left);
+    setDragScrollLeft(grid.scrollLeft);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const grid = e.currentTarget;
+    const rect = grid.getBoundingClientRect();
+    const x = e.pageX - rect.left;
+    const walk = (x - startX) * 2;
+    grid.scrollLeft = dragScrollLeft - walk;
+  };
+
   if (isLoading) {
     return <LoadingScreen isVisible={true} />;
   }
 
   return (
-    <>
+    <ContainerTotal>
       <Header />
       <PageWrapper>
         <SidebarWrapper isOpen={isSidebarOpen}>
@@ -1078,6 +1109,7 @@ export function Escolar() {
                 </PrimeirosPassosContainer>
               ) : (
                 <>
+              
                   <HeaderContainer>
                     <div>
                       <Subtitle>#escolar</Subtitle>
@@ -1101,7 +1133,14 @@ export function Escolar() {
 
                   <ScrollWrapper>
                     <DragDropContext onDragEnd={onDragEnd}>
-                      <Grid ref={gridRef}>
+                      <Grid 
+                        className="lists-grid" 
+                        ref={gridRef}
+                        onMouseDown={handleMouseDown}
+                        onMouseLeave={handleMouseLeave}
+                        onMouseUp={handleMouseUp}
+                        onMouseMove={handleMouseMove}
+                      >
                         {lists.map((list) => (
                           <Droppable droppableId={list.id} key={list.id}>
                             {(provided) => (
@@ -2167,6 +2206,6 @@ export function Escolar() {
           )}
         </MainContent>
       </PageWrapper>
-    </>
+    </ContainerTotal>
   );
 }

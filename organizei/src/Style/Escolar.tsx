@@ -1,7 +1,15 @@
 import styled from "styled-components";
+export const ContainerTotal = styled.div`
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+`;
 
 export const Container = styled.div`
   padding: 0;
+  width: 100%;
+  overflow: hidden;
 `;
 
 export const Subtitle = styled.p`
@@ -82,14 +90,13 @@ export const ButtonExcluir = styled.button`
 
 export const ScrollWrapper = styled.div`
   position: relative;
-  margin-top: 16px;
-  &:hover button {
-    opacity: 1;
-  }
+  width: 100%;
+  overflow: hidden;
 `;
 
 export const ListColumn = styled.div`
   min-width: 300px;
+  flex-shrink: 0;
   scroll-snap-align: start;
   border-radius: 12px;
   padding: 16px;
@@ -524,18 +531,35 @@ export const SaveButton = styled.button`
   }
 `;
 
-/* Grid e ScrollButton permanecem iguais */
 export const Grid = styled.div`
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
+  padding: 20px 0;
   scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  
   &::-webkit-scrollbar {
-    display: none;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    cursor: grabbing;
   }
 `;
 
@@ -609,6 +633,10 @@ export const HeaderContainer = styled.div`
   margin-bottom: 16px;
   flex-wrap: wrap;
   gap: 10px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 export const HeaderButtons = styled.div`
@@ -618,9 +646,10 @@ export const HeaderButtons = styled.div`
 
 export const PageWrapper = styled.div`
   display: flex;
-  min-height: calc(100vh - 140px);
+  min-height: calc(100vh - 64px);
   position: relative;
-  
+  max-width: 100%;
+  overflow-x: hidden;
 `;
 
 export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
@@ -737,6 +766,8 @@ export const MainContent = styled.div<{ isOpen: boolean }>`
   margin-left: ${props => props.isOpen ? '154px' : '88px'};
   transition: margin-left 0.3s ease;
   margin-top: 10px;
+  max-width: calc(100vw - ${props => props.isOpen ? '154px' : '88px'});
+  overflow: hidden;
 `;
 
 export const DashboardStats = styled.div`
