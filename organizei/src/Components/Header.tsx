@@ -27,86 +27,80 @@ export function Header() {
 
       <NavMenu>
         <ul>
-          <li
-            className={location.pathname.includes("/escolar") ? "active" : ""}
+          <Link
+            to="/escolar"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/escolar"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/escolar") ? "active" : ""}>
               Escolar
-            </Link>
-          </li>
-          <li
-            className={
-              location.pathname.includes("/profissional") ? "active" : ""
-            }
+            </li>
+          </Link>
+          
+          <Link
+            to="/games"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/profissional"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/games") ? "active" : ""}>
               Games
-            </Link>
-          </li>
-          <li
-            className={
-              location.pathname.includes("/comunidade") ? "active" : ""
-            }
+            </li>
+          </Link>
+          
+          <Link
+            to="/comunidade"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/comunidade"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/comunidade") ? "active" : ""}>
               Comunidade
-            </Link>
-          </li>
-          <li className={location.pathname.includes("/planos") ? "active" : ""}>
-            <Link
-              to="/planos"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            </li>
+          </Link>
+          
+          <Link
+            to="/planos"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname.includes("/planos") ? "active" : ""}>
               Planos
-            </Link>
-          </li>
+            </li>
+          </Link>
         </ul>
       </NavMenu>
 
       <SecondaryNavMenu>
         <ul>
           {canUseAI && (
-            <li className={location.pathname === "/ia" ? "active" : ""}>
-              <Link
-                to="/ia"
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
+            <Link
+              to="/ia"
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <li className={location.pathname === "/ia" ? "active" : ""}>
                 <img src={IconIa} />
-              </Link>
-            </li>
+              </li>
+            </Link>
           )}
-          <li className={location.pathname === "/notificacoes" ? "active" : ""}>
-            <Link
-              to="/notificacoes"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <img src={IconNotifacoes} />
-            </Link>
-          </li>
-          <li
-            className={location.pathname === "/configuracoes" ? "active" : ""}
+          
+          <Link
+            to="/notificacoes"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/configuracoes"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname === "/notificacoes" ? "active" : ""}>
+              <img src={IconNotifacoes} />
+            </li>
+          </Link>
+          
+          <Link
+            to="/configuracoes"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname === "/configuracoes" ? "active" : ""}>
               <img src={Iconconfig} />
-            </Link>
-          </li>
-          <li className={location.pathname === "/perfil" ? "active" : ""}>
-            <Link
-              to="/perfil"
-              style={{ textDecoration: "none", color: "inherit", display: 'flex', alignItems: 'center' }}
-            >
+            </li>
+          </Link>
+          
+          <Link
+            to="/perfil"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname === "/perfil" ? "active" : ""}>
               {user?.profileImage ? (
                 <img
                   src={user.profileImage}
@@ -140,8 +134,8 @@ export function Header() {
                   {user?.name ? user.name[0].toUpperCase() : 'P'}
                 </div>
               )}
-            </Link>
-          </li>
+            </li>
+          </Link>
         </ul>
       </SecondaryNavMenu>
     </HeaderContainer>

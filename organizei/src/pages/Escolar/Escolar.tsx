@@ -36,6 +36,17 @@ import {
   CardTitle,
   ButtonCriar,
   ButtonExcluir,
+  PrimeirosPassosContainer,
+  PrimeirosPassosTag,
+  PrimeirosPassosTitle,
+  PrimeirosPassosButton,
+  HeaderContainer,
+  HeaderButtons,
+  PageWrapper,
+  SidebarWrapper,
+  SidebarToggle,
+  SidebarItem,
+  MainContent,
 } from "../../Style/Escolar";
 
 import {
@@ -48,11 +59,20 @@ import { toast } from "react-toastify";
 import comunidadeIcon from "../../../assets/comunidade.svg";
 import adicionarCard from "../../../assets/adicionarCard.svg";
 import lixeira from "../../../assets/lixeira.svg";
+import setaDireita from "../../../assets/setaDireita.svg";
+import setaEsquerda from "../../../assets/setaEsquerda.svg";
+import pontosIcon from "../../../assets/pontos.svg";
+import dashboardIcon from "../../../assets/dashboard.svg";
+import { PontosView } from '../../Components/PontosView/PontosView';
 
 export function Escolar() {
   const { user } = useAuth();
   const userId = user?._id;
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  usePageLoading(isLoading);
+  const [currentView, setCurrentView] = useState('lists');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Função auxiliar para formatar data
   const formatDate = (dateString: string | undefined) => {
@@ -111,7 +131,6 @@ export function Escolar() {
   const [prioridadeSelecionada, setPrioridadeSelecionada] = useState<string>("Baixa");
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [isDataLoading, setIsDataLoading] = useState(true);
   const [confirmDeleteList, setConfirmDeleteList] = useState(false);
   const [listToDelete, setListToDelete] = useState<Lista | null>(null);
   const [confirmListName, setConfirmListName] = useState("");
@@ -119,13 +138,13 @@ export function Escolar() {
   const [listToEdit, setListToEdit] = useState<Lista | null>(null);
   const [newListName, setNewListName] = useState("");
 
-  usePageLoading(isDataLoading);
-
   useEffect(() => {
     const fetchListsAndCards = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
       
-      setIsDataLoading(true);
       try {
         const res = await axios.get(
           `http://localhost:3000/lists/user/${userId}`
@@ -135,6 +154,7 @@ export function Escolar() {
 
         if (listas.length === 0) {
           setCards({});
+          setIsLoading(false);
           return;
         }
 
@@ -145,7 +165,6 @@ export function Escolar() {
               `http://localhost:3000/lists/${list.id}/cards`
             );
             
-            // Para cada card, buscar os dados completos incluindo imagens
             const cardsWithDetails = await Promise.all(
               cardsRes.data.data.map(async (card: any) => {
                 try {
@@ -153,8 +172,6 @@ export function Escolar() {
                     `http://localhost:3000/cards/${card.id}`
                   );
                   const cardDetail = cardDetailRes.data.data;
-                  
-                  console.log("Card detail:", cardDetail); // Debug log
                   
                   return {
                     id: card.id,
@@ -168,8 +185,6 @@ export function Escolar() {
                     priority: cardDetail.priority || "Baixa",
                   };
                 } catch (err) {
-                  // Se falhar ao buscar detalhes, retorna dados básicos
-                  console.warn(`Erro ao buscar detalhes do card ${card.id}:`, err);
                   return {
                     id: card.id,
                     title: card.title,
@@ -193,7 +208,7 @@ export function Escolar() {
       } catch (err) {
         console.error("Erro ao buscar listas ou cards", err);
       } finally {
-        setIsDataLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -281,7 +296,7 @@ export function Escolar() {
 
   const handleCreateList = async () => {
     if (!userId || !listName.trim()) {
-      alert("Preencha o nome da lista corretamente.");
+      toast.error("Por favor, preencha o nome da lista.");
       return;
     }
 
@@ -302,40 +317,29 @@ export function Escolar() {
       setLists((prev) => [...prev, novaLista]);
       setListName("");
       setShowModal(false);
+      toast.success("✨ Lista criada com sucesso!");
     } catch (err: any) {
       console.error("Erro ao criar lista", err);
-      if (err.response) {
-        console.error("Resposta do backend:", err.response.data);
-      }
+      toast.error("Não foi possível criar a lista. Tente novamente.");
     }
   };
 
   const handleCreateCard = async () => {
     if (!cardTitle || !selectedListId) {
-      toast.error("Preencha o nome do card.");
-      console.log("❌ Título do card ou lista não selecionados.");
+      toast.error("Por favor, preencha o título do card.");
       return;
     }
 
     try {
-      console.log("🚀 Iniciando criação do card...");
-      console.log("📦 Dados enviados:", {
-        title: cardTitle,
-        listId: selectedListId,
-      });
-
       const res = await axios.post("http://localhost:3000/cards", {
         title: cardTitle,
         listId: selectedListId,
       });
 
       const newCardId = res.data.data.id;
-      console.log("✅ Card criado com sucesso:", newCardId);
-      toast.success("Card criado com sucesso!");
+      toast.success("✨ Card criado com sucesso!");
 
-      // Upload da imagem, se houver
       if (image) {
-        console.log("🖼️ Iniciando upload da imagem:", image.name);
         const formData = new FormData();
         formData.append("files", image);
 
@@ -345,11 +349,10 @@ export function Escolar() {
           { headers: { "Content-Type": "multipart/form-data" } }
         );
 
-        console.log("✅ Upload da imagem concluído.");
-        toast.success("Imagem enviada com sucesso.");
+        toast.success("🖼️ Imagem adicionada ao card!");
       }
 
-      // Recarregar os dados da lista para mostrar o card com a imagem
+      // Recarregar os dados da lista
       try {
         const cardsRes = await axios.get(
           `http://localhost:3000/lists/${selectedListId}/cards`
@@ -394,17 +397,18 @@ export function Escolar() {
         }));
       } catch (err) {
         console.error("Erro ao recarregar cards:", err);
+        toast.error("Erro ao atualizar a lista de cards.");
       }
 
       setShowCardModal(false);
       setCardTitle("");
       setImage(null);
-      console.log("🧹 Formulário resetado. Modal fechado.");
     } catch (err) {
-      console.error("💥 Erro ao criar card ou enviar imagem:", err);
-      toast.error("Erro ao criar card ou enviar imagem.");
+      console.error("Erro ao criar card ou enviar imagem:", err);
+      toast.error("Erro ao criar card. Tente novamente.");
     }
   };
+
   const handleDeleteCard = async () => {
     if (!cardParaExcluir || !selectedListId) return;
     try {
@@ -417,20 +421,21 @@ export function Escolar() {
       }));
       setCardParaExcluir(null);
       setConfirmDelete(false);
-      setModoExcluir(false); // Sai do modo excluir após deletar
+      setModoExcluir(false);
+      toast.success("🗑️ Card excluído com sucesso!");
     } catch (err) {
       console.error("Erro ao excluir card", err);
+      toast.error("Não foi possível excluir o card. Tente novamente.");
     }
   };
 
   const handleSalvarEdicao = async () => {
     if (!cardSelecionado || !novoTitulo.trim() || !selectedListId) {
-      console.log("Dados insuficientes para editar.");
+      toast.error("Por favor, preencha o título do card.");
       return;
     }
 
     try {
-      console.log("Editando título...");
       const token = localStorage.getItem("authenticacao");
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
@@ -442,9 +447,6 @@ export function Escolar() {
         }
       );
 
-      console.log("Título atualizado:", res.data.data.title);
-
-      // Upload de arquivos (imagem e/ou PDF)
       if (image || pdf) {
         const formData = new FormData();
         if (image) formData.append("files", image);
@@ -461,7 +463,12 @@ export function Escolar() {
           }
         );
 
-        console.log("Arquivos enviados com sucesso.");
+        toast.success(image && pdf 
+          ? "📎 Arquivos anexados com sucesso!" 
+          : image 
+            ? "🖼️ Imagem anexada com sucesso!" 
+            : "📄 PDF anexado com sucesso!"
+        );
       }
 
       setCards((prev) => ({
@@ -475,20 +482,20 @@ export function Escolar() {
       setEditModalOpen(false);
       setImage(null);
       setPdf(null);
-      console.log("Edição concluída.");
+      toast.success("✨ Card atualizado com sucesso!");
     } catch (err) {
       console.error("Erro ao editar card ou enviar arquivos", err);
+      toast.error("Erro ao atualizar o card. Tente novamente.");
     }
   };
 
   const handleSalvarDetalhes = async () => {
     if (!cardSelecionado || !tituloEditavel.trim() || !selectedListId) {
-      toast.error("Preencha o título corretamente.");
+      toast.error("Por favor, preencha o título do card.");
       return;
     }
 
     try {
-      // Atualiza o título, prioridade e descrição
       const res = await axios.patch(
         `http://localhost:3000/cards/${cardSelecionado.id}`,
         { 
@@ -498,7 +505,6 @@ export function Escolar() {
         }
       );
 
-      // Upload do PDF se houver
       if (pdf) {
         const formData = new FormData();
         formData.append("files", pdf);
@@ -508,9 +514,9 @@ export function Escolar() {
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
+        toast.success("📄 PDF anexado com sucesso!");
       }
 
-      // Recarregar os dados completos do card
       const cardDetailRes = await axios.get(
         `http://localhost:3000/cards/${cardSelecionado.id}`
       );
@@ -526,7 +532,6 @@ export function Escolar() {
         is_published: cardDetail.is_published || false,
       };
 
-      // Atualizar na lista de cards
       setCards((prev) => ({
         ...prev,
         [selectedListId]: prev[selectedListId].map((c) =>
@@ -534,14 +539,12 @@ export function Escolar() {
         ),
       }));
 
-      // Atualiza no modal
       setCardSelecionado(updatedCard);
-
-      toast.success("Card atualizado com sucesso.");
+      toast.success("✨ Card atualizado com sucesso!");
       setPdf(null);
     } catch (error) {
       console.error("Erro ao atualizar card:", error);
-      toast.error("Erro ao atualizar card.");
+      toast.error("Erro ao atualizar o card. Tente novamente.");
     }
   };
 
@@ -556,7 +559,6 @@ export function Escolar() {
   const confirmDeleteListAction = async () => {
     if (!listToDelete) return;
     
-    // Verificar se o nome digitado está correto
     if (confirmListName.trim() !== listToDelete.name) {
       toast.error("O nome digitado não confere com o nome da lista!");
       return;
@@ -570,10 +572,11 @@ export function Escolar() {
         delete updated[listToDelete.id];
         return updated;
       });
-      toast.success("Lista excluída com sucesso!");
+      toast.success("🗑️ Lista excluída com sucesso!");
+      toast.info(`${cards[listToDelete.id]?.length || 0} cards foram removidos junto com a lista.`);
     } catch (err) {
       console.error("Erro ao excluir lista", err);
-      toast.error("Erro ao excluir lista");
+      toast.error("Erro ao excluir a lista. Tente novamente.");
     } finally {
       setConfirmDeleteList(false);
       setListToDelete(null);
@@ -729,7 +732,7 @@ export function Escolar() {
 
   const handleSaveListEdit = async () => {
     if (!listToEdit || !newListName.trim()) {
-      toast.error("Nome da lista não pode estar vazio!");
+      toast.error("O nome da lista não pode ficar vazio!");
       return;
     }
 
@@ -740,13 +743,7 @@ export function Escolar() {
         return;
       }
 
-      console.log("Token:", token);
-      console.log("Dados da requisição:", {
-        listId: listToEdit.id,
-        newName: newListName.trim()
-      });
-
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:3000/lists/${listToEdit.id}`,
         {
           name: newListName.trim()
@@ -758,9 +755,6 @@ export function Escolar() {
         }
       );
 
-      console.log("Resposta do servidor:", response.data);
-
-      // Atualizar a lista no estado
       setLists((prev) => 
         prev.map((list) => 
           list.id === listToEdit.id 
@@ -769,18 +763,13 @@ export function Escolar() {
         )
       );
 
-      toast.success("Nome da lista atualizado com sucesso!");
+      toast.success("✨ Nome da lista atualizado com sucesso!");
       setShowEditListModal(false);
       setListToEdit(null);
       setNewListName("");
     } catch (err: any) {
-      console.error("Erro ao editar lista:", {
-        error: err,
-        response: err.response?.data,
-        status: err.response?.status,
-        headers: err.response?.headers
-      });
-      toast.error(err.response?.data?.message || "Erro ao editar lista");
+      console.error("Erro ao editar lista:", err);
+      toast.error(err.response?.data?.message || "Erro ao editar lista. Tente novamente.");
     }
   };
 
@@ -875,1064 +864,1128 @@ export function Escolar() {
     }
   };
 
-  if (isDataLoading) {
+  if (isLoading) {
     return <LoadingScreen isVisible={true} />;
   }
 
   return (
     <>
       <Header />
-      <Container>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "16px",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
-          <div>
-            <Subtitle>#escolar</Subtitle>
-            <Title>O que vamos estudar hoje?</Title>
-          </div>
+      <PageWrapper>
+        <SidebarWrapper isOpen={isSidebarOpen}>
+          <SidebarToggle 
+            isOpen={isSidebarOpen} 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <img 
+              src={isSidebarOpen ? setaEsquerda : setaDireita} 
+              alt="Toggle menu"
+              style={{ width: '24px', height: '24px' }}
+            />
+            {isSidebarOpen && <span>Fechar menu</span>}
+          </SidebarToggle>
 
-          <div style={{ display: "flex", gap: "10px" }}>
-            <ButtonCriar onClick={() => setShowModal(true)}>
-              <img src={adicionarCard} alt="Adicionar" />
-              Criar nova lista
-            </ButtonCriar>
+          <SidebarItem 
+            isOpen={isSidebarOpen}
+            className={currentView === 'points' ? "active" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('points');
+            }}
+          >
+            <img 
+              src={pontosIcon} 
+              alt="Pontos"
+              className="icon"
+              style={{ width: '20px', height: '20px' }}
+            />
+            {isSidebarOpen && <span className="text">Pontos</span>}
+          </SidebarItem>
 
-            <ButtonExcluir
-              className={modoExcluir ? "ativo" : ""}
-              onClick={() => setModoExcluir(!modoExcluir)}
-            >
-              <img src={lixeira} alt="Excluir" />
-            </ButtonExcluir>
-          </div>
-        </div>
+          <SidebarItem 
+            isOpen={isSidebarOpen}
+            className={currentView === 'lists' ? "active" : ""}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('lists');
+            }}
+          >
+            <img 
+              src={dashboardIcon} 
+              alt="Dashboard"
+              className="icon"
+              style={{ width: '20px', height: '20px' }}
+            />
+            {isSidebarOpen && <span className="text">Dashboard</span>}
+          </SidebarItem>
+        </SidebarWrapper>
 
-        <ScrollWrapper>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Grid ref={gridRef}>
-              {lists.map((list) => (
-                <Droppable droppableId={list.id} key={list.id}>
-                  {(provided) => (
-                    <ListColumn
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                    >
-                      <ColumnTitle>{list.name}</ColumnTitle>
-                      
-                      <div style={{ 
-                        display: "flex", 
-                        justifyContent: "flex-end", 
-                        gap: "8px", 
-                        marginBottom: "8px" 
-                      }}>
-                        <button
-                          onClick={() => handleEditList(list.id, list.name)}
-                          style={{
-                            background: "transparent",
-                            color: "#666",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            transition: "color 0.2s ease"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = "#333"}
-                          onMouseLeave={(e) => e.currentTarget.style.color = "#666"}
-                        >
-                          Editar Lista
-                        </button>
-                        
-                        <button
-                          onClick={() => handleDeleteList(list.id)}
-                          style={{
-                            background: "transparent",
-                            color: "red",
-                            border: "none",
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            transition: "color 0.2s ease"
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.color = "#d32f2f"}
-                          onMouseLeave={(e) => e.currentTarget.style.color = "red"}
-                        >
-                          Excluir Lista
-                        </button>
-                      </div>
+        <MainContent isOpen={isSidebarOpen}>
+          {currentView === 'points' ? (
+            <PontosView />
+          ) : (
+            <Container>
+              {lists.length === 0 ? (
+                <PrimeirosPassosContainer>
+                  <PrimeirosPassosTag>
+                    #primeiros-passos
+                  </PrimeirosPassosTag>
+                  <PrimeirosPassosTitle>
+                    Vamos criar a sua primeira lista?
+                  </PrimeirosPassosTitle>
+                  <PrimeirosPassosButton onClick={() => setShowModal(true)}>
+                    <img src={adicionarCard} alt="Adicionar" />
+                    Criar lista
+                  </PrimeirosPassosButton>
+                </PrimeirosPassosContainer>
+              ) : (
+                <>
+                  <HeaderContainer>
+                    <div>
+                      <Subtitle>#escolar</Subtitle>
+                      <Title>O que vamos estudar hoje?</Title>
+                    </div>
 
-                      <CardArea>
-                        {(cards[list.id] || []).map((card, index) => (
-                          <Draggable
-                            draggableId={card.id}
-                            index={index}
-                            key={card.id}
-                          >
+                    <HeaderButtons>
+                      <ButtonCriar onClick={() => setShowModal(true)}>
+                        <img src={adicionarCard} alt="Adicionar" />
+                        Criar nova lista
+                      </ButtonCriar>
+
+                      <ButtonExcluir
+                        className={modoExcluir ? "ativo" : ""}
+                        onClick={() => setModoExcluir(!modoExcluir)}
+                      >
+                        <img src={lixeira} alt="Excluir" />
+                      </ButtonExcluir>
+                    </HeaderButtons>
+                  </HeaderContainer>
+
+                  <ScrollWrapper>
+                    <DragDropContext onDragEnd={onDragEnd}>
+                      <Grid ref={gridRef}>
+                        {lists.map((list) => (
+                          <Droppable droppableId={list.id} key={list.id}>
                             {(provided) => (
-                              <Card
+                              <ListColumn
                                 ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={modoExcluir ? "modo-excluir" : ""}
-                                onMouseDown={() =>
-                                  ((card as any).clickStart = Date.now())
-                                }
-                                onClick={() => {
-                                  const now = Date.now();
-                                  if (modoExcluir) {
-                                    setCardParaExcluir(card);
-                                    setSelectedListId(list.id);
-                                    setConfirmDelete(true);
-                                  } else if (
-                                    (card as any).clickStart &&
-                                    now - (card as any).clickStart < 150
-                                  ) {
-                                    handleExibirDetalhes(card.id, list.id);
-                                  }
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (modoExcluir) {
-                                    e.currentTarget.classList.add(
-                                      "hover-excluir"
-                                    );
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (modoExcluir) {
-                                    e.currentTarget.classList.remove(
-                                      "hover-excluir"
-                                    );
-                                  }
-                                }}
+                                {...provided.droppableProps}
                               >
-                                {/* Conteúdo do card */}
-                                <div className="card-content">
-                                  {/* Banner da imagem do card */}
-                                  {card.image_url && card.image_url.length > 0 && (
-                                    <div
-                                      style={{
-                                        width: "100%",
-                                        height: "70px",
-                                        borderRadius: "8px",
-                                        overflow: "hidden",
-                                        background: "#f5f5f5",
-                                        marginBottom: "8px",
-                                        border: "1px solid #e0e0e0",
-                                      }}
-                                    >
-                                      <img
-                                        src={`http://localhost:3000${card.image_url[0]}`}
-                                        alt="Card banner"
-                                        style={{
-                                          width: "100%",
-                                          height: "100%",
-                                          objectFit: "cover",
-                                          transition: "opacity 0.3s ease",
-                                        }}
-                                        loading="eager"
-                                        onLoad={(e) => {
-                                          e.currentTarget.style.opacity = "1";
-                                        }}
-                                        onError={(e) => {
-                                          // Fallback caso a imagem não carregue
-                                          e.currentTarget.parentElement!.style.display = "none";
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-
-                                  {/* Área do título e foto do usuário */}
-                                  <div
+                                <ColumnTitle>{list.name}</ColumnTitle>
+                                
+                                <div style={{ 
+                                  display: "flex", 
+                                  justifyContent: "flex-end", 
+                                  gap: "8px", 
+                                  marginBottom: "8px" 
+                                }}>
+                                  <button
+                                    onClick={() => handleEditList(list.id, list.name)}
                                     style={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "start",
-                                      marginBottom: "8px",
+                                      background: "transparent",
+                                      color: "#666",
+                                      border: "none",
+                                      cursor: "pointer",
+                                      fontSize: "14px",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      transition: "color 0.2s ease"
                                     }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = "#333"}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = "#666"}
                                   >
-                                    <CardTitle>
-                                      {card.title.length > 40
-                                        ? card.title.slice(0, 40) + "..."
-                                        : card.title}
-                                    </CardTitle>
-                                    
-                                    {/* Foto do perfil do usuário */}
+                                    Editar Lista
+                                  </button>
+                                  
+                                  <button
+                                    onClick={() => handleDeleteList(list.id)}
+                                    style={{
+                                      background: "transparent",
+                                      color: "red",
+                                      border: "none",
+                                      cursor: "pointer",
+                                      fontSize: "14px",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      transition: "color 0.2s ease"
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = "#d32f2f"}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = "red"}
+                                  >
+                                    Excluir Lista
+                                  </button>
+                                </div>
+
+                                <CardArea>
+                                  {(cards[list.id] || []).map((card, index) => (
+                                    <Draggable
+                                      draggableId={card.id}
+                                      index={index}
+                                      key={card.id}
+                                    >
+                                      {(provided) => (
+                                        <Card
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                          className={modoExcluir ? "modo-excluir" : ""}
+                                          onMouseDown={() =>
+                                            ((card as any).clickStart = Date.now())
+                                          }
+                                          onClick={() => {
+                                            const now = Date.now();
+                                            if (modoExcluir) {
+                                              setCardParaExcluir(card);
+                                              setSelectedListId(list.id);
+                                              setConfirmDelete(true);
+                                            } else if (
+                                              (card as any).clickStart &&
+                                              now - (card as any).clickStart < 150
+                                            ) {
+                                              handleExibirDetalhes(card.id, list.id);
+                                            }
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            if (modoExcluir) {
+                                              e.currentTarget.classList.add(
+                                                "hover-excluir"
+                                              );
+                                            }
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            if (modoExcluir) {
+                                              e.currentTarget.classList.remove(
+                                                "hover-excluir"
+                                              );
+                                            }
+                                          }}
+                                        >
+                                          {/* Conteúdo do card */}
+                                          <div className="card-content">
+                                            {/* Banner da imagem do card */}
+                                            {card.image_url && card.image_url.length > 0 && (
+                                              <div
+                                                style={{
+                                                  width: "100%",
+                                                  height: "70px",
+                                                  borderRadius: "8px",
+                                                  overflow: "hidden",
+                                                  background: "#f5f5f5",
+                                                  marginBottom: "8px",
+                                                  border: "1px solid #e0e0e0",
+                                                }}
+                                              >
+                                                <img
+                                                  src={`http://localhost:3000${card.image_url[0]}`}
+                                                  alt="Card banner"
+                                                  style={{
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    objectFit: "cover",
+                                                    transition: "opacity 0.3s ease",
+                                                  }}
+                                                  loading="eager"
+                                                  onLoad={(e) => {
+                                                    e.currentTarget.style.opacity = "1";
+                                                  }}
+                                                  onError={(e) => {
+                                                    // Fallback caso a imagem não carregue
+                                                    e.currentTarget.parentElement!.style.display = "none";
+                                                  }}
+                                                />
+                                              </div>
+                                            )}
+
+                                            {/* Área do título e foto do usuário */}
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "start",
+                                                marginBottom: "8px",
+                                              }}
+                                            >
+                                              <CardTitle>
+                                                {card.title.length > 40
+                                                  ? card.title.slice(0, 40) + "..."
+                                                  : card.title}
+                                              </CardTitle>
+                                              
+                                              {/* Foto do perfil do usuário */}
+                                              <img
+                                                src={
+                                                  user?.profileImage ||
+                                                  "https://via.placeholder.com/30"
+                                                }
+                                                alt="foto"
+                                                style={{
+                                                  width: "30px",
+                                                  height: "30px",
+                                                  borderRadius: "50%",
+                                                  objectFit: "cover",
+                                                  flexShrink: 0,
+                                                }}
+                                              />
+                                            </div>
+
+                                            {/* Linha de data, barra de prioridade e publicado */}
+                                            <div
+                                              style={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                marginTop: "auto",
+                                              }}
+                                            >
+                                              <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+                                                <CardDate style={{ flexShrink: 0 }}>
+                                                  {formatDate(card.createdAt)}
+                                                </CardDate>
+                                                
+                                                {/* Barra horizontal de prioridade */}
+                                                <div
+                                                  style={{
+                                                    width: "100px",
+                                                    height: "6px",
+                                                    backgroundColor: getPriorityColor(card.priority || "Baixa"),
+                                                    borderRadius: "3px",
+                                                    flexShrink: 0,
+                                                  }}
+                                                />
+                                              </div>
+
+                                              {card.is_published && (
+                                                <PublishedIcon
+                                                  src={comunidadeIcon}
+                                                  alt="Publicado"
+                                                  title="Publicado na comunidade"
+                                                />
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* Ícone de exclusão */}
+                                          <div className="icon-excluir">
+                                            <img src={lixeira} alt="Excluir" />
+                                          </div>
+                                        </Card>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+
+                                  {/* Card de adicionar */}
+                                  <Card
+                                    className="add-card"
+                                    onClick={() => openCardModal(list.id)}
+                                  >
                                     <img
-                                      src={
-                                        user?.profileImage ||
-                                        "https://via.placeholder.com/30"
-                                      }
-                                      alt="foto"
+                                      src={adicionarCard}
+                                      alt="Adicionar"
                                       style={{
-                                        width: "30px",
-                                        height: "30px",
-                                        borderRadius: "50%",
-                                        objectFit: "cover",
-                                        flexShrink: 0,
+                                        width: "32px",
+                                        height: "32px",
+                                        display: "block",
+                                        margin: "0 auto",
                                       }}
                                     />
-                                  </div>
-
-                                  {/* Linha de data, barra de prioridade e publicado */}
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      marginTop: "auto",
-                                    }}
-                                  >
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
-                                      <CardDate style={{ flexShrink: 0 }}>
-                                        {formatDate(card.createdAt)}
-                                      </CardDate>
-                                      
-                                      {/* Barra horizontal de prioridade */}
-                                      <div
-                                        style={{
-                                          width: "100px",
-                                          height: "6px",
-                                          backgroundColor: getPriorityColor(card.priority || "Baixa"),
-                                          borderRadius: "3px",
-                                          flexShrink: 0,
-                                        }}
-                                      />
-                                    </div>
-
-                                    {card.is_published && (
-                                      <PublishedIcon
-                                        src={comunidadeIcon}
-                                        alt="Publicado"
-                                        title="Publicado na comunidade"
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Ícone de exclusão */}
-                                <div className="icon-excluir">
-                                  <img src={lixeira} alt="Excluir" />
-                                </div>
-                              </Card>
+                                  </Card>
+                                </CardArea>
+                              </ListColumn>
                             )}
-                          </Draggable>
+                          </Droppable>
                         ))}
-                        {provided.placeholder}
+                      </Grid>
+                    </DragDropContext>
+                  </ScrollWrapper>
+                </>
+              )}
+            </Container>
+          )}
 
-                        {/* Card de adicionar */}
-                        <Card
-                          className="add-card"
-                          onClick={() => openCardModal(list.id)}
-                        >
-                          <img
-                            src={adicionarCard}
-                            alt="Adicionar"
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              display: "block",
-                              margin: "0 auto",
-                            }}
-                          />
-                        </Card>
-                      </CardArea>
-                    </ListColumn>
-                  )}
-                </Droppable>
-              ))}
-            </Grid>
-          </DragDropContext>
-        </ScrollWrapper>
-      </Container>
-
-      {cardSelecionado && (
-        <ModalOverlay>
-          <DetalhesContainer>
-            {/* Sidebar */}
-            <Sidebar>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <img
-                  src={user?.profileImage || "https://via.placeholder.com/40"}
-                  alt="Foto de perfil"
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "10px",
-                    objectFit: "cover",
-                  }}
-                />
-                <div>
-                  <p style={{ margin: 0, fontWeight: "bold" }}>{user?.name}</p>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
-                    Criador premium
-                  </p>
-                </div>
-              </div>
-
-              <SidebarCard>
-                <h4>#titulo</h4>
-                <input
-                  style={{
-                    width: "100%",
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#111",
-                    color: "white",
-                  }}
-                  value={tituloEditavel}
-                  onChange={(e) => setTituloEditavel(e.target.value)}
-                />
-              </SidebarCard>
-
-              <SidebarCard>
-                <h4>#prioridade</h4>
-                <PrioridadeWrapper>
-                  <span 
-                    onClick={() => setPrioridadeSelecionada("Baixa")}
-                    style={{ 
-                      cursor: "pointer",
-                      opacity: prioridadeSelecionada === "Baixa" ? 1 : 0.5,
-                      fontWeight: prioridadeSelecionada === "Baixa" ? "bold" : "normal"
-                    }}
+          {cardSelecionado && (
+            <ModalOverlay>
+              <DetalhesContainer>
+                {/* Sidebar */}
+                <Sidebar>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "10px" }}
                   >
-                    <div className="baixa" /> Baixa
-                  </span>
-                  <span 
-                    onClick={() => setPrioridadeSelecionada("Média")}
-                    style={{ 
-                      cursor: "pointer",
-                      opacity: prioridadeSelecionada === "Média" ? 1 : 0.5,
-                      fontWeight: prioridadeSelecionada === "Média" ? "bold" : "normal"
-                    }}
-                  >
-                    <div className="media" /> Média
-                  </span>
-                  <span 
-                    onClick={() => setPrioridadeSelecionada("Alta")}
-                    style={{ 
-                      cursor: "pointer",
-                      opacity: prioridadeSelecionada === "Alta" ? 1 : 0.5,
-                      fontWeight: prioridadeSelecionada === "Alta" ? "bold" : "normal"
-                    }}
-                  >
-                    <div className="alta" /> Alta
-                  </span>
-                </PrioridadeWrapper>
-              </SidebarCard>
-
-              <SidebarCard>
-                <h4>#descrição</h4>
-                <textarea
-                  style={{
-                    width: "100%",
-                    minHeight: "100px",
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "#111",
-                    color: "white",
-                    resize: "vertical",
-                    fontFamily: "inherit",
-                    fontSize: "14px",
-                    lineHeight: "1.4"
-                  }}
-                  value={descricaoEditavel}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 500) {
-                      setDescricaoEditavel(e.target.value);
-                    }
-                  }}
-                  placeholder="Adicione uma descrição para o seu card..."
-                />
-                <div style={{
-                  fontSize: "12px",
-                  color: "#999",
-                  marginTop: "8px",
-                  textAlign: "right"
-                }}>
-                  {descricaoEditavel.length}/500
-                </div>
-              </SidebarCard>
-
-              {/* Botão de Publicar na Comunidade */}
-              <div style={{ marginTop: "20px" }}>
-                <button
-                  onClick={handlePublishToCommunity}
-                  disabled={cardSelecionado?.is_published}
-                  style={{
-                    width: "100%",
-                    padding: "12px 16px",
-                    backgroundColor: cardSelecionado?.is_published ? "#4caf50" : "#2196f3",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "10px",
-                    cursor: cardSelecionado?.is_published ? "not-allowed" : "pointer",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                    transition: "all 0.3s ease",
-                    opacity: cardSelecionado?.is_published ? 0.7 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!cardSelecionado?.is_published) {
-                      e.currentTarget.style.backgroundColor = "#1976d2";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!cardSelecionado?.is_published) {
-                      e.currentTarget.style.backgroundColor = "#2196f3";
-                    }
-                  }}
-                >
-                  {cardSelecionado?.is_published ? (
-                    <>
-                      ✅ Publicado na Comunidade
-                    </>
-                  ) : (
-                    <>
-                      🌐 Publicar na Comunidade
-                    </>
-                  )}
-                </button>
-              </div>
-            </Sidebar>
-
-            {/* Content */}
-            <ContentArea>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <h2>{tituloEditavel}</h2>
-                <button
-                  onClick={handleCloseCardModal}
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    fontSize: "24px",
-                    cursor: "pointer",
-                    color: "white",
-                  }}
-                >
-                  ❌
-                </button>
-              </div>
-
-              <hr />
-
-              {/* Visualização do PDF */}
-              {cardSelecionado?.pdfs &&
-              Array.isArray(cardSelecionado.pdfs) &&
-              cardSelecionado.pdfs.length > 0 ? (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "500px",
-                    background: "#eaeaea",
-                    borderRadius: "20px",
-                    marginBottom: "20px",
-                    overflow: "hidden",
-                  }}
-                >
-                  {pdfUrl ? (
-                    <iframe
-                      src={pdfUrl}
-                      title={cardSelecionado.pdfs[0].filename}
-                      width="100%"
-                      height="100%"
-                      style={{ border: "none" }}
-                    />
-                  ) : (
-                    <div
+                    <img
+                      src={user?.profileImage || "https://via.placeholder.com/40"}
+                      alt="Foto de perfil"
                       style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "10px",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: "bold" }}>{user?.name}</p>
+                      <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
+                        Criador premium
+                      </p>
+                    </div>
+                  </div>
+
+                  <SidebarCard>
+                    <h4>#titulo</h4>
+                    <input
+                      style={{
+                        width: "100%",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#111",
+                        color: "white",
+                      }}
+                      value={tituloEditavel}
+                      onChange={(e) => setTituloEditavel(e.target.value)}
+                    />
+                  </SidebarCard>
+
+                  <SidebarCard>
+                    <h4>#prioridade</h4>
+                    <PrioridadeWrapper>
+                      <span 
+                        onClick={() => setPrioridadeSelecionada("Baixa")}
+                        style={{ 
+                          cursor: "pointer",
+                          opacity: prioridadeSelecionada === "Baixa" ? 1 : 0.5,
+                          fontWeight: prioridadeSelecionada === "Baixa" ? "bold" : "normal"
+                        }}
+                      >
+                        <div className="baixa" /> Baixa
+                      </span>
+                      <span 
+                        onClick={() => setPrioridadeSelecionada("Média")}
+                        style={{ 
+                          cursor: "pointer",
+                          opacity: prioridadeSelecionada === "Média" ? 1 : 0.5,
+                          fontWeight: prioridadeSelecionada === "Média" ? "bold" : "normal"
+                        }}
+                      >
+                        <div className="media" /> Média
+                      </span>
+                      <span 
+                        onClick={() => setPrioridadeSelecionada("Alta")}
+                        style={{ 
+                          cursor: "pointer",
+                          opacity: prioridadeSelecionada === "Alta" ? 1 : 0.5,
+                          fontWeight: prioridadeSelecionada === "Alta" ? "bold" : "normal"
+                        }}
+                      >
+                        <div className="alta" /> Alta
+                      </span>
+                    </PrioridadeWrapper>
+                  </SidebarCard>
+
+                  <SidebarCard>
+                    <h4>#descrição</h4>
+                    <textarea
+                      style={{
+                        width: "100%",
+                        minHeight: "100px",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        border: "none",
+                        background: "#111",
+                        color: "white",
+                        resize: "vertical",
+                        fontFamily: "inherit",
+                        fontSize: "14px",
+                        lineHeight: "1.4"
+                      }}
+                      value={descricaoEditavel}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 500) {
+                          setDescricaoEditavel(e.target.value);
+                        }
+                      }}
+                      placeholder="Adicione uma descrição para o seu card..."
+                    />
+                    <div style={{
+                      fontSize: "12px",
+                      color: "#999",
+                      marginTop: "8px",
+                      textAlign: "right"
+                    }}>
+                      {descricaoEditavel.length}/500
+                    </div>
+                  </SidebarCard>
+
+                  {/* Botão de Publicar na Comunidade */}
+                  <div style={{ marginTop: "20px" }}>
+                    <button
+                      onClick={handlePublishToCommunity}
+                      disabled={cardSelecionado?.is_published}
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        backgroundColor: cardSelecionado?.is_published ? "#4caf50" : "#2196f3",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "10px",
+                        cursor: cardSelecionado?.is_published ? "not-allowed" : "pointer",
+                        fontSize: "14px",
+                        fontWeight: "bold",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        height: "100%",
-                        flexDirection: "column",
-                        gap: "10px",
+                        gap: "8px",
+                        transition: "all 0.3s ease",
+                        opacity: cardSelecionado?.is_published ? 0.7 : 1
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!cardSelecionado?.is_published) {
+                          e.currentTarget.style.backgroundColor = "#1976d2";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!cardSelecionado?.is_published) {
+                          e.currentTarget.style.backgroundColor = "#2196f3";
+                        }
                       }}
                     >
-                      <p>Carregando PDF...</p>
-                      <button
-                        onClick={() =>
-                          document.getElementById("fileInput")?.click()
-                        }
-                        style={{
-                          background: "#111",
-                          color: "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "30px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        ⬆️ Upar PDF
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "500px",
-                    background: "#eaeaea",
-                    borderRadius: "20px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: "20px",
-                    flexDirection: "column",
-                  }}
-                >
-                  {pdf ? (
-                    <div style={{ textAlign: "center" }}>
-                      <p style={{ fontWeight: "500", color: "#444", marginBottom: "16px" }}>
-                        📄 PDF selecionado:
-                      </p>
-                      <p style={{ 
-                        fontWeight: "bold", 
-                        color: "#333", 
+                      {cardSelecionado?.is_published ? (
+                        <>
+                          ✅ Publicado na Comunidade
+                        </>
+                      ) : (
+                        <>
+                          🌐 Publicar na Comunidade
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </Sidebar>
+
+                {/* Content */}
+                <ContentArea>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <h2>{tituloEditavel}</h2>
+                    <button
+                      onClick={handleCloseCardModal}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        fontSize: "24px",
+                        cursor: "pointer",
+                        color: "white",
+                      }}
+                    >
+                      ❌
+                    </button>
+                  </div>
+
+                  <hr />
+
+                  {/* Visualização do PDF */}
+                  {cardSelecionado?.pdfs &&
+                  Array.isArray(cardSelecionado.pdfs) &&
+                  cardSelecionado.pdfs.length > 0 ? (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "500px",
+                        background: "#eaeaea",
+                        borderRadius: "20px",
                         marginBottom: "20px",
-                        padding: "10px 20px",
-                        backgroundColor: "#fff",
-                        borderRadius: "8px",
-                        border: "2px solid #4caf50"
-                      }}>
-                        {pdf.name}
-                      </p>
-                      <p style={{ color: "#666", fontSize: "14px", marginBottom: "16px" }}>
-                        Clique em "Salvar" para enviar o arquivo
-                      </p>
-                      <button
-                        onClick={() => {
-                          setPdf(null);
-                          const fileInput = document.getElementById("fileInput") as HTMLInputElement;
-                          if (fileInput) fileInput.value = "";
-                        }}
-                        style={{
-                          background: "#f44336",
-                          color: "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "20px",
-                          cursor: "pointer",
-                          fontSize: "14px"
-                        }}
-                      >
-                        ❌ Remover PDF
-                      </button>
+                        overflow: "hidden",
+                      }}
+                    >
+                      {pdfUrl ? (
+                        <iframe
+                          src={pdfUrl}
+                          title={cardSelecionado.pdfs[0].filename}
+                          width="100%"
+                          height="100%"
+                          style={{ border: "none" }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            height: "100%",
+                            flexDirection: "column",
+                            gap: "10px",
+                          }}
+                        >
+                          <p>Carregando PDF...</p>
+                          <button
+                            onClick={() =>
+                              document.getElementById("fileInput")?.click()
+                            }
+                            style={{
+                              background: "#111",
+                              color: "white",
+                              border: "none",
+                              padding: "8px 16px",
+                              borderRadius: "30px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            ⬆️ Upar PDF
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div style={{ textAlign: "center" }}>
-                      <p style={{ fontWeight: "500", color: "#444" }}>
-                        Nenhum PDF encontrado, envie um!
-                      </p>
-                      <button
-                        onClick={() =>
-                          document.getElementById("fileInput")?.click()
-                        }
-                        style={{
-                          background: "#111",
-                          color: "white",
-                          border: "none",
-                          padding: "8px 16px",
-                          borderRadius: "30px",
-                          cursor: "pointer",
-                          marginTop: "10px",
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "500px",
+                        background: "#eaeaea",
+                        borderRadius: "20px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: "20px",
+                        flexDirection: "column",
+                      }}
+                    >
+                      {pdf ? (
+                        <div style={{ textAlign: "center" }}>
+                          <p style={{ fontWeight: "500", color: "#444", marginBottom: "16px" }}>
+                            📄 PDF selecionado:
+                          </p>
+                          <p style={{ 
+                            fontWeight: "bold", 
+                            color: "#333", 
+                            marginBottom: "20px",
+                            padding: "10px 20px",
+                            backgroundColor: "#fff",
+                            borderRadius: "8px",
+                            border: "2px solid #4caf50"
+                          }}>
+                            {pdf.name}
+                          </p>
+                          <p style={{ color: "#666", fontSize: "14px", marginBottom: "16px" }}>
+                            Clique em "Salvar" para enviar o arquivo
+                          </p>
+                          <button
+                            onClick={() => {
+                              setPdf(null);
+                              const fileInput = document.getElementById("fileInput") as HTMLInputElement;
+                              if (fileInput) fileInput.value = "";
+                            }}
+                            style={{
+                              background: "#f44336",
+                              color: "white",
+                              border: "none",
+                              padding: "8px 16px",
+                              borderRadius: "20px",
+                              cursor: "pointer",
+                              fontSize: "14px"
+                            }}
+                          >
+                            ❌ Remover PDF
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ textAlign: "center" }}>
+                          <p style={{ fontWeight: "500", color: "#444" }}>
+                            Nenhum PDF encontrado, envie um!
+                          </p>
+                          <button
+                            onClick={() =>
+                              document.getElementById("fileInput")?.click()
+                            }
+                            style={{
+                              background: "#111",
+                              color: "white",
+                              border: "none",
+                              padding: "8px 16px",
+                              borderRadius: "30px",
+                              cursor: "pointer",
+                              marginTop: "10px",
+                            }}
+                          >
+                            ⬆️ Upar PDF
+                          </button>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        id="fileInput"
+                        accept="application/pdf"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setPdf(file);
+                            console.log("📄 PDF selecionado:", file.name);
+                          }
                         }}
-                      >
-                        ⬆️ Upar PDF
-                      </button>
+                      />
                     </div>
                   )}
+
+                  <SaveButton onClick={handleSalvarDetalhes}>Salvar</SaveButton>
+                </ContentArea>
+              </DetalhesContainer>
+            </ModalOverlay>
+          )}
+
+          {editModalOpen && (
+            <ModalOverlay>
+              <ModalContent>
+                <h3>Editar Título</h3>
+                <Input
+                  value={novoTitulo}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 50) {
+                      setNovoTitulo(e.target.value);
+                    }
+                  }}
+                />
+
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files?.[0] || null)}
+                />
+                {image && (
+                  <p style={{ marginBottom: "8px" }}>
+                    🖼️ <strong>Imagem selecionada:</strong> {image.name}
+                  </p>
+                )}
+
+                <Input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setPdf(e.target.files?.[0] || null)}
+                />
+                {pdf && (
+                  <p style={{ marginBottom: "8px" }}>
+                    📄 <strong>PDF selecionado:</strong> {pdf.name}
+                  </p>
+                )}
+
+                <ButtonGroup>
+                  <button
+                    className="cancel"
+                    onClick={() => setEditModalOpen(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button className="confirm" onClick={handleSalvarEdicao}>
+                    Salvar
+                  </button>
+                </ButtonGroup>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+
+          {confirmDelete && (
+            <ConfirmOverlay>
+              <ConfirmBox>
+                <h3>Confirmar Exclusão</h3>
+                <p>
+                  Deseja excluir o card <strong>{cardParaExcluir?.title}</strong>?
+                </p>
+                <ButtonGroup>
+                  <button
+                    className="cancel"
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancelar
+                  </button>
+                  <button className="confirm" onClick={handleDeleteCard}>
+                    Confirmar
+                  </button>
+                </ButtonGroup>
+              </ConfirmBox>
+            </ConfirmOverlay>
+          )}
+
+          {confirmDeleteList && (
+            <ConfirmOverlay>
+              <ConfirmBox>
+                <h3>⚠️ Excluir Lista</h3>
+                <p>
+                  Tem certeza que deseja excluir a lista <strong>"{listToDelete?.name}"</strong>?
+                </p>
+                <p style={{ color: '#d32f2f', fontWeight: 'bold', marginTop: '16px' }}>
+                  ⚠️ ATENÇÃO: Todos os {cards[listToDelete?.id || '']?.length || 0} cards desta lista serão excluídos permanentemente e não poderão ser recuperados!
+                </p>
+                
+                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                  <p style={{ marginBottom: '12px', fontWeight: 'bold', textAlign: 'center' }}>
+                    Para confirmar, digite o nome da lista: <br/>
+                    <span style={{ color: '#d32f2f', fontSize: '16px' }}>"{listToDelete?.name}"</span>
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <Input
+                      type="text"
+                      placeholder={`Digite "${listToDelete?.name}" para confirmar`}
+                      value={confirmListName}
+                      onChange={(e) => setConfirmListName(e.target.value)}
+                      style={{ 
+                        width: '300px',
+                        padding: '10px 12px', 
+                        border: confirmListName.trim() === listToDelete?.name ? '2px solid #4caf50' : '2px solid #ddd',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        transition: 'border-color 0.3s ease',
+                        backgroundColor: '#fff',
+                        textAlign: 'center'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <ButtonGroup>
+                  <button
+                    className="cancel"
+                    onClick={() => {
+                      setConfirmDeleteList(false);
+                      setListToDelete(null);
+                      setConfirmListName("");
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className="confirm" 
+                    onClick={confirmDeleteListAction}
+                    disabled={confirmListName.trim() !== listToDelete?.name}
+                    style={{ 
+                      backgroundColor: confirmListName.trim() === listToDelete?.name ? '#d32f2f' : '#ccc',
+                      cursor: confirmListName.trim() === listToDelete?.name ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    Excluir Lista
+                  </button>
+                </ButtonGroup>
+              </ConfirmBox>
+            </ConfirmOverlay>
+          )}
+
+          {showModal && (
+            <ModalOverlay>
+              <ModalContent style={{
+                maxWidth: '450px',
+                padding: '32px',
+                borderRadius: '20px',
+                background: '#000000',
+                color: 'white',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Background decoration */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-50%',
+                  right: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+                  pointerEvents: 'none'
+                }} />
+                
+                {/* Header */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '24px',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  <h3 style={{
+                    margin: 0,
+                    fontSize: '24px',
+                    fontWeight: '700',
+                    background: 'linear-gradient(45deg, #fff, #f0f0f0)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    📋 Nova Lista
+                  </h3>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '40px',
+                      height: '40px',
+                      color: 'white',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Input Section */}
+                <div style={{ marginBottom: '32px', position: 'relative', zIndex: 1 }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    marginBottom: '12px',
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    ✏️ Nome da lista
+                  </label>
+                  <div style={{
+                    position: 'relative',
+                    background: 'rgba(255,255,255,0.1)',
+                    borderRadius: '12px',
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    <input
+                      value={listName}
+                      onChange={(e) => setListName(e.target.value)}
+                      placeholder="Digite o nome da sua lista..."
+                      style={{
+                        width: '100%',
+                        padding: '16px 20px',
+                        background: 'transparent',
+                        border: 'none',
+                        outline: 'none',
+                        color: 'white',
+                        fontSize: '16px',
+                        borderRadius: '12px'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.5)';
+                        e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.15)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.2)';
+                        e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.1)';
+                      }}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && listName.trim()) {
+                          handleCreateList();
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      right: '16px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '12px',
+                      color: 'rgba(255,255,255,0.6)'
+                    }}>
+                      {listName.length}/100
+                    </div>
+                  </div>
+                  <p style={{
+                    fontSize: '12px',
+                    color: 'rgba(255,255,255,0.7)',
+                    margin: '8px 0 0 0',
+                    fontStyle: 'italic'
+                  }}>
+                    💡 Dica: Use nomes descritivos como "Matemática", "Projetos" ou "Estudos"
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{
+                  display: 'flex',
+                  gap: '12px',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    style={{
+                      flex: 1,
+                      padding: '14px 20px',
+                      background: 'rgba(255,255,255,0.2)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleCreateList}
+                    disabled={!listName.trim()}
+                    style={{
+                      flex: 2,
+                      padding: '14px 20px',
+                      background: listName.trim() 
+                        ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
+                        : 'rgba(255,255,255,0.2)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: listName.trim() ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.3s ease',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      boxShadow: listName.trim() ? '0 8px 20px rgba(76, 175, 80, 0.3)' : 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (listName.trim()) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 12px 25px rgba(76, 175, 80, 0.4)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (listName.trim()) {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.3)';
+                      }
+                    }}
+                  >
+                    {listName.trim() ? '🚀 Criar Lista' : '⚠️ Digite um nome'}
+                  </button>
+                </div>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+
+          {showCardModal && (
+            <ModalOverlay>
+              <ModalContent>
+                <h2>Criando seu card</h2>
+
+                <p>Imagem que aparecerá na comunidade</p>
+                <ImageUploadArea
+                  onClick={() => document.getElementById("imageInput")?.click()}
+                >
+                  {image ? (
+                    <img src={URL.createObjectURL(image)} alt="Preview" />
+                  ) : (
+                    <span>📷</span>
+                  )}
+                </ImageUploadArea>
+
+                <input
+                  type="file"
+                  id="imageInput"
+                  accept="image/*"
+                  onChange={(e) => setImage(e.target.files?.[0] || null)}
+                  style={{ display: "none" }}
+                />
+
+                <p>Defina o nome do card</p>
+                <InputWrapper>
+                  <span>✏️</span>
                   <input
-                    type="file"
-                    id="fileInput"
-                    accept="application/pdf"
-                    style={{ display: "none" }}
+                    placeholder="Nome do card"
+                    value={cardTitle}
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setPdf(file);
-                        console.log("📄 PDF selecionado:", file.name);
+                      if (e.target.value.length <= 50) {
+                        setCardTitle(e.target.value);
                       }
                     }}
                   />
-                </div>
-              )}
+                </InputWrapper>
 
-              <SaveButton onClick={handleSalvarDetalhes}>Salvar</SaveButton>
-            </ContentArea>
-          </DetalhesContainer>
-        </ModalOverlay>
-      )}
+                <CreateButton onClick={handleCreateCard}>CRIAR</CreateButton>
+              </ModalContent>
+            </ModalOverlay>
+          )}
 
-      {editModalOpen && (
-        <ModalOverlay>
-          <ModalContent>
-            <h3>Editar Título</h3>
-            <Input
-              value={novoTitulo}
-              onChange={(e) => {
-                if (e.target.value.length <= 50) {
-                  setNovoTitulo(e.target.value);
-                }
-              }}
-            />
-
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-            />
-            {image && (
-              <p style={{ marginBottom: "8px" }}>
-                🖼️ <strong>Imagem selecionada:</strong> {image.name}
-              </p>
-            )}
-
-            <Input
-              type="file"
-              accept="application/pdf"
-              onChange={(e) => setPdf(e.target.files?.[0] || null)}
-            />
-            {pdf && (
-              <p style={{ marginBottom: "8px" }}>
-                📄 <strong>PDF selecionado:</strong> {pdf.name}
-              </p>
-            )}
-
-            <ButtonGroup>
-              <button
-                className="cancel"
-                onClick={() => setEditModalOpen(false)}
-              >
-                Cancelar
-              </button>
-              <button className="confirm" onClick={handleSalvarEdicao}>
-                Salvar
-              </button>
-            </ButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {confirmDelete && (
-        <ConfirmOverlay>
-          <ConfirmBox>
-            <h3>Confirmar Exclusão</h3>
-            <p>
-              Deseja excluir o card <strong>{cardParaExcluir?.title}</strong>?
-            </p>
-            <ButtonGroup>
-              <button
-                className="cancel"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancelar
-              </button>
-              <button className="confirm" onClick={handleDeleteCard}>
-                Confirmar
-              </button>
-            </ButtonGroup>
-          </ConfirmBox>
-        </ConfirmOverlay>
-      )}
-
-      {confirmDeleteList && (
-        <ConfirmOverlay>
-          <ConfirmBox>
-            <h3>⚠️ Excluir Lista</h3>
-            <p>
-              Tem certeza que deseja excluir a lista <strong>"{listToDelete?.name}"</strong>?
-            </p>
-            <p style={{ color: '#d32f2f', fontWeight: 'bold', marginTop: '16px' }}>
-              ⚠️ ATENÇÃO: Todos os {cards[listToDelete?.id || '']?.length || 0} cards desta lista serão excluídos permanentemente e não poderão ser recuperados!
-            </p>
-            
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <p style={{ marginBottom: '12px', fontWeight: 'bold', textAlign: 'center' }}>
-                Para confirmar, digite o nome da lista: <br/>
-                <span style={{ color: '#d32f2f', fontSize: '16px' }}>"{listToDelete?.name}"</span>
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <Input
-                  type="text"
-                  placeholder={`Digite "${listToDelete?.name}" para confirmar`}
-                  value={confirmListName}
-                  onChange={(e) => setConfirmListName(e.target.value)}
-                  style={{ 
-                    width: '300px',
+          {showEditListModal && (
+            <ModalOverlay>
+              <ModalContent>
+                <h3>Editar Lista</h3>
+                
+                <div style={{ marginBottom: '20px' }}>
+                  <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Nome atual:</p>
+                  <p style={{ 
                     padding: '10px 12px', 
-                    border: confirmListName.trim() === listToDelete?.name ? '2px solid #4caf50' : '2px solid #ddd',
+                    backgroundColor: '#f5f5f5', 
                     borderRadius: '8px',
-                    fontSize: '14px',
-                    fontFamily: 'inherit',
-                    outline: 'none',
-                    transition: 'border-color 0.3s ease',
-                    backgroundColor: '#fff',
-                    textAlign: 'center'
-                  }}
-                />
-              </div>
-            </div>
-
-            <ButtonGroup>
-              <button
-                className="cancel"
-                onClick={() => {
-                  setConfirmDeleteList(false);
-                  setListToDelete(null);
-                  setConfirmListName("");
-                }}
-              >
-                Cancelar
-              </button>
-              <button 
-                className="confirm" 
-                onClick={confirmDeleteListAction}
-                disabled={confirmListName.trim() !== listToDelete?.name}
-                style={{ 
-                  backgroundColor: confirmListName.trim() === listToDelete?.name ? '#d32f2f' : '#ccc',
-                  cursor: confirmListName.trim() === listToDelete?.name ? 'pointer' : 'not-allowed'
-                }}
-              >
-                Excluir Lista
-              </button>
-            </ButtonGroup>
-          </ConfirmBox>
-        </ConfirmOverlay>
-      )}
-
-      {showModal && (
-        <ModalOverlay>
-          <ModalContent style={{
-            maxWidth: '450px',
-            padding: '32px',
-            borderRadius: '20px',
-            background: '#000000',
-            color: 'white',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Background decoration */}
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              right: '-50%',
-              width: '200%',
-              height: '200%',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
-              pointerEvents: 'none'
-            }} />
-            
-            {/* Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '24px',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <h3 style={{
-                margin: 0,
-                fontSize: '24px',
-                fontWeight: '700',
-                background: 'linear-gradient(45deg, #fff, #f0f0f0)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                📋 Nova Lista
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '40px',
-                  height: '40px',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Input Section */}
-            <div style={{ marginBottom: '32px', position: 'relative', zIndex: 1 }}>
-              <label style={{
-                display: 'block',
-                fontSize: '16px',
-                fontWeight: '600',
-                marginBottom: '12px',
-                color: 'rgba(255,255,255,0.9)'
-              }}>
-                ✏️ Nome da lista
-              </label>
-              <div style={{
-                position: 'relative',
-                background: 'rgba(255,255,255,0.1)',
-                borderRadius: '12px',
-                border: '2px solid rgba(255,255,255,0.2)',
-                transition: 'all 0.3s ease'
-              }}>
-                <input
-                  value={listName}
-                  onChange={(e) => setListName(e.target.value)}
-                  placeholder="Digite o nome da sua lista..."
-                  style={{
-                    width: '100%',
-                    padding: '16px 20px',
-                    background: 'transparent',
-                    border: 'none',
-                    outline: 'none',
-                    color: 'white',
-                    fontSize: '16px',
-                    borderRadius: '12px'
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.5)';
-                    e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.15)';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.2)';
-                    e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.1)';
-                  }}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && listName.trim()) {
-                      handleCreateList();
-                    }
-                  }}
-                  autoFocus
-                />
-                <div style={{
-                  position: 'absolute',
-                  right: '16px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: '12px',
-                  color: 'rgba(255,255,255,0.6)'
-                }}>
-                  {listName.length}/100
+                    margin: '0 0 16px 0',
+                    color: '#666'
+                  }}>
+                    {listToEdit?.name}
+                  </p>
+                  
+                  <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Novo nome:</p>
+                  <Input
+                    value={newListName}
+                    onChange={(e) => setNewListName(e.target.value)}
+                    placeholder="Digite o novo nome da lista"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      fontSize: '16px',
+                      border: '2px solid #ddd',
+                      borderRadius: '8px',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                    onBlur={(e) => e.target.style.borderColor = '#ddd'}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSaveListEdit();
+                      }
+                    }}
+                    autoFocus
+                  />
                 </div>
-              </div>
-              <p style={{
-                fontSize: '12px',
-                color: 'rgba(255,255,255,0.7)',
-                margin: '8px 0 0 0',
-                fontStyle: 'italic'
-              }}>
-                💡 Dica: Use nomes descritivos como "Matemática", "Projetos" ou "Estudos"
-              </p>
-            </div>
 
-            {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <button
-                onClick={() => setShowModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '14px 20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateList}
-                disabled={!listName.trim()}
-                style={{
-                  flex: 2,
-                  padding: '14px 20px',
-                  background: listName.trim() 
-                    ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
-                    : 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  cursor: listName.trim() ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.3s ease',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  boxShadow: listName.trim() ? '0 8px 20px rgba(76, 175, 80, 0.3)' : 'none'
-                }}
-                onMouseEnter={(e) => {
-                  if (listName.trim()) {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 12px 25px rgba(76, 175, 80, 0.4)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (listName.trim()) {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 8px 20px rgba(76, 175, 80, 0.3)';
-                  }
-                }}
-              >
-                {listName.trim() ? '🚀 Criar Lista' : '⚠️ Digite um nome'}
-              </button>
-            </div>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {showCardModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <h2>Criando seu card</h2>
-
-            <p>Imagem que aparecerá na comunidade</p>
-            <ImageUploadArea
-              onClick={() => document.getElementById("imageInput")?.click()}
-            >
-              {image ? (
-                <img src={URL.createObjectURL(image)} alt="Preview" />
-              ) : (
-                <span>📷</span>
-              )}
-            </ImageUploadArea>
-
-            <input
-              type="file"
-              id="imageInput"
-              accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
-              style={{ display: "none" }}
-            />
-
-            <p>Defina o nome do card</p>
-            <InputWrapper>
-              <span>✏️</span>
-              <input
-                placeholder="Nome do card"
-                value={cardTitle}
-                onChange={(e) => {
-                  if (e.target.value.length <= 50) {
-                    setCardTitle(e.target.value);
-                  }
-                }}
-              />
-            </InputWrapper>
-
-            <CreateButton onClick={handleCreateCard}>CRIAR</CreateButton>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {showEditListModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <h3>Editar Lista</h3>
-            
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Nome atual:</p>
-              <p style={{ 
-                padding: '10px 12px', 
-                backgroundColor: '#f5f5f5', 
-                borderRadius: '8px',
-                margin: '0 0 16px 0',
-                color: '#666'
-              }}>
-                {listToEdit?.name}
-              </p>
-              
-              <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Novo nome:</p>
-              <Input
-                value={newListName}
-                onChange={(e) => setNewListName(e.target.value)}
-                placeholder="Digite o novo nome da lista"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '16px',
-                  border: '2px solid #ddd',
-                  borderRadius: '8px',
-                  outline: 'none',
-                  transition: 'border-color 0.3s ease'
-                }}
-                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
-                onBlur={(e) => e.target.style.borderColor = '#ddd'}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSaveListEdit();
-                  }
-                }}
-                autoFocus
-              />
-            </div>
-
-            <ButtonGroup>
-              <button
-                className="cancel"
-                onClick={handleCancelListEdit}
-              >
-                Cancelar
-              </button>
-              <button 
-                className="confirm" 
-                onClick={handleSaveListEdit}
-                disabled={!newListName.trim() || newListName.trim() === listToEdit?.name}
-                style={{
-                  backgroundColor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? '#ccc' : '#4caf50',
-                  cursor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                Salvar
-              </button>
-            </ButtonGroup>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+                <ButtonGroup>
+                  <button
+                    className="cancel"
+                    onClick={handleCancelListEdit}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className="confirm" 
+                    onClick={handleSaveListEdit}
+                    disabled={!newListName.trim() || newListName.trim() === listToEdit?.name}
+                    style={{
+                      backgroundColor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? '#ccc' : '#4caf50',
+                      cursor: (!newListName.trim() || newListName.trim() === listToEdit?.name) ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    Salvar
+                  </button>
+                </ButtonGroup>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+        </MainContent>
+      </PageWrapper>
     </>
   );
 }

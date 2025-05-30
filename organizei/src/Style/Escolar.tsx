@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  padding: 24px;
+  padding: 0;
 `;
 
 export const Subtitle = styled.p`
@@ -556,4 +556,185 @@ export const ScrollButton = styled.button.withConfig({
   z-index: 10;
   opacity: 0;
   transition: opacity 0.2s;
+`;
+
+export const PrimeirosPassosContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  gap: 16px;
+`;
+
+export const PrimeirosPassosTag = styled.p`
+  color: #666;
+  font-size: 18px;
+  font-weight: 500;
+`;
+
+export const PrimeirosPassosTitle = styled.h1`
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+export const PrimeirosPassosButton = styled(ButtonCriar)`
+  padding: 12px 24px;
+  font-size: 16px;
+  margin-top: 8px;
+  background-color: #007AFF;
+  color: white;
+
+  img {
+    filter: brightness(0) invert(1);
+  }
+
+  &:hover {
+    background-color: #003D80;
+    color: white;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
+`;
+
+export const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+`;
+
+export const HeaderButtons = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+export const PageWrapper = styled.div`
+  display: flex;
+  min-height: calc(100vh - 140px);
+  position: relative;
+  
+`;
+
+export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
+  width: ${props => props.isOpen ? '180px' : '64px'};
+  background: transparent;
+  box-shadow: none;
+  transition: width 0.3s ease;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(100vh - 120px);
+  position: fixed;
+  left: 24px;
+  margin-top: 10px;
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+export const SidebarToggle = styled.button<{ isOpen: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: ${props => props.isOpen ? '10px 12px' : '10px'};
+  color: #666;
+  width: 100%;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  justify-content: ${props => props.isOpen ? 'flex-start' : 'center'};
+  min-height: 40px;
+
+  img {
+    width: 24px;
+    height: 24px;
+    transition: filter 0.3s ease;
+    margin: ${props => props.isOpen ? '0' : '0 auto'};
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  &:hover {
+    background: rgba(245, 245, 245, 0.1);
+    
+    img {
+      filter: brightness(0) saturate(100%) invert(31%) sepia(98%) saturate(3383%) hue-rotate(201deg) brightness(100%) contrast(107%);
+    }
+  }
+`;
+
+export const SidebarItem = styled.div<{ isOpen: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: ${props => props.isOpen ? '10px 12px' : '10px'};
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  color: #666;
+  min-height: 40px;
+  justify-content: ${props => props.isOpen ? 'flex-start' : 'center'};
+  background: transparent;
+  width: 100%;
+
+  .icon {
+    min-width: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter 0.3s ease;
+  }
+
+  .text {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: ${props => props.isOpen ? 1 : 0};
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover {
+    background: rgba(245, 245, 245, 0.1);
+    color: #007AFF;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(31%) sepia(98%) saturate(3383%) hue-rotate(201deg) brightness(100%) contrast(107%);
+    }
+  }
+
+  &.active {
+    background: rgba(0, 122, 255, 0.9);
+    color: white;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+    }
+  }
+`;
+
+export const MainContent = styled.div<{ isOpen: boolean }>`
+  flex: 1;
+  padding: 0 24px 24px 24px;
+  background: transparent;
+  margin-left: ${props => props.isOpen ? '204px' : '88px'};
+  transition: margin-left 0.3s ease;
+  margin-top: 10px;
 `;

@@ -1016,7 +1016,7 @@ const CardsContainer = styled.div`
 //   );
 // };
 
-export function Profissional() {
+export function Games() {
   const { user } = useAuth();
   const token = localStorage.getItem("authenticacao");
 
@@ -1072,7 +1072,7 @@ export function Profissional() {
       });
       console.log("Cards recebidos:", res.data.data);
       setCards(
-        res.data.data.map((card: any) => ({
+        res.data.data.map((card: { _id?: string; id?: string; title: string }) => ({
           _id: card._id || card.id,
           title: card.title,
         }))
@@ -1118,25 +1118,25 @@ export function Profissional() {
   const createTagFromModal = async () => {
     if (!newTag.trim()) return;
     try {
-      const response = await axios.post(
+      await axios.post(
         "http://localhost:3000/tags",
         { name: newTag.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // Adicionar a nova tag à lista e selecioná-la automaticamente
-      const newTagObj = { _id: response.data.data._id, name: newTag.trim() };
-      setTagList((prev) => [...prev, newTagObj]);
-      setSelectedTags((prev) => [...prev, newTagObj._id]);
+      // Atualize a lista de tags após criar uma nova
+      await loadTags();
 
       setNewTag("");
       setShowCreateTagModal(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao criar tag", err);
-      alert(
-        "Erro ao criar tag: " +
-          (err.response?.data?.message || "Erro desconhecido")
-      );
+      let message = "Erro desconhecido";
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const errorObj = err as { response?: { data?: { message?: string } } };
+        message = errorObj.response?.data?.message || message;
+      }
+      alert("Erro ao criar tag: " + message);
     }
   };
 
@@ -1199,7 +1199,7 @@ export function Profissional() {
     setIsCreating(true);
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `http://localhost:3000/flashcards/withAI`,
         {
           cardId: selectedCardId,
@@ -1226,40 +1226,43 @@ export function Profissional() {
         setIsCreating(false);
         loadFlashcards();
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erro ao criar flashcard com IA:", err);
 
       let errorMessage = "Erro desconhecido";
 
-      if (err.response) {
+      if (typeof err === "object" && err !== null && "response" in err) {
         // Erro de resposta do servidor (4xx, 5xx)
-        console.error("Status:", err.response.status);
-        console.error("Data:", err.response.data);
-        console.error("Headers:", err.response.headers);
+        const errorObj = err as { response?: { status?: number; data?: { message?: string }; statusText?: string; headers?: unknown }; request?: unknown; message?: string };
+        console.error("Status:", errorObj.response?.status);
+        console.error("Data:", errorObj.response?.data);
+        console.error("Headers:", errorObj.response?.headers);
 
-        if (err.response.status === 404) {
+        if (errorObj.response?.status === 404) {
           errorMessage =
             "Endpoint não encontrado. Verifique se a API está rodando.";
-        } else if (err.response.status === 401) {
+        } else if (errorObj.response?.status === 401) {
           errorMessage =
             "Token de autenticação inválido. Faça login novamente.";
-        } else if (err.response.status === 500) {
+        } else if (errorObj.response?.status === 500) {
           errorMessage =
             "Erro interno do servidor. Tente novamente mais tarde.";
         } else {
           errorMessage =
-            err.response.data?.message ||
-            `Erro ${err.response.status}: ${err.response.statusText}`;
+            errorObj.response?.data?.message ||
+            `Erro ${errorObj.response?.status}: ${errorObj.response?.statusText}`;
         }
-      } else if (err.request) {
+      } else if (typeof err === "object" && err !== null && "request" in err) {
         // Erro de rede (sem resposta do servidor)
-        console.error("Request:", err.request);
+        const errorObj = err as { request?: unknown; message?: string };
+        console.error("Request:", errorObj.request);
         errorMessage =
           "Erro de conexão. Verifique se a API está rodando na porta 3000.";
-      } else {
+      } else if (typeof err === "object" && err !== null && "message" in err) {
         // Erro na configuração da requisição
-        console.error("Error:", err.message);
-        errorMessage = `Erro na requisição: ${err.message}`;
+        const errorObj = err as { message?: string };
+        console.error("Error:", errorObj.message);
+        errorMessage = `Erro na requisição: ${errorObj.message}`;
       }
 
       alert(`Erro ao criar flashcard com IA: ${errorMessage}`);
