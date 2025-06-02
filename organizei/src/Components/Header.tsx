@@ -12,7 +12,7 @@ import IconIa from "../../assets/bot.svg";
 
 export function Header() {
   const location = useLocation();
-  const { currentPlan, isLoading } = useAuth();
+  const { currentPlan, isLoading, user } = useAuth();
 
   if (isLoading) return null;
   const canUseAI = currentPlan === "premium" || currentPlan === "enterprise";
@@ -20,96 +20,122 @@ export function Header() {
   return (
     <HeaderContainer>
       <div className="logo">
-        <Link to="/perfil" style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to="/escolar" style={{ textDecoration: "none", color: "inherit" }}>
           Organiz.ei
         </Link>
       </div>
 
       <NavMenu>
         <ul>
-          <li
-            className={location.pathname.includes("/escolar") ? "active" : ""}
+          <Link
+            to="/escolar"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/escolar"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/escolar") ? "active" : ""}>
               Escolar
-            </Link>
-          </li>
-          <li
-            className={
-              location.pathname.includes("/profissional") ? "active" : ""
-            }
+            </li>
+          </Link>
+          
+          <Link
+            to="/games"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/profissional"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/games") ? "active" : ""}>
               Games
-            </Link>
-          </li>
-          <li
-            className={
-              location.pathname.includes("/comunidade") ? "active" : ""
-            }
+            </li>
+          </Link>
+          
+          <Link
+            to="/comunidade"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/comunidade"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname.includes("/comunidade") ? "active" : ""}>
               Comunidade
-            </Link>
-          </li>
-          <li className={location.pathname.includes("/planos") ? "active" : ""}>
-            <Link
-              to="/planos"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            </li>
+          </Link>
+          
+          <Link
+            to="/planos"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname.includes("/planos") ? "active" : ""}>
               Planos
-            </Link>
-          </li>
+            </li>
+          </Link>
         </ul>
       </NavMenu>
 
       <SecondaryNavMenu>
         <ul>
           {canUseAI && (
-            <li className={location.pathname === "/ia" ? "active" : ""}>
-              <Link
-                to="/ia"
-                style={{ textDecoration: "none", color: "inherit" }}
-              >
+            <Link
+              to="/ia"
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+            >
+              <li className={location.pathname === "/ia" ? "active" : ""}>
                 <img src={IconIa} />
-              </Link>
-            </li>
+              </li>
+            </Link>
           )}
-          <li className={location.pathname === "/notificacoes" ? "active" : ""}>
-            <Link
-              to="/notificacoes"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              <img src={IconNotifacoes} />
-            </Link>
-          </li>
-          <li
-            className={location.pathname === "/configuracoes" ? "active" : ""}
+          
+          <Link
+            to="/notificacoes"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
           >
-            <Link
-              to="/configuracoes"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
+            <li className={location.pathname === "/notificacoes" ? "active" : ""}>
+              <img src={IconNotifacoes} />
+            </li>
+          </Link>
+          
+          <Link
+            to="/configuracoes"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname === "/configuracoes" ? "active" : ""}>
               <img src={Iconconfig} />
-            </Link>
-          </li>
-          <li className={location.pathname === "/perfil" ? "active" : ""}>
-            <Link
-              to="/perfil"
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Perfil
-            </Link>
-          </li>
+            </li>
+          </Link>
+          
+          <Link
+            to="/perfil"
+            style={{ textDecoration: "none", color: "inherit", display: "block" }}
+          >
+            <li className={location.pathname === "/perfil" ? "active" : ""}>
+              {user?.profileImage ? (
+                <img
+                  src={user.profileImage}
+                  alt="Perfil"
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: 'none',
+                    boxShadow: 'none',
+                    background: 'none',
+                    transition: 'border 0.2s',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: '#eee',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    color: '#888',
+                    fontSize: 16,
+                  }}
+                >
+                  {user?.name ? user.name[0].toUpperCase() : 'P'}
+                </div>
+              )}
+            </li>
+          </Link>
         </ul>
       </SecondaryNavMenu>
     </HeaderContainer>

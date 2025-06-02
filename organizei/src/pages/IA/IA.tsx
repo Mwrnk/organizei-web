@@ -1,65 +1,141 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../../Components/Header";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import axios from "axios";
+import { useAuth } from "../../Contexts/AuthContexts";
+import { Usuario } from "../../Types/User";
 
 const ChatContainer = styled.div`
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  max-width: 1500px;
+  margin: 40px auto;
+  padding: 40px 32px 32px 32px;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
   background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  @media (max-width: 900px) {
+    max-width: 98vw;
+    padding: 16px 2vw 20px 2vw;
+  }
 `;
 
 const ChatHeader = styled.div`
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 `;
 
 const ChatMessages = styled.div`
-  height: 400px;
+  flex: 1;
+  min-height: 400px;
+  max-height: 40vh;
   overflow-y: auto;
-  padding: 10px;
+  padding: 18px 0;
   background-color: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  border-radius: 16px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  @media (max-width: 600px) {
+    min-height: 320px;
+    max-height: 45vh;
+    gap: 14px;
+  }
+`;
+
+const MessageRow = styled.div<{ isUser: boolean }>`
+  display: flex;
+  flex-direction: ${({ isUser }) => (isUser ? 'row-reverse' : 'row')};
+  align-items: flex-end;
+  gap: 18px;
+  margin: 0 8px;
+`;
+
+const Avatar = styled.div<{ isUser: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ isUser }) => (isUser ? '#1d1b20' : '#e1e1e1')};
+  color: ${({ isUser }) => (isUser ? '#fff' : '#333')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-bottom: 8px;
+  overflow: hidden;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 const MessageBubble = styled.div<{ isUser: boolean }>`
-  max-width: 70%;
-  padding: 10px 15px;
-  margin: 10px 0;
-  border-radius: 18px;
+  position: relative;
+  max-width: 80%;
+  padding: 18px 22px;
+  border-radius: 22px;
+  font-size: 17px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
   ${({ isUser }) =>
     isUser
       ? `
-      background-color: #1d1b20;
-      color: white;
+      background: linear-gradient(90deg, #1d1b20 80%, #2c2c2c 100%);
+      color: #fff;
+      border-bottom-right-radius: 8px;
       align-self: flex-end;
       margin-left: auto;
+      &::after {
+        content: '';
+        position: absolute;
+        right: -12px;
+        bottom: 8px;
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-left: 12px solid #1d1b20;
+      }
     `
       : `
-      background-color: #e1e1e1;
+      background: #e1e1e1;
       color: #333;
+      border-bottom-left-radius: 8px;
       align-self: flex-start;
+      &::after {
+        content: '';
+        position: absolute;
+        left: -12px;
+        bottom: 8px;
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 12px solid #e1e1e1;
+      }
     `}
-  display: flex;
-  flex-direction: column;
+  word-break: break-word;
+  transition: background 0.2s;
 `;
 
 const ChatForm = styled.form`
   display: flex;
   gap: 10px;
+  margin-top: 8px;
 `;
 
 const ChatInput = styled.input`
   flex: 1;
-  padding: 12px 15px;
+  padding: 14px 18px;
   border-radius: 25px;
   border: 1px solid #ccc;
   outline: none;
-  font-size: 16px;
+  font-size: 17px;
   &:focus {
     border-color: #1d1b20;
   }
@@ -70,9 +146,9 @@ const SendButton = styled.button`
   color: white;
   border: none;
   border-radius: 25px;
-  padding: 0 20px;
+  padding: 0 24px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 17px;
   transition: background-color 0.3s;
   &:hover {
     background-color: #2c2c2c;
@@ -89,6 +165,32 @@ export function IA() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const { user } = useAuth();
+
+  usePageLoading(isInitialLoading);
+
+  // Simular carregamento inicial da IA
+  useEffect(() => {
+    const initializeIA = async () => {
+      setIsInitialLoading(true);
+      
+      // Simular delay de inicialização
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mensagem de boas-vindas da IA
+      const welcomeMessage: Message = {
+        id: Date.now(),
+        text: "Olá! Eu sou a ORGAN.IA, sua assistente de organização. Como posso ajudá-lo hoje?",
+        isUser: false,
+      };
+      
+      setMessages([welcomeMessage]);
+      setIsInitialLoading(false);
+    };
+
+    initializeIA();
+  }, []);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,12 +241,28 @@ export function IA() {
 
         <ChatMessages>
           {messages.map((message) => (
-            <MessageBubble key={message.id} isUser={message.isUser}>
-              {message.text}
-            </MessageBubble>
+            <MessageRow key={message.id} isUser={message.isUser}>
+              <Avatar isUser={message.isUser}>
+                {message.isUser ? (
+                  user?.profileImage ? (
+                    <img src={user.profileImage} alt="User" />
+                  ) : (
+                    'M'
+                  )
+                ) : (
+                  'IA'
+                )}
+              </Avatar>
+              <MessageBubble isUser={message.isUser}>
+                {message.text}
+              </MessageBubble>
+            </MessageRow>
           ))}
           {loading && (
-            <MessageBubble isUser={false}>Analisando...</MessageBubble>
+            <MessageRow isUser={false}>
+              <Avatar isUser={false}>IA</Avatar>
+              <MessageBubble isUser={false}>Analisando...</MessageBubble>
+            </MessageRow>
           )}
         </ChatMessages>
 

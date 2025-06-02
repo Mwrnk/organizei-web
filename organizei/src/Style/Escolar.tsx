@@ -1,7 +1,15 @@
 import styled from "styled-components";
+export const ContainerTotal = styled.div`
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+`;
 
 export const Container = styled.div`
-  padding: 24px;
+  padding: 0;
+  width: 100%;
+  overflow: hidden;
 `;
 
 export const Subtitle = styled.p`
@@ -82,14 +90,13 @@ export const ButtonExcluir = styled.button`
 
 export const ScrollWrapper = styled.div`
   position: relative;
-  margin-top: 16px;
-  &:hover button {
-    opacity: 1;
-  }
+  width: 100%;
+  overflow: hidden;
 `;
 
 export const ListColumn = styled.div`
   min-width: 300px;
+  flex-shrink: 0;
   scroll-snap-align: start;
   border-radius: 12px;
   padding: 16px;
@@ -113,8 +120,8 @@ export const CardArea = styled.div`
 export const Card = styled.div`
   background-color: white;
   border-radius: 16px;
-  padding: 20px;
-  min-height: 120px;
+  padding: 12px;
+  min-height: 80px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   cursor: pointer;
@@ -122,6 +129,8 @@ export const Card = styled.div`
   flex-direction: column;
   justify-content: space-between;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
@@ -133,11 +142,23 @@ export const Card = styled.div`
     border: 2px dashed red;
     opacity: 0.3;
     pointer-events: auto;
+    transform: none;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    /* Manter tamanho original */
+    min-height: 80px;
+    padding: 12px;
+    width: 100%;
 
     &:hover {
       background-color: #ff4d4d;
       opacity: 1;
       border: 2px dashed red;
+      transform: none;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+      /* Manter tamanho no hover */
+      min-height: 80px;
+      padding: 12px;
+      width: 100%;
     }
 
     &:hover .icon-excluir {
@@ -146,7 +167,8 @@ export const Card = styled.div`
     }
 
     &:hover .card-content {
-      display: none;
+      opacity: 0;
+      visibility: hidden;
     }
   }
 
@@ -155,6 +177,12 @@ export const Card = styled.div`
     background-color: #ff4d4d;
     opacity: 1;
     border: 2px dashed red;
+    transform: none;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+    /* Manter tamanho */
+    min-height: 80px;
+    padding: 12px;
+    width: 100%;
   }
 
   /* Card para adicionar */
@@ -165,7 +193,7 @@ export const Card = styled.div`
     justify-content: center;
     align-items: center;
     padding: 0;
-    min-height: 120px;
+    min-height: 80px;
 
     &:hover {
       transform: none;
@@ -178,8 +206,11 @@ export const Card = styled.div`
   .card-content {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
   }
 
   /* Ícone de exclusão */
@@ -191,6 +222,7 @@ export const Card = styled.div`
     opacity: 0;
     display: none;
     pointer-events: none;
+    z-index: 10;
 
     img {
       width: 42px;
@@ -273,7 +305,33 @@ export const ModalOverlay = styled.div`
 export const ConfirmOverlay = styled(ModalOverlay)`
   z-index: 1100;
 `;
-export const ConfirmBox = styled.div``;
+
+export const ConfirmBox = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.3);
+  text-align: center;
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.5;
+  }
+`;
+
 export const ModalContent = styled.div`
   background: white;
   border-radius: 20px;
@@ -473,18 +531,35 @@ export const SaveButton = styled.button`
   }
 `;
 
-/* Grid e ScrollButton permanecem iguais */
 export const Grid = styled.div`
   display: flex;
   gap: 24px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
+  padding: 20px 0;
   scroll-behavior: smooth;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  
   &::-webkit-scrollbar {
-    display: none;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    cursor: grabbing;
   }
 `;
 
@@ -505,4 +580,244 @@ export const ScrollButton = styled.button.withConfig({
   z-index: 10;
   opacity: 0;
   transition: opacity 0.2s;
+`;
+
+export const PrimeirosPassosContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  gap: 16px;
+`;
+
+export const PrimeirosPassosTag = styled.p`
+  color: #666;
+  font-size: 18px;
+  font-weight: 500;
+`;
+
+export const PrimeirosPassosTitle = styled.h1`
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+`;
+
+export const PrimeirosPassosButton = styled(ButtonCriar)`
+  padding: 12px 24px;
+  font-size: 16px;
+  margin-top: 8px;
+  background-color: #007AFF;
+  color: white;
+
+  img {
+    filter: brightness(0) invert(1);
+  }
+
+  &:hover {
+    background-color: #003D80;
+    color: white;
+
+    img {
+      filter: brightness(0) invert(1);
+    }
+  }
+`;
+
+export const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+`;
+
+export const HeaderButtons = styled.div`
+  display: flex;
+  gap: 10px;
+`;
+
+export const PageWrapper = styled.div`
+  display: flex;
+  min-height: calc(100vh - 64px);
+  position: relative;
+  max-width: 100%;
+  overflow-x: hidden;
+`;
+
+export const SidebarWrapper = styled.div<{ isOpen: boolean }>`
+  width: ${props => props.isOpen ? '130px' : '64px'};
+  background: transparent;
+  box-shadow: none;
+  transition: width 0.3s ease;
+  padding: 10px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: calc(100vh - 120px);
+  position: fixed;
+  left: 24px;
+  margin-top: 10px;
+  border-radius: 16px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+export const SidebarToggle = styled.button<{ isOpen: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: ${props => props.isOpen ? '10px 6px' : '10px'};
+  color: #666;
+  width: 100%;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  margin-bottom: 4px;
+  justify-content: ${props => props.isOpen ? 'flex-start' : 'center'};
+  min-height: 40px;
+
+  img {
+    width: 24px;
+    height: 24px;
+    transition: filter 0.3s ease;
+    margin: ${props => props.isOpen ? '0' : '0 auto'};
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &:hover {
+    background: rgba(245, 245, 245, 0.1);
+    
+    img {
+      filter: brightness(0) saturate(100%) invert(31%) sepia(98%) saturate(3383%) hue-rotate(201deg) brightness(100%) contrast(107%);
+    }
+  }
+`;
+
+export const SidebarItem = styled.div<{ isOpen: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: ${props => props.isOpen ? '10px 6px' : '10px'};
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  color: #666;
+  min-height: 40px;
+  justify-content: ${props => props.isOpen ? 'flex-start' : 'center'};
+  background: transparent;
+  width: 100%;
+
+  .icon {
+    min-width: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: filter 0.3s ease;
+  }
+
+  .text {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: ${props => props.isOpen ? 1 : 0};
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover {
+    background: rgba(245, 245, 245, 0.1);
+    color: #007AFF;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(31%) sepia(98%) saturate(3383%) hue-rotate(201deg) brightness(100%) contrast(107%);
+    }
+  }
+
+  &.active {
+    background: rgba(0, 122, 255, 0.9);
+    color: white;
+
+    .icon {
+      filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+    }
+  }
+`;
+
+export const MainContent = styled.div<{ isOpen: boolean }>`
+  flex: 1;
+  padding: 0 24px 24px 24px;
+  background: transparent;
+  margin-left: ${props => props.isOpen ? '154px' : '88px'};
+  transition: margin-left 0.3s ease;
+  margin-top: 10px;
+  max-width: calc(100vw - ${props => props.isOpen ? '154px' : '88px'});
+  overflow: hidden;
+`;
+
+export const DashboardStats = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  padding: 20px 0;
+`;
+
+export const StatCard = styled.div`
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+export const StatIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #007AFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+`;
+
+export const StatValue = styled.div`
+  font-size: 36px;
+  font-weight: 700;
+  color: #333;
+`;
+
+export const StatLabel = styled.div`
+  font-size: 14px;
+  color: #666;
+  text-align: center;
 `;

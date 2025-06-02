@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -142,9 +143,12 @@ const formatDateInput = (date: string) => {
 
 export function Configuracoes() {
   const { user, logout, setUser } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(user?.name || "");
   const [email] = useState(user?.email || "");
   const [dateOfBirth, setDateOfBirth] = useState(user?.dateOfBirth || "");
+
+  usePageLoading(isLoading);
 
   const [notificacoesEmail, setNotificacoesEmail] = useState(true);
   const [notificacoesPush, setNotificacoesPush] = useState(true);
@@ -161,6 +165,7 @@ export function Configuracoes() {
 
   const handleSalvarPerfil = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       if (!user?._id) {
         toast.error("Usuário não encontrado.");
@@ -187,29 +192,50 @@ export function Configuracoes() {
     } catch (error: any) {
       console.error(error);
       toast.error(error.response?.data?.message || "Erro ao atualizar perfil.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSalvarNotificacoes = (e: React.FormEvent) => {
+  const handleSalvarNotificacoes = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
+    // Simular delay de salvamento
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     toast.success("Preferências de notificações salvas!");
+    setIsLoading(false);
   };
 
-  const handleSalvarAparencia = (e: React.FormEvent) => {
+  const handleSalvarAparencia = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    
+    // Simular delay de salvamento
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     toast.success("Preferências de aparência salvas!");
+    setIsLoading(false);
   };
 
-  const handleAlterarSenha = (e: React.FormEvent) => {
+  const handleAlterarSenha = async (e: React.FormEvent) => {
     e.preventDefault();
     if (novaSenha !== confirmarSenha) {
       toast.error("As senhas não coincidem!");
       return;
     }
+    
+    setIsLoading(true);
+    
+    // Simular delay de alteração de senha
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     toast.success("Senha alterada com sucesso!");
     setSenhaAtual("");
     setNovaSenha("");
     setConfirmarSenha("");
+    setIsLoading(false);
   };
 
   const handleExcluirConta = () => {

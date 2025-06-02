@@ -1,7 +1,7 @@
 export type CardData = {
   id: string;
   title: string;
-  userId: string;
+  userId?: string;
   createdAt?: string; // <== Adiciona isso para a data
   updatedAt?: string; // (opcional, se quiser também)
   pdfs?: {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '../../Components/Header';
+import { usePageLoading } from '../../Utils/usePageLoading';
 import styled from 'styled-components';
 
 const NotificacoesContainer = styled.div`
@@ -109,29 +110,50 @@ type Notificacao = {
 };
 
 export function Notificacoes() {
-  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([
-    {
-      id: 1,
-      titulo: 'Nova tarefa atribuída',
-      mensagem: 'Você recebeu uma nova tarefa para revisar o relatório mensal.',
-      data: new Date(Date.now() - 1000 * 60 * 30), // 30 minutos atrás
-      lida: false
-    },
-    {
-      id: 2,
-      titulo: 'Lembrete de reunião',
-      mensagem: 'Reunião de planejamento amanhã às 10h.',
-      data: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 horas atrás
-      lida: false
-    },
-    {
-      id: 3,
-      titulo: 'Prazo próximo',
-      mensagem: 'A tarefa "Finalizar apresentação" vence em 2 dias.',
-      data: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 dia atrás
-      lida: true
-    }
-  ]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
+
+  usePageLoading(isDataLoading);
+
+  // Simular carregamento de notificações
+  useEffect(() => {
+    const loadNotifications = async () => {
+      setIsDataLoading(true);
+      
+      // Simular delay de carregamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Dados simulados das notificações
+      const notificacoesSimuladas = [
+        {
+          id: 1,
+          titulo: 'Nova tarefa atribuída',
+          mensagem: 'Você recebeu uma nova tarefa para revisar o relatório mensal.',
+          data: new Date(Date.now() - 1000 * 60 * 30), // 30 minutos atrás
+          lida: false
+        },
+        {
+          id: 2,
+          titulo: 'Lembrete de reunião',
+          mensagem: 'Reunião de planejamento amanhã às 10h.',
+          data: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 horas atrás
+          lida: false
+        },
+        {
+          id: 3,
+          titulo: 'Prazo próximo',
+          mensagem: 'A tarefa "Finalizar apresentação" vence em 2 dias.',
+          data: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 dia atrás
+          lida: true
+        }
+      ];
+      
+      setNotificacoes(notificacoesSimuladas);
+      setIsDataLoading(false);
+    };
+
+    loadNotifications();
+  }, []);
 
   const marcarComoLida = (id: number) => {
     setNotificacoes(prev => 

@@ -2,7 +2,9 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Header } from "../../Components/Header";
+import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
+import { LoadingScreen } from "../../Components/LoadingScreen";
 
 // ESTILOS
 const Container = styled.div`
@@ -92,9 +94,13 @@ export function PerfilBusca() {
   const [usuario, setUsuario] = useState<any>(null);
   const [cards, setCards] = useState<any[]>([]);
   const [erro, setErro] = useState("");
+  const [isDataLoading, setIsDataLoading] = useState(true);
+
+  usePageLoading(isDataLoading);
 
   useEffect(() => {
     async function buscarUsuario() {
+      setIsDataLoading(true);
       try {
         if (!id) return;
 
@@ -119,6 +125,8 @@ export function PerfilBusca() {
       } catch (error) {
         console.error(error);
         setErro("Usuário não encontrado ou erro na busca.");
+      } finally {
+        setIsDataLoading(false);
       }
     }
 
@@ -135,9 +143,7 @@ export function PerfilBusca() {
 
   if (!usuario) {
     return (
-      <div>
-        <h1>Carregando usuário...</h1>
-      </div>
+      <LoadingScreen isVisible={true} />
     );
   }
 
