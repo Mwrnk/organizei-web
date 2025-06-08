@@ -1166,23 +1166,58 @@ export function Comunidade() {
       return;
     }
 
+    if (!selectedCard || (!selectedCard.id && !selectedCard._id)) {
+      toast.error("Card inválido. Tente novamente.");
+      return;
+    }
+
+    const cardId = selectedCard.id || selectedCard._id;
+
     setIsDownloading(true);
     try {
       const token = localStorage.getItem("authenticacao");
-      await axios.post(
-        `http://localhost:3000/comunidade/download/${selectedCard.id}`,
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado");
+      }
+
+      // Tenta fazer a requisição
+      const response = await axios.post(
+        `http://localhost:3000/comunidade/download/${cardId}`,
         { listId: selectedListForDownload },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
       );
 
+      console.log("Resposta do download:", response.data);
+      
       toast.success("✨ Card baixado com sucesso!");
       setShowDownloadModal(false);
       setSelectedListForDownload("");
     } catch (err: any) {
-      console.error("Erro ao baixar card:", err);
-      toast.error(err.response?.data?.message || "Erro ao baixar o card");
+      console.error("Erro detalhado ao baixar card:", err);
+      
+      let errorMessage = "Erro ao baixar o card";
+      
+      if (err.response) {
+        // Erro da API
+        if (err.response.status === 404) {
+          errorMessage = "Card não encontrado. Tente novamente.";
+        } else if (err.response.status === 401) {
+          errorMessage = "Sessão expirada. Faça login novamente.";
+        } else if (err.response.status === 500) {
+          errorMessage = "Erro no servidor. Tente novamente mais tarde.";
+        } else if (err.response.data?.message) {
+          errorMessage = err.response.data.message;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsDownloading(false);
     }
