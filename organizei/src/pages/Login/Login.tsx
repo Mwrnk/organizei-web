@@ -64,15 +64,51 @@ export function Login() {
       });
 
       console.log("Usuário registrado com sucesso:", response.data);
-      toast.success("Registro realizado com sucesso!");
+      toast.success("Registro realizado com sucesso! Faça login para continuar.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setLogin(true);
-      limparCampos(); 
+      limparCampos();
     } catch (error: any) {
       console.error(
         "Erro ao registrar:",
         error.response?.data || error.message
       );
-      toast.error("Erro no registro");
+      
+      // Handle specific error messages from the backend
+      const errorMessage = error.response?.data?.message || '';
+      
+      if (errorMessage.includes('coduser already exists')) {
+        toast.error('Este código de usuário já está em uso. Por favor, escolha outro.', {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else if (errorMessage.includes('email already exists')) {
+        toast.error('Este e-mail já está cadastrado. Use outro e-mail ou faça login.', {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else if (errorMessage.includes('password')) {
+        toast.error('A senha não atende aos requisitos mínimos de segurança.', {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else if (errorMessage.includes('date')) {
+        toast.error('Data de nascimento inválida.', {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      } else {
+        toast.error('Erro no registro. Por favor, verifique os dados e tente novamente.', {
+          position: "top-right",
+          autoClose: 5000,
+        });
+      }
     } finally {
       setIsLoading(false);
     }

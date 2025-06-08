@@ -5,6 +5,7 @@ import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import styled, { css } from "styled-components";
 import { LoadingScreen } from "../../Components/LoadingScreen";
+import { toast } from 'react-toastify';
 
 // Tipos locais
 type Tag = {
@@ -345,22 +346,25 @@ const StepIndicator = styled.div`
 `;
 
 const LoadingSpinner = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 2px solid #e2e8f0;
-  border-top: 2px solid #667eea;
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-left-color: #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-right: 10px;
 
   @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
   }
+`;
+
+const SmallLoadingSpinner = styled(LoadingSpinner)`
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+  margin-right: 10px;
+  border-color: #e2e8f0;
+  border-left-color: #667eea;
 `;
 
 const NameInput = styled.input`
@@ -679,11 +683,18 @@ const FlashcardCard = styled.div`
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-color: #667eea;
+    background: #f8fafc;
+  }
+
+  &:active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
 
   &::before {
@@ -768,47 +779,7 @@ const FlashcardTag = styled.span`
   letter-spacing: 0.3px;
 `;
 
-const FlashcardActions = styled.div`
-  display: flex;
-  gap: 8px;
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid #e2e8f0;
-`;
 
-const ActionButton = styled.button`
-  flex: 1;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const StudyButton = styled(ActionButton)`
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-  }
-`;
-
-const PreviewButton = styled(ActionButton)`
-  background: #f7fafc;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
-
-  &:hover {
-    background: #edf2f7;
-    border-color: #cbd5e0;
-  }
-`;
 
 const EmptyFlashcardsState = styled.div`
   text-align: center;
@@ -1047,6 +1018,8 @@ const QuizContainer = styled.div`
   color: white;
   position: relative;
   overflow: hidden;
+  margin: 20px auto;
+  max-width: 1000px;
 
   &::before {
     content: "";
@@ -1060,12 +1033,8 @@ const QuizContainer = styled.div`
   }
 
   @keyframes rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 `;
 
@@ -1132,6 +1101,8 @@ const QuestionText = styled.h2`
   font-size: 24px;
   line-height: 1.5;
   text-align: center;
+  color: white;
+  margin-bottom: 20px;
 `;
 
 const OptionsGrid = styled.div`
@@ -1140,6 +1111,11 @@ const OptionsGrid = styled.div`
   gap: 20px;
   position: relative;
   z-index: 1;
+  margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const OptionButton = styled.button<{
@@ -1160,12 +1136,14 @@ const OptionButton = styled.button<{
     return 'rgba(255, 255, 255, 0.1)';
   }};
   color: #ffffff;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  width: 100%;
+  text-align: left;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
@@ -1179,14 +1157,30 @@ const OptionButton = styled.button<{
   }
 `;
 
-const AnswerExplanation = styled.div`
-  margin-top: 20px;
-  padding: 20px;
+const QuizStats = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 30px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
+  padding: 20px;
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+  color: white;
+`;
+
+const StatValue = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 5px;
+`;
+
+const StatLabel = styled.div`
+  font-size: 14px;
   color: #cbd5e0;
-  font-size: 16px;
-  line-height: 1.6;
 `;
 
 const QuizResult = styled.div`
@@ -1194,17 +1188,19 @@ const QuizResult = styled.div`
   padding: 40px;
   position: relative;
   z-index: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  margin-top: 30px;
 `;
 
 const ResultTitle = styled.h2<{ isSuccess: boolean }>`
   font-size: 36px;
   font-weight: 800;
   margin-bottom: 20px;
-  ${props => css`
-    background: ${props.isSuccess 
-      ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)' 
+  background: ${({ isSuccess }) => 
+    isSuccess 
+      ? 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)'
       : 'linear-gradient(135deg, #f56565 0%, #e53e3e 100%)'};
-  `}
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1216,32 +1212,248 @@ const ResultMessage = styled.p`
   margin-bottom: 30px;
 `;
 
-const PlayAgainButton = styled(StepButton)`
-  margin: 0 auto;
+const QuizSetupSection = styled.div`
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  max-width: 800px;
 `;
 
-const QuizLoadingContainer = styled.div`
+const QuizSetupTitle = styled.h2`
+  font-size: 24px;
+  color: #2d3748;
+  margin-bottom: 20px;
+  font-weight: 700;
+`;
+
+const QuizSetupForm = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  color: white;
+  gap: 20px;
 `;
 
-const QuizLoadingSpinner = styled.div`
-  width: 60px;
-  height: 60px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-top: 4px solid #667eea;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+const QuestionAmountSelect = styled.select`
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #4a5568;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #667eea;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+`;
+
+const StartQuizButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
+const LoadingOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+`;
+
+const AnswerExplanation = styled.div`
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #cbd5e0;
+  font-size: 16px;
+  line-height: 1.6;
+`;
+
+const TagFilterContainer = styled.div`
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+`;
+
+const TagFilterTitle = styled.h4`
+  font-size: 16px;
+  color: #2d3748;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ClearFiltersButton = styled.button`
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #718096;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+
+  &:hover {
+    background: #f7fafc;
+    color: #4a5568;
+  }
+`;
+
+const TagSearchContainer = styled.div`
+  position: relative;
   margin-bottom: 20px;
 `;
 
-const QuizLoadingText = styled.p`
-  font-size: 18px;
-  color: #cbd5e0;
+const TagSearchInput = styled.input`
+  width: 97%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+`;
+
+const TagSearchResults = styled.div<{ show: boolean }>`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  display: ${({ show }) => (show ? 'block' : 'none')};
+  border: 1px solid #e2e8f0;
+`;
+
+const TagSearchResult = styled.div`
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: #f7fafc;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid #e2e8f0;
+  }
+`;
+
+const SelectedTagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+`;
+
+const SelectedTag = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+
+  button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+`;
+
+const StudyButton = styled.button`
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
 `;
 
 export function Games() {
@@ -1278,7 +1490,7 @@ export function Games() {
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCardTitle, setSelectedCardTitle] = useState("");
   const [showCreateTagModal, setShowCreateTagModal] = useState(false);
-  const [quizQuestionsAmount, setQuizQuestionsAmount] = useState(5); // Default 5 questions
+  const [questionAmount, setQuestionAmount] = useState(5);
 
   // Estado para mensagens de feedback
   const [feedbackMessage, setFeedbackMessage] = useState<{
@@ -1296,11 +1508,45 @@ export function Games() {
   const [quizStats, setQuizStats] = useState({
     totalQuestions: 0,
     correctAnswers: 0,
-    pointsEarned: 0
+    pointsEarned: 0,
+    timeSpent: 0,
+    currentQuestion: 1
   });
 
-  // Modificar o estado para o número da questão atual
-  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(1);
+  // Add new states for tag filtering
+  const [activeTagFilters, setActiveTagFilters] = useState<string[]>([]);
+  const [filteredFlashcards, setFilteredFlashcards] = useState<Flashcard[]>([]);
+  const [studyMode, setStudyMode] = useState(false);
+  const [studyIndex, setStudyIndex] = useState(0);
+  const [tagSearchTerm, setTagSearchTerm] = useState("");
+  const [showTagResults, setShowTagResults] = useState(false);
+
+  // Filter tags based on search term
+  const filteredTags = tagList.filter(tag => 
+    tag.name.toLowerCase().includes(tagSearchTerm.toLowerCase()) &&
+    !activeTagFilters.includes(tag._id)
+  );
+
+  // Handle tag search input focus
+  const handleTagSearchFocus = () => {
+    setShowTagResults(true);
+  };
+
+  // Handle clicking outside of tag search
+  const handleClickOutside = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.tag-search-container')) {
+      setShowTagResults(false);
+    }
+  };
+
+  // Add click outside listener
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Função para mostrar mensagem de feedback
   const showFeedback = (text: string, type: 'success' | 'error' | 'warning') => {
@@ -1589,82 +1835,146 @@ export function Games() {
   };
 
   // Funções do Jogo do Milhão
-  const startQuiz = async (cardId: string) => {
-    setIsLoadingQuiz(true);
-    try {
-      const response = await axios.post(
-        `http://localhost:3000/quiz/start/${cardId}`,
-        {
-          amount: quizQuestionsAmount
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      console.log('Quiz started:', response.data);
-      setQuizSession(response.data.data);
-      setSelectedAnswer(null);
-      setShowQuizResult(false);
-      setIsCorrect(false);
-      setCorrectAnswerIndex(null);
-    } catch (error) {
-      console.error('Erro ao iniciar quiz:', error);
-      showFeedback("Erro ao iniciar quiz. Verifique se o card possui PDF.", "error");
-    } finally {
-      setIsLoadingQuiz(false);
-    }
-  };
-
-  const answerQuestion = async () => {
-    if (selectedAnswer === null || !quizSession) return;
-
-    // Validar se a resposta está no intervalo correto
-    if (selectedAnswer < 0 || selectedAnswer > 3) {
-      showFeedback("Resposta inválida. Escolha uma opção entre 1 e 4.", "error");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `http://localhost:3000/quiz/answer/${quizSession.sessionId}`,
-        {
-          answer: selectedAnswer, // Garantido que é um número entre 0-3
-          timeSpent: 30
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      console.log('Answer response:', response.data);
-      const result = response.data.data;
-      
-      setIsCorrect(result.isCorrect);
-      setCorrectAnswerIndex(result.correctAnswer);
-      setShowQuizResult(true);
-      
-      // Atualizar estatísticas
-      setQuizStats(prev => ({
-        totalQuestions: prev.totalQuestions + 1,
-        correctAnswers: prev.correctAnswers + (result.isCorrect ? 1 : 0),
-        pointsEarned: prev.pointsEarned + (result.pointsEarned || 0)
-      }));
-
-      if (result.isCorrect) {
-        showFeedback(`Resposta correta! +${result.pointsEarned} pontos`, "success");
-      } else {
-        showFeedback(`Resposta incorreta. A resposta correta era: ${result.correctOption}`, "error");
-      }
-    } catch (error) {
-      console.error('Erro ao responder pergunta:', error);
-      showFeedback("Erro ao processar resposta", "error");
-    }
-  };
-
   const resetQuiz = () => {
     setQuizSession(null);
     setSelectedAnswer(null);
     setShowQuizResult(false);
     setIsCorrect(false);
     setCorrectAnswerIndex(null);
-    setCurrentQuestionNumber(1);
+    setCurrentCardId(null);
+    setQuizStats({
+      totalQuestions: questionAmount,
+      correctAnswers: 0,
+      pointsEarned: 0,
+      timeSpent: 0,
+      currentQuestion: 1
+    });
+  };
+
+  const [currentCardId, setCurrentCardId] = useState<string | null>(null);
+  const [isLoadingNextQuestion, setIsLoadingNextQuestion] = useState(false);
+
+  const startQuiz = async (cardId: string) => {
+    setIsLoadingQuiz(true);
+    setCurrentCardId(cardId);
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/quiz/start/${cardId}`,
+        { amount: questionAmount },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setQuizSession(response.data.data);
+      setSelectedAnswer(null);
+      setShowQuizResult(false);
+      setIsCorrect(false);
+      setCorrectAnswerIndex(null);
+      setQuizStats({
+        totalQuestions: questionAmount,
+        correctAnswers: 0,
+        pointsEarned: 0,
+        timeSpent: 0,
+        currentQuestion: 1
+      });
+    } catch (error: any) {
+      console.error('Erro ao iniciar quiz:', error);
+      
+      if (error.response?.status === 404) {
+        toast.error('Quiz não encontrado. Verifique se o card selecionado existe.');
+      } else if (error.response?.data?.message?.includes('active session')) {
+        toast.warning('Você já tem uma sessão de quiz ativa. Por favor, aguarde alguns minutos ou tente novamente mais tarde.');
+      } else if (error.code === 'ERR_NETWORK') {
+        toast.error('Erro de conexão com o servidor. Verifique sua internet e tente novamente.');
+      } else {
+        toast.error('Erro ao iniciar o quiz. Por favor, tente novamente.');
+      }
+    } finally {
+      setIsLoadingQuiz(false);
+    }
+  };
+
+  const handleNextQuestion = async () => {
+    if (!currentCardId) return;
+    
+    setIsLoadingNextQuestion(true);
+    try {
+      // Se ainda há perguntas restantes
+      if (quizStats.currentQuestion <= quizStats.totalQuestions) {
+        // Inicia uma nova sessão para a próxima pergunta
+        const response = await axios.post(
+          `http://localhost:3000/quiz/start/${currentCardId}`,
+          { amount: questionAmount },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setQuizSession(response.data.data);
+        setSelectedAnswer(null);
+        setShowQuizResult(false);
+      }
+    } catch (error: any) {
+      console.error('Erro ao carregar próxima pergunta:', error);
+      if (error.response?.status === 404) {
+        toast.error('Quiz não encontrado. Por favor, inicie um novo jogo.');
+        resetQuiz();
+      } else if (error.code === 'ERR_NETWORK') {
+        toast.error('Erro de conexão com o servidor. Verifique sua internet e tente novamente.');
+      } else {
+        toast.error('Erro ao carregar próxima pergunta. Por favor, tente novamente.');
+      }
+    } finally {
+      setIsLoadingNextQuestion(false);
+    }
+  };
+
+  const [isAnswering, setIsAnswering] = useState(false);
+
+  const answerQuestion = async () => {
+    if (selectedAnswer === null || !quizSession) return;
+    setIsAnswering(true);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/quiz/answer/${quizSession.sessionId}`,
+        {
+          answer: selectedAnswer,
+          timeSpent: 30 // You can implement a timer if needed
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const result = response.data.data;
+      setIsCorrect(result.isCorrect);
+      setCorrectAnswerIndex(result.correctAnswer);
+      setShowQuizResult(true);
+
+      setQuizStats(prev => ({
+        ...prev,
+        correctAnswers: prev.correctAnswers + (result.isCorrect ? 1 : 0),
+        pointsEarned: prev.pointsEarned + (result.pointsEarned || 0),
+        currentQuestion: prev.currentQuestion + 1
+      }));
+
+      if (result.isCorrect) {
+        toast.success(`Resposta correta! +${result.pointsEarned} pontos`);
+      } else {
+        toast.info(`Resposta incorreta. A resposta correta era: ${quizSession.question.options[result.correctAnswer]}`);
+      }
+    } catch (error: any) {
+      console.error('Erro ao responder pergunta:', error);
+      
+      if (error.response?.status === 404) {
+        toast.error('Sessão não encontrada. Por favor, inicie um novo quiz.');
+        resetQuiz();
+      } else if (error.response?.status === 400) {
+        toast.error('Resposta inválida. Por favor, tente novamente.');
+      } else if (error.code === 'ERR_NETWORK') {
+        toast.error('Erro de conexão com o servidor. Verifique sua internet e tente novamente.');
+      } else {
+        toast.error('Erro ao processar resposta. Por favor, tente novamente.');
+      }
+    } finally {
+      setIsAnswering(false);
+    }
   };
 
   const renderGameSelection = () => {
@@ -1783,90 +2093,65 @@ export function Games() {
       return (
         <>
           <Header />
-          <Container style={{ padding: '0 20px' }}>
+          <Container>
             <BackButton onClick={() => {
               setSelectedGame(null);
               setShowGameSelection(true);
             }}>
               ← Voltar
             </BackButton>
-            
-            <StepTitle>Escolha um Card para o Quiz</StepTitle>
-            <StepSubtitle>
-              Selecione um card que tenha PDF para gerar perguntas
-            </StepSubtitle>
 
-            <div style={{ 
-              marginBottom: '20px',
-              background: '#f7fafc',
-              padding: '20px',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <div style={{ 
-                fontSize: '16px', 
-                fontWeight: 600, 
-                marginBottom: '10px',
-                color: '#2d3748'
-              }}>
-                Quantidade de Perguntas
-              </div>
-              <select
-                value={quizQuestionsAmount}
-                onChange={(e) => setQuizQuestionsAmount(Number(e.target.value))}
-                style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  border: '2px solid #e2e8f0',
-                  fontSize: '16px',
-                  color: '#4a5568',
-                  background: 'white',
-                  cursor: 'pointer',
-                  outline: 'none'
-                }}
-              >
-                <option value={5}>5 Perguntas</option>
-                <option value={10}>10 Perguntas</option>
-                <option value={15}>15 Perguntas</option>
-                <option value={20}>20 Perguntas</option>
-              </select>
-            </div>
-
-            <SearchInput
-              placeholder="🔍 Pesquisar cards..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-            {cards.length === 0 ? (
-              <EmptyState>
-                <EmptyStateText>
-                  Você precisa criar pelo menos um card com PDF na seção Escolar.
-                </EmptyStateText>
-                <CreateFirstCardButton onClick={() => window.location.href = "/escolar"}>
-                  Ir para Escolar
-                </CreateFirstCardButton>
-              </EmptyState>
-            ) : (
-              <CardsSelectionArea>
-                <CardsContainer>
-                  {cards
-                    .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
-                    .map((card) => (
-                      <CardOption
-                        key={card._id}
-                        onClick={() => startQuiz(card._id)}
-                      >
-                        <CardOptionTitle>{card.title}</CardOptionTitle>
-                        <CardOptionSubtitle>
-                          Clique para iniciar o quiz com {quizQuestionsAmount} perguntas
-                        </CardOptionSubtitle>
-                      </CardOption>
+            <QuizSetupSection>
+              <QuizSetupTitle>Configurar Quiz</QuizSetupTitle>
+              <QuizSetupForm>
+                <div>
+                  <label htmlFor="questionAmount" style={{ 
+                    display: 'block', 
+                    marginBottom: '10px',
+                    color: '#4a5568',
+                    fontSize: '16px',
+                    fontWeight: '500'
+                  }}>
+                    Quantidade de Perguntas
+                  </label>
+                  <QuestionAmountSelect
+                    id="questionAmount"
+                    value={questionAmount}
+                    onChange={(e) => setQuestionAmount(Number(e.target.value))}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                      <option key={num} value={num}>{num} pergunta{num > 1 ? 's' : ''}</option>
                     ))}
-                </CardsContainer>
-              </CardsSelectionArea>
-            )}
+                  </QuestionAmountSelect>
+                </div>
+
+                <div>
+                  <SearchInput
+                    placeholder="🔍 Pesquisar cards..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <CardsSelectionArea>
+                  <CardsContainer>
+                    {cards
+                      .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                      .map((card) => (
+                        <CardOption
+                          key={card._id}
+                          onClick={() => startQuiz(card._id)}
+                        >
+                          <CardOptionTitle>{card.title}</CardOptionTitle>
+                          <CardOptionSubtitle>
+                            Iniciar quiz com {questionAmount} pergunta{questionAmount > 1 ? 's' : ''}
+                          </CardOptionSubtitle>
+                        </CardOption>
+                      ))}
+                  </CardsContainer>
+                </CardsSelectionArea>
+              </QuizSetupForm>
+            </QuizSetupSection>
           </Container>
         </>
       );
@@ -1875,33 +2160,47 @@ export function Games() {
     return (
       <>
         <Header />
-        <Container style={{ padding: '0 20px' }}>
-          <BackButton onClick={() => {
-            resetQuiz();
-          }}>
+        <Container>
+          <BackButton onClick={resetQuiz}>
             ← Voltar
           </BackButton>
 
           <QuizContainer>
             {isLoadingQuiz ? (
-              <QuizLoadingContainer>
-                <QuizLoadingSpinner />
-                <QuizLoadingText>Gerando pergunta...</QuizLoadingText>
-              </QuizLoadingContainer>
+                              <LoadingOverlay>
+                  <SmallLoadingSpinner />
+                </LoadingOverlay>
             ) : (
               <>
                 <QuizHeader>
                   <QuizTitle>Jogo do Milhão</QuizTitle>
                   <QuizCardTitle>{quizSession?.cardTitle}</QuizCardTitle>
                   <QuizProgress>
-                    <span>Pergunta {currentQuestionNumber} de {quizQuestionsAmount}</span>
+                    <span>Pergunta {quizStats.currentQuestion} de {quizStats.totalQuestions}</span>
                     <QuizProgressBar>
                       <QuizProgressFill 
-                        progress={(currentQuestionNumber / quizQuestionsAmount) * 100} 
+                        progress={(quizStats.currentQuestion / quizStats.totalQuestions) * 100} 
                       />
                     </QuizProgressBar>
                   </QuizProgress>
                 </QuizHeader>
+
+                <QuizStats>
+                  <StatItem>
+                    <StatValue>{quizStats.correctAnswers}</StatValue>
+                    <StatLabel>Acertos</StatLabel>
+                  </StatItem>
+                  <StatItem>
+                    <StatValue>{quizStats.pointsEarned}</StatValue>
+                    <StatLabel>Pontos</StatLabel>
+                  </StatItem>
+                  <StatItem>
+                    <StatValue>
+                      {Math.round((quizStats.correctAnswers / (quizStats.currentQuestion - 1)) * 100 || 0)}%
+                    </StatValue>
+                    <StatLabel>Taxa de Acerto</StatLabel>
+                  </StatItem>
+                </QuizStats>
 
                 {!showQuizResult ? (
                   <>
@@ -1909,15 +2208,56 @@ export function Games() {
                       <QuestionText>{quizSession?.question.question}</QuestionText>
                     </QuizQuestion>
 
-                    {renderOptions()}
+                    <OptionsGrid>
+                      {quizSession?.question.options.map((option, index) => (
+                        <OptionButton
+                          key={index}
+                          isSelected={selectedAnswer === index}
+                          onClick={() => !showQuizResult && setSelectedAnswer(index)}
+                          disabled={showQuizResult}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ 
+                              minWidth: '24px',
+                              height: '24px',
+                              borderRadius: '12px',
+                              background: selectedAnswer === index ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '14px'
+                            }}>
+                              {String.fromCharCode(65 + index)}
+                            </span>
+                            {option}
+                          </div>
+                        </OptionButton>
+                      ))}
+                    </OptionsGrid>
 
                     <div style={{ textAlign: 'center', marginTop: '30px' }}>
-                      <StepButton
+                      <OptionButton
                         onClick={answerQuestion}
-                        disabled={selectedAnswer === null}
+                        disabled={selectedAnswer === null || isAnswering}
+                        style={{
+                          width: 'auto',
+                          padding: '15px 30px',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          fontWeight: '600',
+                          opacity: isAnswering ? 0.7 : 1,
+                          cursor: isAnswering ? 'not-allowed' : 'pointer'
+                        }}
                       >
-                        {selectedAnswer === null ? 'Escolha uma opção' : 'Confirmar Resposta'}
-                      </StepButton>
+                        {isAnswering ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <SmallLoadingSpinner />
+                            Enviando resposta...
+                          </div>
+                        ) : (
+                          selectedAnswer === null ? 'Escolha uma opção' : 'Confirmar Resposta'
+                        )}
+                      </OptionButton>
                     </div>
                   </>
                 ) : (
@@ -1932,17 +2272,34 @@ export function Games() {
                       }
                     </ResultMessage>
                     
-                    <div style={{ marginBottom: '20px' }}>
-                      <p>📊 Estatísticas:</p>
-                      <p>Total de perguntas: {quizStats.totalQuestions}</p>
-                      <p>Acertos: {quizStats.correctAnswers}</p>
-                      <p>Taxa de acerto: {quizStats.totalQuestions > 0 ? Math.round((quizStats.correctAnswers / quizStats.totalQuestions) * 100) : 0}%</p>
-                      <p>Pontos ganhos: {quizStats.pointsEarned}</p>
-                    </div>
-
-                    <PlayAgainButton onClick={resetQuiz}>
-                      Jogar Novamente
-                    </PlayAgainButton>
+                    {quizStats.currentQuestion > quizStats.totalQuestions ? (
+                      <>
+                        <div style={{ marginBottom: '20px' }}>
+                          <h3 style={{ color: '#cbd5e0', marginBottom: '15px' }}>Resultado Final</h3>
+                          <p>Total de perguntas: {quizStats.totalQuestions}</p>
+                          <p>Acertos: {quizStats.correctAnswers}</p>
+                          <p>Taxa de acerto: {Math.round((quizStats.correctAnswers / quizStats.totalQuestions) * 100)}%</p>
+                          <p>Pontos ganhos: {quizStats.pointsEarned}</p>
+                        </div>
+                        <StartQuizButton onClick={resetQuiz}>
+                          Jogar Novamente
+                        </StartQuizButton>
+                      </>
+                    ) : (
+                      <StartQuizButton 
+                        onClick={handleNextQuestion}
+                        disabled={isLoadingNextQuestion}
+                      >
+                        {isLoadingNextQuestion ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <SmallLoadingSpinner />
+                            Carregando próxima pergunta...
+                          </div>
+                        ) : (
+                          'Próxima Pergunta'
+                        )}
+                      </StartQuizButton>
+                    )}
                   </QuizResult>
                 )}
               </>
@@ -2304,12 +2661,12 @@ export function Games() {
                   cursor: selectedTags.length === 0 ? 'not-allowed' : 'pointer'
                 }}
               >
-                {isCreating ? (
-                  <>
-                    <LoadingSpinner />
-                    {creationType === 'manual' ? 'Criando...' : 'Criando com IA...'}
-                  </>
-                ) : (
+                                  {isCreating ? (
+                    <>
+                      <SmallLoadingSpinner />
+                      {creationType === 'manual' ? 'Criando...' : 'Criando com IA...'}
+                    </>
+                  ) : (
                   <>
                     {selectedTags.length === 0 ? '⚠️ Selecione pelo menos uma tag' : (
                       creationType === 'manual' ? '✍️ Finalizar Criação Manual' : '🤖 Finalizar e Gerar com IA'
@@ -2364,6 +2721,56 @@ export function Games() {
     loadInitialData();
   }, [token, user]);
 
+  // Add new functions for tag filtering
+  const toggleTagFilter = (tagId: string) => {
+    setActiveTagFilters(prev => {
+      const isActive = prev.includes(tagId);
+      return isActive ? prev.filter(id => id !== tagId) : [...prev, tagId];
+    });
+  };
+
+  const clearTagFilters = () => {
+    setActiveTagFilters([]);
+  };
+
+  // Update filtered flashcards when filters or flashcards change
+  useEffect(() => {
+    if (activeTagFilters.length === 0) {
+      setFilteredFlashcards(flashcards);
+    } else {
+      const filtered = flashcards.filter(flashcard => 
+        flashcard.tags.some(tag => 
+          activeTagFilters.includes(typeof tag === 'object' ? tag._id : tag)
+        )
+      );
+      setFilteredFlashcards(filtered);
+    }
+  }, [activeTagFilters, flashcards]);
+
+  // Function to start studying filtered flashcards
+  const startStudyMode = () => {
+    setStudyMode(true);
+    setStudyIndex(0);
+    setShowBack(false);
+  };
+
+  // Function to exit study mode
+  const exitStudyMode = () => {
+    setStudyMode(false);
+    setStudyIndex(0);
+    setShowBack(false);
+  };
+
+  // Function to handle next flashcard in study mode
+  const handleNextStudyCard = () => {
+    if (studyIndex < filteredFlashcards.length - 1) {
+      setStudyIndex(prev => prev + 1);
+      setShowBack(false);
+    } else {
+      exitStudyMode();
+    }
+  };
+
   if (isLoading)
     return (
       <Container>
@@ -2403,39 +2810,196 @@ export function Games() {
               ← Voltar para seleção de jogos
             </BackButton>
 
-            {renderCreationStep()}
+            {!studyMode ? (
+              <>
+                {renderCreationStep()}
 
-            {showCreateTagModal && (
-              <TagModal onClick={() => setShowCreateTagModal(false)}>
-                <TagModalContent onClick={(e) => e.stopPropagation()}>
-                  <TagModalTitle>Criar Nova Tag</TagModalTitle>
-                  <TagModalInput
-                    placeholder="Digite o nome da nova tag..."
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
-                  />
-                  <TagModalButtons>
-                    <TagModalButton
-                      variant="secondary"
-                      onClick={() => setShowCreateTagModal(false)}
-                    >
-                      Cancelar
-                    </TagModalButton>
-                    <TagModalButton variant="primary" onClick={createTagFromModal}>
-                      Criar Tag
-                    </TagModalButton>
-                  </TagModalButtons>
-                </TagModalContent>
-              </TagModal>
-            )}
+                {showCreateTagModal && (
+                  <TagModal onClick={() => setShowCreateTagModal(false)}>
+                    <TagModalContent onClick={(e) => e.stopPropagation()}>
+                      <TagModalTitle>Criar Nova Tag</TagModalTitle>
+                      <TagModalInput
+                        placeholder="Digite o nome da nova tag..."
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyPress={(e) => e.key === "Enter" && createTagFromModal()}
+                      />
+                      <TagModalButtons>
+                        <TagModalButton
+                          variant="secondary"
+                          onClick={() => setShowCreateTagModal(false)}
+                        >
+                          Cancelar
+                        </TagModalButton>
+                        <TagModalButton variant="primary" onClick={createTagFromModal}>
+                          Criar Tag
+                        </TagModalButton>
+                      </TagModalButtons>
+                    </TagModalContent>
+                  </TagModal>
+                )}
 
-            {flashcards.length === 0 ? (
-              <p>Você ainda não possui flashcards.</p>
-            ) : currentIndex >= flashcards.length ? (
-              <p>Parabéns! Você revisou todos os flashcards.</p>
+                <AllFlashcardsSection>
+                  <SectionHeader>
+                    <SectionTitle>
+                      📚 Seus Flashcards
+                      <FlashcardCount>
+                        {activeTagFilters.length > 0 
+                          ? `${filteredFlashcards.length} filtrados` 
+                          : flashcards.length}
+                      </FlashcardCount>
+                    </SectionTitle>
+                  </SectionHeader>
+
+                  <TagFilterContainer>
+                    <TagFilterTitle>
+                      🏷️ Filtrar por Tags
+                      {activeTagFilters.length > 0 && (
+                        <ClearFiltersButton onClick={clearTagFilters}>
+                          Limpar Filtros
+                        </ClearFiltersButton>
+                      )}
+                    </TagFilterTitle>
+
+                    <TagSearchContainer className="tag-search-container">
+                      <TagSearchInput
+                        placeholder="🔍 Buscar tags..."
+                        value={tagSearchTerm}
+                        onChange={(e) => setTagSearchTerm(e.target.value)}
+                        onFocus={handleTagSearchFocus}
+                      />
+
+                      {activeTagFilters.length > 0 && (
+                        <SelectedTagsContainer>
+                          {activeTagFilters.map(tagId => {
+                            const tag = tagList.find(t => t._id === tagId);
+                            return tag ? (
+                              <SelectedTag key={tag._id}>
+                                {tag.name}
+                                <button onClick={() => toggleTagFilter(tag._id)}>×</button>
+                              </SelectedTag>
+                            ) : null;
+                          })}
+                        </SelectedTagsContainer>
+                      )}
+
+                      <TagSearchResults show={showTagResults && filteredTags.length > 0}>
+                        {filteredTags.map(tag => (
+                          <TagSearchResult
+                            key={tag._id}
+                            onClick={() => {
+                              toggleTagFilter(tag._id);
+                              setTagSearchTerm("");
+                              setShowTagResults(false);
+                            }}
+                          >
+                            <span>🏷️</span>
+                            {tag.name}
+                          </TagSearchResult>
+                        ))}
+                      </TagSearchResults>
+                    </TagSearchContainer>
+                  </TagFilterContainer>
+
+                  {filteredFlashcards.length === 0 ? (
+                    <EmptyFlashcardsState>
+                      <EmptyIcon>🎴</EmptyIcon>
+                      <EmptyTitle>
+                        {activeTagFilters.length > 0 
+                          ? 'Nenhum flashcard encontrado com os filtros selecionados' 
+                          : 'Nenhum flashcard criado ainda'}
+                      </EmptyTitle>
+                      <EmptyDescription>
+                        {activeTagFilters.length > 0 
+                          ? 'Tente selecionar outras tags ou limpar os filtros.'
+                          : 'Crie seu primeiro flashcard usando o fluxo step-by-step acima.'}
+                      </EmptyDescription>
+                      {activeTagFilters.length > 0 ? (
+                        <CreateFirstFlashcardButton onClick={clearTagFilters}>
+                          Limpar Filtros
+                        </CreateFirstFlashcardButton>
+                      ) : (
+                        <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
+                          🚀 Criar Primeiro Flashcard
+                        </CreateFirstFlashcardButton>
+                      )}
+                    </EmptyFlashcardsState>
+                  ) : (
+                    <>
+                      {activeTagFilters.length > 0 && (
+                        <div style={{ 
+                          textAlign: 'center', 
+                          marginBottom: '20px' 
+                        }}>
+                          <StudyButton 
+                            onClick={startStudyMode}
+                            disabled={selectedTags.length === 0}
+                          >
+                            📚 Estudar Flashcards Filtrados
+                          </StudyButton>
+                        </div>
+                      )}
+                      <FlashcardsGrid>
+                        {filteredFlashcards.map((fc) => (
+                          <FlashcardCard 
+                            key={fc._id}
+                            onClick={() => {
+                              const index = filteredFlashcards.findIndex(f => f._id === fc._id);
+                              setStudyIndex(index);
+                              startStudyMode();
+                            }}>
+                            <FlashcardHeader>
+                              <FlashcardTitle>{fc.front}</FlashcardTitle>
+                              <FlashcardDate>Criado recentemente</FlashcardDate>
+                            </FlashcardHeader>
+
+                            <FlashcardContent>
+                              <ContentSection>
+                                <ContentLabel>Pergunta</ContentLabel>
+                                <ContentText>{fc.front}</ContentText>
+                              </ContentSection>
+                            </FlashcardContent>
+
+                            {fc.tags && fc.tags.length > 0 && (
+                              <FlashcardTags onClick={(e) => e.stopPropagation()}>
+                                {fc.tags.map((tag, index) => (
+                                  <FlashcardTag 
+                                    key={index}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleTagFilter(
+                                        typeof tag === 'object' ? tag._id : tag
+                                      );
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                  >
+                                    {typeof tag === "object" ? tag.name : tag}
+                                  </FlashcardTag>
+                                ))}
+                              </FlashcardTags>
+                            )}
+                          </FlashcardCard>
+                        ))}
+                      </FlashcardsGrid>
+                    </>
+                  )}
+                </AllFlashcardsSection>
+              </>
             ) : (
-              <div>
+              // Study Mode UI
+              <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+                <BackButton onClick={exitStudyMode}>
+                  ← Voltar para lista
+                </BackButton>
+                
+                <div style={{ 
+                  textAlign: 'center', 
+                  marginBottom: '20px',
+                  color: '#4A5568'
+                }}>
+                  Estudando {studyIndex + 1} de {filteredFlashcards.length} flashcards
+                </div>
+
                 <FlashcardContainer>
                   <FlashcardInner
                     isFlipped={showBack}
@@ -2443,11 +3007,11 @@ export function Games() {
                   >
                     <FlashcardFront>
                       <FlashcardStepTitle>Pergunta</FlashcardStepTitle>
-                      <FlashText>{current.front}</FlashText>
+                      <FlashText>{filteredFlashcards[studyIndex].front}</FlashText>
                     </FlashcardFront>
                     <FlashcardBack>
                       <FlashcardStepTitle>Resposta</FlashcardStepTitle>
-                      <FlashText>{current.back}</FlashText>
+                      <FlashText>{filteredFlashcards[studyIndex].back}</FlashText>
                     </FlashcardBack>
                   </FlashcardInner>
                 </FlashcardContainer>
@@ -2462,7 +3026,13 @@ export function Games() {
                   <GradeContainer>
                     <GradeText>Como você se saiu? (0 a 5)</GradeText>
                     {[0, 1, 2, 3, 4, 5].map((n) => (
-                      <GradeButton key={n} onClick={() => handleGrade(n)}>
+                      <GradeButton 
+                        key={n} 
+                        onClick={() => {
+                          handleGrade(n);
+                          handleNextStudyCard();
+                        }}
+                      >
                         {n}
                       </GradeButton>
                     ))}
@@ -2470,63 +3040,6 @@ export function Games() {
                 )}
               </div>
             )}
-
-            <AllFlashcardsSection>
-              <SectionHeader>
-                <SectionTitle>
-                  📚 Seus Flashcards
-                  <FlashcardCount>{flashcards.length}</FlashcardCount>
-                </SectionTitle>
-              </SectionHeader>
-
-              {flashcards.length === 0 ? (
-                <EmptyFlashcardsState>
-                  <EmptyIcon>🎴</EmptyIcon>
-                  <EmptyTitle>Nenhum flashcard criado ainda</EmptyTitle>
-                  <EmptyDescription>
-                    Crie seu primeiro flashcard usando o fluxo step-by-step acima.
-                    <br />
-                    Organize seus estudos de forma inteligente e ganhe pontos!
-                  </EmptyDescription>
-                  <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
-                    🚀 Criar Primeiro Flashcard
-                  </CreateFirstFlashcardButton>
-                </EmptyFlashcardsState>
-              ) : (
-                <FlashcardsGrid>
-                  {flashcards.map((fc) => (
-                    <FlashcardCard key={fc._id}>
-                      <FlashcardHeader>
-                        <FlashcardTitle>{fc.front}</FlashcardTitle>
-                        <FlashcardDate>Criado recentemente</FlashcardDate>
-                      </FlashcardHeader>
-
-                      <FlashcardContent>
-                        <ContentSection>
-                          <ContentLabel>Pergunta</ContentLabel>
-                          <ContentText>{fc.front}</ContentText>
-                        </ContentSection>
-                      </FlashcardContent>
-
-                      {fc.tags && fc.tags.length > 0 && (
-                        <FlashcardTags>
-                          {fc.tags.map((tag, index) => (
-                            <FlashcardTag key={index}>
-                              {typeof tag === "object" ? tag.name : tag}
-                            </FlashcardTag>
-                          ))}
-                        </FlashcardTags>
-                      )}
-
-                      <FlashcardActions>
-                        <StudyButton>📖 Estudar</StudyButton>
-                        <PreviewButton>👁️ Preview</PreviewButton>
-                      </FlashcardActions>
-                    </FlashcardCard>
-                  ))}
-                </FlashcardsGrid>
-              )}
-            </AllFlashcardsSection>
           </Container>
         </>
       )}

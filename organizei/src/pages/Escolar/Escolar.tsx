@@ -1542,8 +1542,8 @@ export function Escolar() {
 
                 {/* Content */}
                 <ContentArea>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <h2>{tituloEditavel}</h2>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h2 style={{ margin: 0 }}>{tituloEditavel}</h2>
                     <button
                       onClick={handleCloseCardModal}
                       style={{
@@ -2059,7 +2059,45 @@ export function Escolar() {
           {showCardModal && (
             <ModalOverlay>
               <ModalContent>
-                <h2>Criando seu card</h2>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '24px'
+                }}>
+                  <h2 style={{ margin: 0 }}>Criando seu card</h2>
+                  <button
+                    onClick={() => {
+                      setShowCardModal(false);
+                      setCardTitle("");
+                      setImage(null);
+                    }}
+                    style={{
+                      background: 'rgba(0,0,0,0.1)',
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      color: '#666',
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+                      e.currentTarget.style.color = '#333';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(0,0,0,0.1)';
+                      e.currentTarget.style.color = '#666';
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
 
                 <p>Imagem que aparecerá na comunidade</p>
                 <ImageUploadArea

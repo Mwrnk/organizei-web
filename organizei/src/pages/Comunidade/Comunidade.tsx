@@ -619,10 +619,11 @@ const DEFAULT_PROFILE_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.or
 
 export function Comunidade() {
   const [allCards, setAllCards] = useState<any[]>([]);
+  const [myCards, setMyCards] = useState<CardData[]>([]);
   const [searchTitle, setSearchTitle] = useState("");
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
-  const [selectedListId, setSelectedListId] = useState("");
+  const [selectedListId, setSelectedListId] = useState<string>("");
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [likedCards, setLikedCards] = useState<Set<string>>(new Set());
   const [visibleCards, setVisibleCards] = useState(10);
@@ -709,8 +710,37 @@ export function Comunidade() {
     }
   };
 
+  const fetchMyCards = async () => {
+    try {
+      const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        console.error("Token não encontrado");
+        return;
+      }
+
+      const res = await axios.get("http://localhost:3000/cards", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Filtra apenas os cards não publicados e garante a estrutura correta
+      const unpublishedCards = res.data.data
+        .filter((card: any) => !card.is_published)
+        .map((card: any) => ({
+          id: card._id || card.id, // Garante que temos o id correto (ObjectId do MongoDB)
+          title: card.title,
+          is_published: card.is_published,
+        }));
+
+      setMyCards(unpublishedCards);
+    } catch (err) {
+      console.error("Erro ao carregar seus cards:", err);
+      toast.error("Erro ao carregar seus cards. Por favor, tente novamente.");
+    }
+  };
+
   useEffect(() => {
     fetchAllCards();
+    fetchMyCards();
   }, []);
 
   // Função para obter os cards mais curtidos
@@ -743,26 +773,69 @@ export function Comunidade() {
   };
 
   const handlePublicar = async (cardId: string) => {
+    if (!cardId) {
+      toast.error("Selecione um card para publicar");
+      return;
+    }
+
+    // Encontra o card selecionado para garantir que temos o ID correto
+    const selectedCard = myCards.find(card => card.id === cardId);
+    if (!selectedCard) {
+      toast.error("Card não encontrado na lista local");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        toast.error("Você precisa estar logado para publicar");
+        return;
+      }
 
-      await axios.post(
-        `http://localhost:3000/comunidade/publish/${cardId}`,
+      // Usa a rota correta /publish/:id
+      const response = await axios.post(
+        `http://localhost:3000/comunidade/publish/${selectedCard.id}`
+,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          } 
+        }
       );
 
-      toast.success("Card publicado com sucesso!");
-      
-      // Recarrega os dados
-      await fetchUsers();
-      await fetchAllCards();
-      
-      // Limpa a seleção
-      setSelectedListId("");
-    } catch (err) {
+      if (response.data) {
+        toast.success("Card publicado com sucesso!");
+        
+        // Recarrega os dados
+        await Promise.all([
+          fetchMyCards(),    // Recarrega os cards do usuário
+          fetchAllCards()    // Recarrega os cards da comunidade
+        ]);
+        
+        // Limpa a seleção
+        setSelectedListId("");
+      }
+    } catch (err: any) {
       console.error("Erro ao publicar card:", err);
-      toast.error("Erro ao publicar card.");
+      
+      // Tratamento específico de erros da API
+      if (err.response) {
+        const errorMessage = err.response.data?.message || "Erro ao publicar card";
+        
+        if (err.response.status === 404) {
+          toast.error("Card não encontrado. Verifique se o card ainda existe.");
+          // Recarrega os cards para garantir que a lista está atualizada
+          fetchMyCards();
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (err.request) {
+        toast.error("Erro de conexão. Verifique sua internet.");
+      } else {
+        toast.error("Erro ao publicar card. Tente novamente.");
+      }
     }
   };
 
@@ -1122,27 +1195,21 @@ export function Comunidade() {
               <PublishForm>
                 <Select
                   value={selectedListId}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedListId(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    const selectedId = e.target.value;
+                    setSelectedListId(selectedId);
+                  }}
                 >
                   <option value="">Selecionar o card</option>
-                  {allCards
-                    .filter((card) => !card.is_published)
-                    .map((card) => (
-                      <option key={card._id} value={card._id}>
-                        {card.title}
-                      </option>
-                    ))}
+                  {myCards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.title}
+                    </option>
+                  ))}
                 </Select>
 
                 <PublishButton
-                  onClick={() => {
-                    const selectedCard = allCards.find(
-                      (card) => card._id === selectedListId
-                    );
-                    if (selectedCard) {
-                      handlePublicar(selectedCard._id);
-                    }
-                  }}
+                  onClick={() => handlePublicar(selectedListId)}
                   disabled={!selectedListId}
                 >
                   Publicar
