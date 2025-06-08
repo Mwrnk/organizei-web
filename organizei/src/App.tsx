@@ -7,6 +7,7 @@ import { IA } from "./pages/IA/IA";
 import { Planos } from "./pages/Planos/Planos";
 import { Escolar } from "./pages/Escolar/Escolar";
 import { Comunidade } from "./pages/Comunidade/Comunidade";
+import { LandingPage } from "./pages/LandingPage/LandingPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./Contexts/AuthContexts";
@@ -24,7 +25,8 @@ function AppContent() {
       <Routes>
         {/* Rotas públicas */}
         <Route element={<PublicRoute />}>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
         </Route>
 
         {/* Rotas protegidas para usuários autenticados */}
