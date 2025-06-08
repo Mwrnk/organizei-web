@@ -170,6 +170,7 @@ type Plan = {
   price: number;
   description: string;
   points?: number;
+  features: string[];
 };
 
 export function Planos() {
@@ -292,28 +293,53 @@ export function Planos() {
               <PlanoCard key={plan._id} highlighted={isHighlighted}>
                 <PlanoTitulo>{plan.name}</PlanoTitulo>
                 <PlanoBeneficios>
-                  <li>
-                    <img src={VistoPlano} alt="Incluído" />
-                    {plan.description}
-                  </li>
+                  {plan.features?.map((feature, index) => (
+                    <li key={index}>
+                      <img src={VistoPlano} alt="Incluído" />
+                      {feature}
+                    </li>
+                  ))}
                   {plan.name.toLowerCase() === "free" && (
                     <>
                       <li>
                         <img src={NegacaoPlano} alt="Não incluído" />
-                        Suporte premium
+                        <span style={{ color: "#666" }}>Acesso a IA</span>
                       </li>
                       <li>
                         <img src={NegacaoPlano} alt="Não incluído" />
-                        Consultoria
+                        <span style={{ color: "#666" }}>Jogos limitados</span>
+                      </li>
+                      <li>
+                        <img src={NegacaoPlano} alt="Não incluído" />
+                        <span style={{ color: "#666" }}>Jogos ilimitados</span>
                       </li>
                     </>
+                  )}
+
+                  {plan.name.toLowerCase() === "free" && (
+                    <>
+                      <li>
+                        <img src={NegacaoPlano} alt="Não incluído" />
+                        <span style={{ color: "#666" }}>Acesso a IA</span>
+                      </li>
+                      <li>
+                        <img src={NegacaoPlano} alt="Não incluído" />
+                        <span style={{ color: "#666" }}>Jogos limitados</span>
+                      </li>
+                    </>
+                  )}
+                  {plan.name.toLowerCase() === "premium" && (
+                    <li>
+                      <img src={VistoPlano} alt="Incluído" />
+                      Jogos ilimitados
+                    </li>
                   )}
                 </PlanoBeneficios>
 
                 <PlanoPreco>
                   <span className="real">R$</span>
                   <span className="preco">
-                    {plan.price === 0 ? "Free" : plan.price}
+                    {plan.price === 0 ? "Gratuito" : plan.price}
                   </span>
                   {plan.price > 0 && <span className="periodo">/mês</span>}
                   {plan.points && (
