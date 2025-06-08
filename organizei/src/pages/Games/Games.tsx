@@ -260,7 +260,7 @@ const BackButton = styled.button`
 `;
 
 const SearchInput = styled.input`
-  width: 100%;
+  width: 89%;
   padding: 16px 20px 16px 50px;
   border: 2px solid #e2e8f0;
   border-radius: 15px;
