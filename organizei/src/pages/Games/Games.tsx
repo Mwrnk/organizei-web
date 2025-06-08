@@ -707,11 +707,10 @@ const SectionTitle = styled.h2`
 `;
 
 const FlashcardCount = styled.span`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: black;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 600;
 `;
 
