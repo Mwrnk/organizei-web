@@ -261,34 +261,58 @@ const BackButton = styled.button`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 16px 20px;
+  padding: 16px 20px 16px 50px;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border-radius: 15px;
   font-size: 16px;
-  margin-bottom: 20px;
   transition: all 0.3s ease;
+  background: white;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3e%3c/svg%3e");
+  background-position: 16px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
+  position: relative;
+
+  &:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
 
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23667eea'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3e%3c/svg%3e");
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+    font-weight: 500;
   }
 `;
 
 const CardOption = styled.div`
-  padding: 16px 20px;
+  padding: 20px 25px;
   border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  margin-bottom: 12px;
+  border-radius: 16px;
+  margin-bottom: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
   &:hover {
     border-color: #667eea;
-    background: #f7fafc;
-    transform: translateX(8px);
+    background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(1.01);
   }
 
   &::before {
@@ -297,27 +321,51 @@ const CardOption = styled.div`
     left: 0;
     top: 0;
     bottom: 0;
-    width: 4px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-radius: 2px;
+    width: 5px;
+    background: linear-gradient(135deg, #667eea, #764ba2, #ffd89b);
+    border-radius: 0 3px 3px 0;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
   }
 
   &:hover::before {
     opacity: 1;
+    width: 8px;
+  }
+
+  &::after {
+    content: "▶";
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #667eea;
+    font-size: 16px;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    right: 15px;
   }
 `;
 
 const CardOptionTitle = styled.div`
-  font-weight: 600;
+  font-weight: 700;
   color: #2d3748;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 `;
 
 const CardOptionSubtitle = styled.div`
   font-size: 14px;
   color: #718096;
+  line-height: 1.5;
+  padding-right: 40px;
 `;
 
 const ProgressBar = styled.div`
@@ -939,34 +987,42 @@ const LightningIcon = styled.span`
 `;
 
 const CardsSelectionArea = styled.div`
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
-  padding-right: 10px;
-  margin-bottom: 20px;
+  padding: 5px;
+  margin-top: 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
   }
 
   &::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: rgba(226, 232, 240, 0.3);
     border-radius: 10px;
+    margin: 10px 0;
   }
 
   &::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
   }
 
   &::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    background-clip: content-box;
   }
 `;
 
 const CardsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  padding: 10px;
 `;
 
 // Mensagem visual de feedback
@@ -1213,69 +1269,167 @@ const ResultMessage = styled.p`
 `;
 
 const QuizSetupSection = styled.div`
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 40px;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   margin: 20px auto;
-  max-width: 800px;
+  max-width: 900px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #ffd89b);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
 `;
 
 const QuizSetupTitle = styled.h2`
-  font-size: 24px;
-  color: #2d3748;
-  margin-bottom: 20px;
-  font-weight: 700;
+  font-size: 36px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+  font-weight: 800;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+`;
+
+const QuizSetupSubtitle = styled.p`
+  font-size: 18px;
+  color: #718096;
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
 `;
 
 const QuizSetupForm = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 30px;
+  position: relative;
+  z-index: 1;
+`;
+
+const FormSection = styled.div`
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  padding: 25px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+`;
+
+const FormLabel = styled.label`
+  display: block;
+  margin-bottom: 12px;
+  color: #2d3748;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const QuestionAmountSelect = styled.select`
   width: 100%;
-  padding: 15px;
+  padding: 18px 20px;
   border: 2px solid #e2e8f0;
-  border-radius: 10px;
+  border-radius: 15px;
   font-size: 16px;
   color: #4a5568;
   background: white;
   cursor: pointer;
   transition: all 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 50px;
 
   &:hover {
     border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   }
 
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
   }
 `;
 
 const StartQuizButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 15px 30px;
+  padding: 18px 40px;
   border: none;
-  border-radius: 10px;
+  border-radius: 15px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  &:active {
+    transform: translateY(-1px);
   }
 
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+    transform: none;
   }
 `;
 
@@ -2102,18 +2256,16 @@ export function Games() {
             </BackButton>
 
             <QuizSetupSection>
-              <QuizSetupTitle>Configurar Quiz</QuizSetupTitle>
+              <QuizSetupTitle>💰 Configurar Quiz</QuizSetupTitle>
+              <QuizSetupSubtitle>
+                Escolha a quantidade de perguntas e selecione um card para começar sua jornada rumo ao milhão!
+              </QuizSetupSubtitle>
+              
               <QuizSetupForm>
-                <div>
-                  <label htmlFor="questionAmount" style={{ 
-                    display: 'block', 
-                    marginBottom: '10px',
-                    color: '#4a5568',
-                    fontSize: '16px',
-                    fontWeight: '500'
-                  }}>
-                    Quantidade de Perguntas
-                  </label>
+                <FormSection>
+                  <FormLabel htmlFor="questionAmount">
+                    🎯 Quantidade de Perguntas
+                  </FormLabel>
                   <QuestionAmountSelect
                     id="questionAmount"
                     value={questionAmount}
@@ -2123,33 +2275,74 @@ export function Games() {
                       <option key={num} value={num}>{num} pergunta{num > 1 ? 's' : ''}</option>
                     ))}
                   </QuestionAmountSelect>
-                </div>
+                </FormSection>
 
-                <div>
+                <FormSection>
+                  <FormLabel>
+                    🔍 Selecionar Card
+                  </FormLabel>
                   <SearchInput
                     placeholder="🔍 Pesquisar cards..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-                </div>
-
-                <CardsSelectionArea>
-                  <CardsContainer>
-                    {cards
-                      .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
-                      .map((card) => (
-                        <CardOption
-                          key={card._id}
-                          onClick={() => startQuiz(card._id)}
-                        >
-                          <CardOptionTitle>{card.title}</CardOptionTitle>
-                          <CardOptionSubtitle>
-                            Iniciar quiz com {questionAmount} pergunta{questionAmount > 1 ? 's' : ''}
-                          </CardOptionSubtitle>
-                        </CardOption>
-                      ))}
-                  </CardsContainer>
-                </CardsSelectionArea>
+                  
+                  <CardsSelectionArea>
+                    <CardsContainer>
+                      {cards.length === 0 ? (
+                        <EmptyFlashcardsState style={{ 
+                          margin: '20px 0',
+                          padding: '40px 20px',
+                          border: '2px dashed rgba(102, 126, 234, 0.3)'
+                        }}>
+                          <EmptyIcon>📚</EmptyIcon>
+                          <EmptyTitle style={{ fontSize: '20px', marginBottom: '8px' }}>
+                            Nenhum card disponível
+                          </EmptyTitle>
+                          <EmptyDescription style={{ fontSize: '14px', marginBottom: '20px' }}>
+                            Você precisa criar cards na seção Escolar antes de jogar.
+                          </EmptyDescription>
+                          <CreateFirstFlashcardButton
+                            onClick={() => (window.location.href = "/escolar")}
+                            style={{ padding: '12px 24px', fontSize: '14px' }}
+                          >
+                            Ir para Escolar
+                          </CreateFirstFlashcardButton>
+                        </EmptyFlashcardsState>
+                      ) : cards
+                          .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                          .length === 0 ? (
+                        <EmptyFlashcardsState style={{ 
+                          margin: '20px 0',
+                          padding: '40px 20px',
+                          border: '2px dashed rgba(102, 126, 234, 0.3)'
+                        }}>
+                          <EmptyIcon>🔍</EmptyIcon>
+                          <EmptyTitle style={{ fontSize: '20px', marginBottom: '8px' }}>
+                            Nenhum card encontrado
+                          </EmptyTitle>
+                          <EmptyDescription style={{ fontSize: '14px', marginBottom: '0' }}>
+                            Tente pesquisar com outros termos ou verifique a ortografia.
+                          </EmptyDescription>
+                        </EmptyFlashcardsState>
+                      ) : (
+                        cards
+                          .filter(card => card.title.toLowerCase().includes(searchTerm.toLowerCase()))
+                          .map((card) => (
+                            <CardOption
+                              key={card._id}
+                              onClick={() => startQuiz(card._id)}
+                            >
+                              <CardOptionTitle>🎴 {card.title}</CardOptionTitle>
+                              <CardOptionSubtitle>
+                                💎 Iniciar quiz com {questionAmount} pergunta{questionAmount > 1 ? 's' : ''} • Ganhe pontos por cada acerto!
+                              </CardOptionSubtitle>
+                            </CardOption>
+                          ))
+                      )}
+                    </CardsContainer>
+                  </CardsSelectionArea>
+                </FormSection>
               </QuizSetupForm>
             </QuizSetupSection>
           </Container>
