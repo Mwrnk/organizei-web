@@ -240,8 +240,14 @@ export function Escolar() {
       }
       
       try {
+        const token = localStorage.getItem("authenticacao");
         const res = await axios.get(
-          `http://localhost:3000/lists/user/${userId}`
+          `http://localhost:3000/lists/user/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const listas: Lista[] = res.data.data || [];
         setLists(listas);
@@ -252,14 +258,69 @@ export function Escolar() {
           return;
         }
 
-        const cardsPorLista: Record<string, CardData[]> = listas.reduce((acc, list) => {
-          acc[list.id] = Array.isArray(list.cards) ? list.cards : [];
-          return acc;
-        }, {} as Record<string, CardData[]>);
+        // Buscar detalhes de todos os cards de uma vez
+        const allCardsPromises = listas.map(list => 
+          axios.get(`http://localhost:3000/lists/${list.id}/cards`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+        );
+
+        const allCardsResponses = await Promise.all(allCardsPromises);
+
+        const cardsPorLista: Record<string, CardData[]> = {};
+        
+        // Para cada lista, buscar detalhes dos cards
+        await Promise.all(listas.map(async (list, index) => {
+          const cardsData = allCardsResponses[index].data.data;
+          
+          const cardsWithDetails = await Promise.all(
+            cardsData.map(async (card: any) => {
+              try {
+                const cardDetailRes = await axios.get(
+                  `http://localhost:3000/cards/${card.id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+                const cardDetail = cardDetailRes.data.data;
+                
+                return {
+                  id: card.id,
+                  title: card.title,
+                  userId: card.userId,
+                  createdAt: card.createdAt,
+                  pdfs: cardDetail.pdfs || [],
+                  image_url: cardDetail.image_url || [],
+                  is_published: cardDetail.is_published || false,
+                  priority: cardDetail.priority || "Baixa",
+                };
+              } catch (err) {
+                console.error(`Erro ao buscar detalhes do card ${card.id}:`, err);
+                return {
+                  id: card.id,
+                  title: card.title,
+                  userId: card.userId,
+                  createdAt: card.createdAt,
+                  pdfs: [],
+                  image_url: [],
+                  is_published: false,
+                  priority: "Baixa",
+                };
+              }
+            })
+          );
+
+          cardsPorLista[list.id] = cardsWithDetails;
+        }));
 
         setCards(cardsPorLista);
       } catch (err) {
         console.error("Erro ao buscar listas ou cards", err);
+        toast.error("Erro ao carregar os cards. Tente novamente.");
       } finally {
         setIsLoading(false);
       }
@@ -361,10 +422,11 @@ export function Escolar() {
     try {
       const res = await axios.post("http://localhost:3000/lists", payload);
 
-      const novaLista = {
+      const novaLista: Lista = {
         id: res.data.data.id || res.data.data._id,
         name: res.data.data.name,
         userId: res.data.data.userId,
+        cards: []
       };
 
       setLists((prev) => [...prev, novaLista]);
