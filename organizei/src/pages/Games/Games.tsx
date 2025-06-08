@@ -3126,7 +3126,7 @@ export function Games() {
                         }}>
                           <StudyButton 
                             onClick={startStudyMode}
-                            disabled={selectedTags.length === 0}
+                            disabled={filteredFlashcards.length === 0}
                           >
                             📚 Estudar Flashcards Filtrados
                           </StudyButton>
