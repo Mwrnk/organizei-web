@@ -644,64 +644,64 @@ export function Comunidade() {
   const fetchAllCards = async () => {
     setIsDataLoading(true);
     try {
-      // const token = localStorage.getItem("authenticacao");
+      const token = localStorage.getItem("authenticacao");
       const res = await axios.get("http://localhost:3000/comunidade/cards");
       const cardsData = res.data?.data || [];
       
-      // const cardsWithDetails = await Promise.all(
-      //   cardsData.map(async (card: any) => {
-      //     try {
-      //       const cardId = card.id || card._id;
+      const cardsWithDetails = await Promise.all(
+        cardsData.map(async (card: any) => {
+          try {
+            const cardId = card.id || card._id;
 
-      //       // Buscar detalhes do card incluindo comentários
-      //       const [cardDetailRes, commentsRes] = await Promise.all([
-      //         axios.get(
-      //           `http://localhost:3000/cards/${cardId}`,
-      //           {
-      //             headers: { Authorization: `Bearer ${token}` }
-      //           }
-      //         ),
-      //         axios.get(
-      //           `http://localhost:3000/comments/${cardId}`,
-      //           {
-      //             headers: { Authorization: `Bearer ${token}` }
-      //           }
-      //         )
-      //       ]);
+            // Buscar detalhes do card incluindo comentários
+            const [cardDetailRes, commentsRes] = await Promise.all([
+              axios.get(
+                `http://localhost:3000/cards/${cardId}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              ),
+              axios.get(
+                `http://localhost:3000/comments/${cardId}`,
+                {
+                  headers: { Authorization: `Bearer ${token}` }
+                }
+              )
+            ]);
 
-      //       const cardDetail = cardDetailRes.data.data;
-      //       const comments = commentsRes.data.data || [];
+            const cardDetail = cardDetailRes.data.data;
+            const comments = commentsRes.data.data || [];
             
-      //       return {
-      //         ...card,
-      //         id: cardId,
-      //         _id: cardId,
-      //         image_url: cardDetail.image_url || [],
-      //         pdfs: cardDetail.pdfs || [],
-      //         user: cardDetail.user || card.user,
-      //         createdAt: cardDetail.createdAt || card.createdAt || new Date().toISOString(),
-      //         updatedAt: cardDetail.updatedAt || card.updatedAt || new Date().toISOString(),
-      //         likes: cardDetail.likes || card.likes || 0,
-      //         downloads: cardDetail.downloads || card.downloads || 0,
-      //         comments: comments,
-      //         is_published: cardDetail.is_published !== undefined ? cardDetail.is_published : card.is_published
-      //       };
-      //     } catch (err) {
-      //       console.error("Erro ao buscar detalhes do card:", err);
-      //       return {
-      //         ...card,
-      //         id: card.id || card._id,
-      //         _id: card.id || card._id,
-      //         createdAt: card.createdAt || new Date().toISOString(),
-      //         updatedAt: card.updatedAt || new Date().toISOString(),
-      //         likes: card.likes || 0,
-      //         comments: []
-      //       };
-      //     }
-      //   })
-      // );
+            return {
+              ...card,
+              id: cardId,
+              _id: cardId,
+              image_url: cardDetail.image_url || [],
+              pdfs: cardDetail.pdfs || [],
+              user: cardDetail.user || card.user,
+              createdAt: cardDetail.createdAt || card.createdAt || new Date().toISOString(),
+              updatedAt: cardDetail.updatedAt || card.updatedAt || new Date().toISOString(),
+              likes: cardDetail.likes || card.likes || 0,
+              downloads: cardDetail.downloads || card.downloads || 0,
+              comments: comments,
+              is_published: cardDetail.is_published !== undefined ? cardDetail.is_published : card.is_published
+            };
+          } catch (err) {
+            console.error("Erro ao buscar detalhes do card:", err);
+            return {
+              ...card,
+              id: card.id || card._id,
+              _id: card.id || card._id,
+              createdAt: card.createdAt || new Date().toISOString(),
+              updatedAt: card.updatedAt || new Date().toISOString(),
+              likes: card.likes || 0,
+              comments: []
+            };
+          }
+        })
+      );
 
-      setAllCards(cardsData);
+      setAllCards(cardsWithDetails);
     } catch (err) {
       console.error("Erro ao buscar cards:", err);
       toast.error("Erro ao carregar os cards. Por favor, tente novamente.");
