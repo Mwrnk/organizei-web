@@ -1183,18 +1183,17 @@ export function Comunidade() {
       // Tenta fazer a requisição
       const response = await axios.post(
         `http://localhost:3000/comunidade/download/${cardId}`,
-        { listId: selectedListForDownload },
+        { listId: selectedListForDownload }, // Envia o ID da lista selecionada
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
           }
         }
       );
 
       console.log("Resposta do download:", response.data);
       
-      toast.success("✨ Card baixado com sucesso!");
+      toast.success("✨ Card baixado com sucesso! Acesse a página Escolar para visualizar.");
       setShowDownloadModal(false);
       setSelectedListForDownload("");
     } catch (err: any) {
