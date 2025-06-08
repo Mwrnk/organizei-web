@@ -329,7 +329,7 @@ const IconWrapper = styled.div<{ inModal?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
-  color: ${props => props.inModal ? '#fff' : '#1a1a1a'};
+  color: #000000;
 `;
 
 const Icon = styled.img<{ inModal?: boolean }>`
@@ -337,7 +337,7 @@ const Icon = styled.img<{ inModal?: boolean }>`
   height: 24px;
   cursor: pointer;
   transition: all 0.2s ease;
-  filter: ${props => props.inModal ? 'brightness(0) invert(1)' : 'brightness(0)'};
+  filter: brightness(0);
 
   &:hover {
     transform: scale(1.1);
@@ -399,20 +399,20 @@ const ModalOverlay = styled.div`
 const DetalhesContainer = styled.div`
   display: flex;
   gap: 24px;
-  background: #000;
+  background: #ffffff;
   border-radius: 20px;
   width: 90%;
   max-width: 1200px;
   height: 90vh;
   padding: 32px;
-  color: white;
+  color: #000000;
   position: relative;
 `;
 
 const Sidebar = styled.div`
   width: 300px;
   padding-right: 24px;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -436,20 +436,20 @@ const ContentArea = styled.div`
 `;
 
 const SidebarCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   padding: 16px;
 
   h4 {
     margin: 0 0 12px 0;
-    color: rgba(255, 255, 255, 0.7);
+    color: #000000;
     font-size: 14px;
   }
 `;
 
 const CommentSection = styled.div`
   margin-top: 32px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   padding: 20px;
   display: flex;
@@ -465,20 +465,21 @@ const CommentHeader = styled.div`
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 
   h4 {
     margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
+    color: #000000;
     
     span {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.1);
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 12px;
-      color: #fff;
+      color: #000000;
     }
   }
 `;
@@ -513,7 +514,7 @@ const CommentList = styled.div`
 const CommentInput = styled.div`
   display: flex;
   gap: 12px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.03);
   padding: 16px;
   border-radius: 8px;
   position: sticky;
@@ -521,22 +522,22 @@ const CommentInput = styled.div`
 
   textarea {
     flex: 1;
-    background: #111;
-    border: none;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     padding: 12px;
-    color: white;
+    color: #000000;
     font-size: 14px;
     resize: none;
     min-height: 60px;
     font-family: inherit;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(0, 0, 0, 0.5);
     }
 
     &:focus {
-      outline: 1px solid rgba(255, 255, 255, 0.2);
+      outline: 1px solid rgba(0, 0, 0, 0.2);
     }
   }
 
@@ -566,13 +567,13 @@ const CommentInput = styled.div`
 `;
 
 const Comment = styled.div`
-  background: #111;
+  background: rgba(0, 0, 0, 0.03);
   border-radius: 8px;
   padding: 16px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: #191919;
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .header {
@@ -593,20 +594,20 @@ const Comment = styled.div`
 
       .name {
         font-weight: 500;
-        color: white;
+        color: #000000;
         margin: 0;
       }
 
       .date {
         font-size: 12px;
-        color: #666;
+        color: #666666;
         margin: 0;
       }
     }
   }
 
   .content {
-    color: rgba(255, 255, 255, 0.8);
+    color: #000000;
     font-size: 14px;
     line-height: 1.5;
     margin: 0;
@@ -634,6 +635,10 @@ export function Comunidade() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [userLists, setUserLists] = useState<any[]>([]);
+  const [selectedListForDownload, setSelectedListForDownload] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
   
 
   const { user } = useAuth();
@@ -1139,6 +1144,57 @@ export function Comunidade() {
     });
   };
 
+  const fetchUserLists = async () => {
+    try {
+      const token = localStorage.getItem("authenticacao");
+      const res = await axios.get(
+        `http://localhost:3000/lists/user/${user?._id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setUserLists(res.data.data || []);
+    } catch (err) {
+      console.error("Erro ao buscar listas:", err);
+      toast.error("Erro ao carregar suas listas");
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!selectedListForDownload) {
+      toast.error("Selecione uma lista para salvar o card");
+      return;
+    }
+
+    setIsDownloading(true);
+    try {
+      const token = localStorage.getItem("authenticacao");
+      await axios.post(
+        `http://localhost:3000/comunidade/download/${selectedCard.id}`,
+        { listId: selectedListForDownload },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      toast.success("✨ Card baixado com sucesso!");
+      setShowDownloadModal(false);
+      setSelectedListForDownload("");
+    } catch (err: any) {
+      console.error("Erro ao baixar card:", err);
+      toast.error(err.response?.data?.message || "Erro ao baixar o card");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Adicionar efeito para carregar listas quando abrir o modal
+  useEffect(() => {
+    if (showDownloadModal) {
+      fetchUserLists();
+    }
+  }, [showDownloadModal]);
+
   return (
     <>
       <Header />
@@ -1362,19 +1418,6 @@ export function Comunidade() {
               </div>
 
               <SidebarCard>
-                <h4>#titulo</h4>
-                <div style={{
-                  width: "100%",
-                  padding: "10px",
-                  borderRadius: "10px",
-                  background: "#111",
-                  color: "white",
-                }}>
-                  {selectedCard.title}
-                </div>
-              </SidebarCard>
-
-              <SidebarCard>
                 <h4>#estatísticas</h4>
                 <div style={{
                   display: "flex",
@@ -1403,6 +1446,41 @@ export function Comunidade() {
                     />
                     <span>{selectedCard.comments?.length || 0} comentários</span>
                   </IconWrapper>
+                </div>
+              </SidebarCard>
+
+              <SidebarCard>
+                <h4>#ações</h4>
+                <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                  <button
+                    onClick={() => setShowDownloadModal(true)}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      background: "#1976d2",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      transition: "all 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#1565c0";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#1976d2";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
+                  >
+                    ⬇️ Baixar Card
+                  </button>
                 </div>
               </SidebarCard>
 
@@ -1476,7 +1554,7 @@ export function Comunidade() {
                     border: "none",
                     fontSize: "24px",
                     cursor: "pointer",
-                    color: "white",
+                    color: "#000000",
                   }}
                 >
                   ❌
@@ -1594,6 +1672,99 @@ export function Comunidade() {
               )}
             </ContentArea>
           </DetalhesContainer>
+        </ModalOverlay>
+      )}
+
+      {showDownloadModal && (
+        <ModalOverlay>
+          <div style={{
+            background: "white",
+            padding: "32px",
+            borderRadius: "12px",
+            width: "90%",
+            maxWidth: "500px",
+            position: "relative"
+          }}>
+            <h3 style={{ marginTop: 0, marginBottom: "24px" }}>
+              Escolha uma lista para salvar o card
+            </h3>
+
+            <select
+              value={selectedListForDownload}
+              onChange={(e) => setSelectedListForDownload(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "12px",
+                marginBottom: "24px",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+                fontSize: "14px"
+              }}
+            >
+              <option value="">Selecione uma lista</option>
+              {userLists.map((list) => (
+                <option key={list.id} value={list.id}>
+                  {list.name}
+                </option>
+              ))}
+            </select>
+
+            <div style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-end"
+            }}>
+              <button
+                onClick={() => {
+                  setShowDownloadModal(false);
+                  setSelectedListForDownload("");
+                }}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "6px",
+                  background: "#f5f5f5",
+                  cursor: "pointer"
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={!selectedListForDownload || isDownloading}
+                style={{
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "6px",
+                  background: "#1976d2",
+                  color: "white",
+                  cursor: "pointer",
+                  opacity: !selectedListForDownload || isDownloading ? 0.7 : 1
+                }}
+              >
+                {isDownloading ? "Baixando..." : "Confirmar"}
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                setShowDownloadModal(false);
+                setSelectedListForDownload("");
+              }}
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "none",
+                border: "none",
+                fontSize: "20px",
+                cursor: "pointer",
+                padding: "4px"
+              }}
+            >
+              ✕
+            </button>
+          </div>
         </ModalOverlay>
       )}
     </>
