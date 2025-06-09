@@ -62,9 +62,8 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible }) => {
           muted
           playsInline
           preload="auto"
-          loading="eager"
         >
-          <source src={loadingVideo} type="video/mp4" priority="high" />
+          <source src={loadingVideo} type="video/mp4" />
           Seu navegador não suporta vídeos.
         </LoadingVideo>
       </LoadingContainer>
