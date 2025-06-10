@@ -155,6 +155,103 @@ const SendButton = styled.button`
   }
 `;
 
+const MarkdownContent = styled.div`
+  h1 {
+    font-size: 24px;
+    margin: 16px 0 12px;
+    font-weight: 600;
+  }
+  h2 {
+    font-size: 20px;
+    margin: 14px 0 10px;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 18px;
+    margin: 12px 0 8px;
+    font-weight: 600;
+  }
+  ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  li {
+    margin: 4px 0;
+  }
+  strong {
+    font-weight: 600;
+  }
+  p {
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+`;
+
+// Componente para renderizar markdown
+function MarkdownMessage({ text }: { text: string }) {
+  // Função para converter markdown em HTML
+  const parseMarkdown = (md: string) => {
+    let html = md;
+
+    // Converter headers (agora usando \n em vez de \\n)
+    html = html.replace(/### (.*?)\n/g, '<h3>$1</h3>\n');
+    html = html.replace(/## (.*?)\n/g, '<h2>$1</h2>\n');
+    html = html.replace(/# (.*?)\n/g, '<h1>$1</h1>\n');
+
+    // Converter negrito
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Converter listas
+    const lines = html.split('\n');
+    let inList = false;
+    html = lines.map(line => {
+      if (line.trim().startsWith('- ')) {
+        const content = line.trim().substring(2);
+        if (!inList) {
+          inList = true;
+          return `<ul><li>${content}</li>`;
+        }
+        return `<li>${content}</li>`;
+      } else if (inList) {
+        inList = false;
+        return `</ul>${line}`;
+      }
+      return line;
+    }).join('\n');
+
+    if (inList) {
+      html += '</ul>';
+    }
+
+    // Converter parágrafos (ignorando linhas que já são HTML)
+    html = html.split('\n').map(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('<') && !trimmed.endsWith('>')) {
+        return `<p>${line}</p>`;
+      }
+      return line;
+    }).join('');
+
+    // Escapar caracteres HTML apenas no conteúdo, não nas tags
+    return html
+      .replace(/&(?![a-zA-Z]+;)/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;')
+      // Restaurar as tags HTML que queremos manter
+      .replace(/&lt;(\/?)h[1-3]&gt;/g, '<$1h$2>')
+      .replace(/&lt;(\/?)strong&gt;/g, '<$1strong>')
+      .replace(/&lt;(\/?)p&gt;/g, '<$1p>')
+      .replace(/&lt;(\/?)ul&gt;/g, '<$1ul>')
+      .replace(/&lt;(\/?)li&gt;/g, '<$1li>');
+  };
+
+  return (
+    <MarkdownContent dangerouslySetInnerHTML={{ __html: parseMarkdown(text) }} />
+  );
+}
+
 type Message = {
   id: number;
   text: string;
@@ -254,7 +351,11 @@ export function IA() {
                 )}
               </Avatar>
               <MessageBubble isUser={message.isUser}>
-                {message.text}
+                {message.isUser ? (
+                  message.text
+                ) : (
+                  <MarkdownMessage text={message.text} />
+                )}
               </MessageBubble>
             </MessageRow>
           ))}

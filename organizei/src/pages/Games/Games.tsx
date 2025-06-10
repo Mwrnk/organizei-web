@@ -2139,7 +2139,7 @@ export function Games() {
             <GameTitle>O que vai jogar hoje?</GameTitle>
             <GameSubtitle>
               <LightningIcon>⚡</LightningIcon>
-              30pts
+              10pontos
             </GameSubtitle>
             
             <GamesGrid>
