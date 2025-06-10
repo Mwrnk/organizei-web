@@ -15,6 +15,8 @@ import { LoadingScreen } from "./Components/LoadingScreen";
 import { PrivateRoute, PublicRoute, PremiumRoute } from "./Routes/Rotas";
 import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
 import { Games } from "./pages/Games/Games";
+import { ThemeProvider } from './Contexts/ThemeContext';
+import './styles/themes.css';
 
 function AppContent() {
   const { isLoading } = useLoading();
@@ -68,11 +70,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
+      <ThemeProvider>
         <LoadingProvider>
-          <AppContent />
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
         </LoadingProvider>
-      </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

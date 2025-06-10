@@ -5,6 +5,8 @@ import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useTheme } from '../../Contexts/ThemeContext';
+import styles from './Configuracoes.module.css';
 
 const ConfiguracoesContainer = styled.div`
   max-width: 800px;
@@ -163,6 +165,8 @@ export function Configuracoes() {
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
 
+  const { theme, toggleTheme } = useTheme();
+
   const handleSalvarPerfil = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -254,6 +258,20 @@ export function Configuracoes() {
       <ConfiguracoesContainer>
         <SettingsTitle>Configurações</SettingsTitle>
 
+        <div className={styles.section}>
+          <h2>Tema</h2>
+          <div className={styles.themeToggle}>
+            <label>
+              <span>Tema {theme === 'light' ? 'Claro' : 'Escuro'}</span>
+              <input
+                type="checkbox"
+                checked={theme === 'dark'}
+                onChange={toggleTheme}
+              />
+            </label>
+          </div>
+        </div>
+
         {/* === BLOCO PERFIL === */}
         <Card>
           <CardHeader>
@@ -329,43 +347,7 @@ export function Configuracoes() {
           </form>
         </Card>
 
-        {/* === BLOCO APARÊNCIA === */}
-        <Card>
-          <CardHeader>
-            <h3>Aparência</h3>
-          </CardHeader>
-          <form onSubmit={handleSalvarAparencia}>
-            <Checkbox>
-              <ToggleSwitch>
-                <input
-                  type="checkbox"
-                  checked={temaEscuro}
-                  onChange={() => setTemaEscuro(!temaEscuro)}
-                />
-                <span></span>
-              </ToggleSwitch>
-              <Label>Tema escuro</Label>
-            </Checkbox>
-            <FormGroup>
-              <Label>Tamanho da fonte</Label>
-              <div style={{ display: "flex", gap: "10px" }}>
-                {["pequeno", "medio", "grande"].map((size) => (
-                  <label key={size}>
-                    <input
-                      type="radio"
-                      name="tamanhoFonte"
-                      value={size}
-                      checked={tamanhoFonte === size}
-                      onChange={() => setTamanhoFonte(size)}
-                    />{" "}
-                    {size.charAt(0).toUpperCase() + size.slice(1)}
-                  </label>
-                ))}
-              </div>
-            </FormGroup>
-            <Button type="submit">Salvar preferências</Button>
-          </form>
-        </Card>
+        
 
         {/* === BLOCO ALTERAR SENHA === */}
         <Card>
