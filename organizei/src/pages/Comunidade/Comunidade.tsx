@@ -943,13 +943,14 @@ export function Comunidade() {
         const newSet = new Set(prev);
         if (isAlreadyLiked) {
           newSet.delete(cardId);
-          toast.success("Curtida removida! 💔");
         } else {
           newSet.add(cardId);
-          toast.success("Curtido com sucesso! ❤️");
         }
         return newSet;
       });
+
+      // Mostra a notificação após a atualização bem-sucedida
+      toast.success(isAlreadyLiked ? "Curtida removida! 💔" : "Curtido com sucesso! ❤️");
 
     } catch (err: any) {
       if (err.response?.status === 400 || err.response?.status === 403) {
