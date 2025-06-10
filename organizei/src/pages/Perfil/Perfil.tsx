@@ -14,21 +14,14 @@ const Container = styled.div`
   padding: 20px;
 `;
 
-const Banner = styled.div`
-  width: 100%;
-  height: 200px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  position: relative;
-  z-index: -1;
-`;
+
 
 const PerfilBox = styled.div`
   display: flex;
   align-items: center;
-  margin-top: -50px;
-  background: transparent;
-  padding: 0 0 24px 0;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 10px;
   gap: 28px;
 `;
 
@@ -83,7 +76,6 @@ const Avatar = styled.div`
   color: black;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 10000;
-  margin-left: 30px;
   overflow: hidden;
   cursor: pointer;
 `;
@@ -93,7 +85,7 @@ const UserInfo = styled.div`
 `;
 
 const InfoSection = styled.div`
-  margin-top: 40px;
+  margin-top: 16px;
   background-color: white;
   border-radius: 10px;
 `;
@@ -312,7 +304,6 @@ export function Perfil() {
     <>
       <Header />
       <Container>
-        <Banner />
         <PerfilBox>
           <label htmlFor="upload-photo" style={{ margin: 0 }}>
             <Avatar>
