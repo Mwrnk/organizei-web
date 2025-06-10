@@ -74,6 +74,7 @@ import { PontosView } from '../../Components/PontosView/PontosView';
 import nuvemBaixar from "../../../assets/nuvemBaixar.svg";
 import baixarBranco from "../../../assets/baixarBranco.svg";
 import coracaocurtido from "../../../assets/coracaocurtido.svg";
+import { TutorialModal } from '../../Components/TutorialModal/TutorialModal';
 
 
 interface UserStats {
@@ -92,6 +93,15 @@ export function Escolar() {
   usePageLoading(isLoading);
   const [currentView, setCurrentView] = useState('cards');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    // Verifica se é a primeira visita do usuário
+    const tutorialVisto = localStorage.getItem('tutorialEscolarVisto');
+    if (!tutorialVisto) {
+      setShowTutorial(true);
+    }
+  }, []);
 
   // Função auxiliar para formatar data
   const formatDate = (dateString: string | undefined) => {
@@ -1107,6 +1117,20 @@ export function Escolar() {
               style={{ width: '20px', height: '20px' }}
             />
             {isSidebarOpen && <span className="text">Dashboard</span>}
+          </SidebarItem>
+
+          <SidebarItem 
+            isOpen={isSidebarOpen}
+            onClick={() => setShowTutorial(true)}
+            style={{ marginTop: 'auto', marginBottom: '16px' }}
+          >
+            <img 
+              src={pontosIcon}
+              alt="Tutorial"
+              className="icon"
+              style={{ width: '20px', height: '20px' }}
+            />
+            {isSidebarOpen && <span className="text">Ver Tutorial</span>}
           </SidebarItem>
         </SidebarWrapper>
 
@@ -2261,6 +2285,12 @@ export function Escolar() {
             </ModalOverlay>
           )}
         </MainContent>
+
+        {/* Tutorial Modal */}
+        <TutorialModal 
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+        />
       </PageWrapper>
     </ContainerTotal>
   );
