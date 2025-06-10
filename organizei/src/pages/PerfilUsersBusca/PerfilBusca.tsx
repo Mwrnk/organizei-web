@@ -89,10 +89,11 @@ const Value = styled.p`
   font-weight: 500;
 `;
 
+const DEFAULT_PROFILE_IMAGE = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+
 export function PerfilBusca() {
   const { id } = useParams();
   const [usuario, setUsuario] = useState<any>(null);
-  const [cards, setCards] = useState<any[]>([]);
   const [erro, setErro] = useState("");
   const [isDataLoading, setIsDataLoading] = useState(true);
 
@@ -102,29 +103,56 @@ export function PerfilBusca() {
     async function buscarUsuario() {
       setIsDataLoading(true);
       try {
-        if (!id) return;
-
-        const response = await axios.get(`http://localhost:3000/users/${id}`);
-        setUsuario(response.data.data);
-
-        const listasResponse = await axios.get(
-          `http://localhost:3000/lists/${id}/lists`
-        );
-        const listas = listasResponse.data.data;
-
-        const todosCards: any[] = [];
-        for (const lista of listas) {
-          const cardsResponse = await axios.get(
-            `http://localhost:3000/cards/list/${lista.id}`
-          );
-          todosCards.push(...cardsResponse.data.data);
+        if (!id) {
+          setErro("ID do usuário não fornecido");
+          return;
         }
 
-        setCards(todosCards);
+        // Validar formato do ID (24 caracteres hexadecimais)
+        if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+          setErro("ID do usuário inválido");
+          return;
+        }
+
+        const token = localStorage.getItem("authenticacao");
+        if (!token) {
+          setErro("Você precisa estar logado para visualizar este perfil");
+          return;
+        }
+
+        // Buscar dados do usuário com token de autorização
+        const response = await axios.get(
+          `http://localhost:3000/users/${id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (!response.data?.data) {
+          throw new Error("Dados do usuário não encontrados");
+        }
+
+        setUsuario(response.data.data);
         setErro("");
-      } catch (error) {
-        console.error(error);
-        setErro("Usuário não encontrado ou erro na busca.");
+      } catch (error: any) {
+        console.error("Erro ao buscar usuário:", error);
+        
+        // Tratamento específico de erros
+        if (error.response) {
+          if (error.response.status === 404) {
+            setErro("Usuário não encontrado");
+          } else if (error.response.status === 401) {
+            setErro("Você precisa estar logado para visualizar este perfil");
+          } else if (error.response.status === 403) {
+            setErro("Você não tem permissão para visualizar este perfil");
+          } else {
+            setErro(error.response.data?.message || "Erro ao buscar usuário");
+          }
+        } else if (error.request) {
+          setErro("Erro de conexão. Verifique sua internet e tente novamente.");
+        } else {
+          setErro(error.message || "Erro ao buscar usuário");
+        }
       } finally {
         setIsDataLoading(false);
       }
@@ -135,16 +163,26 @@ export function PerfilBusca() {
 
   if (erro) {
     return (
-      <div>
-        <h1>{erro}</h1>
-      </div>
+      <>
+        <Header />
+        <Container>
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '40px', 
+            background: '#fff', 
+            borderRadius: '8px',
+            marginTop: '20px'
+          }}>
+            <h2 style={{ color: '#d32f2f', marginBottom: '16px' }}>❌ Erro</h2>
+            <p style={{ fontSize: '18px', color: '#666' }}>{erro}</p>
+          </div>
+        </Container>
+      </>
     );
   }
 
   if (!usuario) {
-    return (
-      <LoadingScreen isVisible={true} />
-    );
+    return <LoadingScreen isVisible={true} />;
   }
 
   return (
@@ -153,7 +191,20 @@ export function PerfilBusca() {
       <Container>
         <Banner />
         <PerfilBox>
-          <Avatar>FOTO</Avatar>
+          <Avatar>
+            {usuario.profileImage ? (
+              <img
+                src={usuario.profileImage || DEFAULT_PROFILE_IMAGE}
+                alt="avatar"
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "12px" }}
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                }}
+              />
+            ) : (
+              "👤"
+            )}
+          </Avatar>
           <UserInfo>
             <UserName>{usuario.name}</UserName>
           </UserInfo>
@@ -170,27 +221,18 @@ export function PerfilBusca() {
               <Label>Email</Label>
               <Value>{usuario.email}</Value>
             </InfoBox>
-            <InfoBox>
-              <Label>Data de Nascimento</Label>
-              <Value>
-                {new Date(usuario.dateOfBirth).toLocaleDateString()}
-              </Value>
-            </InfoBox>
-          </InfoGrid>
-        </InfoSection>
-
-        <InfoSection>
-          <InfoTitle>Cards Criados</InfoTitle>
-          <InfoGrid>
-            {cards.length > 0 ? (
-              cards.map((card) => (
-                <InfoBox key={card._id}>
-                  <Value>{card.title}</Value>
-                </InfoBox>
-              ))
-            ) : (
+            {usuario.dateOfBirth && (
               <InfoBox>
-                <Value>Nenhum card encontrado.</Value>
+                <Label>Data de Nascimento</Label>
+                <Value>
+                  {new Date(usuario.dateOfBirth).toLocaleDateString()}
+                </Value>
+              </InfoBox>
+            )}
+            {usuario.bio && (
+              <InfoBox>
+                <Label>Bio</Label>
+                <Value>{usuario.bio}</Value>
               </InfoBox>
             )}
           </InfoGrid>

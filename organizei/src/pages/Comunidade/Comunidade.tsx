@@ -40,112 +40,75 @@ const Subtitulo = styled.p`
   font-weight: 400;
 `;
 
-const BuscaWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 40px;
-  position: relative;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  background: white;
-  border-radius: 30px;
-  padding: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+const DEFAULT_PROFILE_IMAGE = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
-  &:focus-within {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-  }
+const BuscaWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
 `;
 
 const InputBusca = styled.input`
-  padding: 12px 20px;
   width: 100%;
-  border-radius: 25px;
-  border: none;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
   font-size: 16px;
   outline: none;
-  background: transparent;
-  
-  &::placeholder {
-    color: #999;
-    transition: color 0.2s ease;
-  }
+  transition: all 0.2s ease;
 
-  &:focus::placeholder {
-    color: #666;
+  &:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
   }
 `;
 
 const BotaoBusca = styled.button`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
   border: none;
-  background-color: #f0f0f0;
-  color: #666;
+  font-size: 20px;
   cursor: pointer;
+  padding: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  
+  transition: transform 0.2s ease;
+
   &:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.05);
+    transform: translateY(-50%) scale(1.1);
   }
 `;
 
-const ListaResultados = styled.ul`
+const ListaResultados = styled.div`
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100%;
   left: 0;
   right: 0;
   background: white;
-  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 8px;
   max-height: 300px;
   overflow-y: auto;
-  list-style: none;
-  padding: 8px 0;
-  margin: 0;
-  border-radius: 12px;
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+  z-index: 1000;
 `;
 
-const ItemResultado = styled.li`
+const ItemResultado = styled.div`
   padding: 12px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  
+  transition: background 0.2s ease;
+
   &:hover {
-    background-color: #f8f9fa;
-    transform: translateX(5px);
+    background: #f5f5f5;
   }
 
-  &:active {
-    background-color: #f0f0f0;
-    transform: translateX(2px);
+  &:not(:last-child) {
+    border-bottom: 1px solid #eee;
   }
 `;
 
@@ -615,13 +578,59 @@ const Comment = styled.div`
   }
 `;
 
-// Adicionar constante para imagem de perfil padrão
-const DEFAULT_PROFILE_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E";
+const NoResultsMessage = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  background: #f9f9f9;
+  border-radius: 12px;
+  margin: 20px 0;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const LoadingText = styled.span`
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+`;
 
 export function Comunidade() {
   const [allCards, setAllCards] = useState<any[]>([]);
   const [myCards, setMyCards] = useState<CardData[]>([]);
-  const [searchTitle, setSearchTitle] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
@@ -630,6 +639,9 @@ export function Comunidade() {
   const [visibleCards, setVisibleCards] = useState(10);
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -645,6 +657,78 @@ export function Comunidade() {
   const navigate = useNavigate();
   
   usePageLoading(isDataLoading);
+
+  // Efeito para fechar a lista de resultados ao clicar fora
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Carregar todos os usuários ao montar o componente
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const token = localStorage.getItem("authenticacao");
+        if (!token) {
+          console.error("Token não encontrado");
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:3000/users",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (response.data?.data) {
+          setUsers(response.data.data);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar usuários:", err);
+      }
+    }
+
+    fetchUsers();
+  }, []);
+
+  // Filtrar usuários localmente baseado no texto de busca
+  useEffect(() => {
+    if (!searchText.trim()) {
+      setFilteredUsers([]);
+      setShowResults(false);
+      return;
+    }
+
+    const searchLower = searchText.toLowerCase().trim();
+    const matched = users.filter(user => 
+      user.name.toLowerCase().includes(searchLower)
+    );
+
+    setFilteredUsers(matched);
+    setShowResults(true);
+  }, [searchText, users]);
+
+  const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchText(value);
+    setIsSearching(false); // Não precisamos mais do estado de loading
+  };
+
+  const handleSelectUser = (userId: string) => {
+    navigate(`/perfilbusca/${userId}`);
+    setSearchText("");
+    setFilteredUsers([]);
+    setShowResults(false);
+  };
 
   const fetchAllCards = async () => {
     setIsDataLoading(true);
@@ -753,28 +837,6 @@ export function Comunidade() {
     return [...allCards]
       .sort((a, b) => (b.likes || 0) - (a.likes || 0))
       .slice(0, 6);
-  };
-
-  const fetchUsers = async () => {
-    try {
-      const res = await axios.get("http://localhost:3000/users");
-      setUsers(res.data.data);
-    } catch (error) {
-      console.error("Erro ao carregar usuários", error);
-    }
-  };
-
-  const handleUserSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTitle(value);
-    const filtrados = users.filter((u) =>
-      u.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredUsers(filtrados);
-  };
-
-  const handleSelectUser = (id: string) => {
-    navigate(`/perfilbusca/${id}`);
   };
 
   const handlePublicar = async (cardId: string) => {
@@ -1229,36 +1291,98 @@ export function Comunidade() {
     }
   }, [showDownloadModal]);
 
+  // Função para filtrar cards com base no texto de busca
+  const getFilteredCards = () => {
+    if (!searchText.trim()) {
+      return allCards;
+    }
+    return allCards.filter(card => 
+      card.title?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  };
+
+  const filteredCards = getFilteredCards();
+  const hasNoResults = searchText.trim() !== "" && filteredCards.length === 0;
+
   return (
     <>
       <Header />
       <Container>
         <ContentWrapper>
           <Titulo>#comunidade</Titulo>
-          <Subtitulo>O que está procurando hoje?</Subtitulo>
+          <Subtitulo>Encontre outros usuários e veja seus cards publicados</Subtitulo>
 
-          <BuscaWrapper>
+          <BuscaWrapper ref={searchRef}>
             <InputBusca
               type="text"
-              placeholder="Boas práticas de programação"
-              value={searchTitle}
+              placeholder="Buscar usuários por nome..."
+              value={searchText}
               onChange={handleUserSearch}
+              onFocus={() => {
+                if (searchText && filteredUsers.length > 0) {
+                  setShowResults(true);
+                }
+              }}
             />
-            <BotaoBusca onClick={() => {
-              fetchAllCards();
-              setSelectedListId("");
-            }}>🔍</BotaoBusca>
+            {isSearching ? (
+              <LoadingText>
+                <LoadingSpinner />
+                Buscando...
+              </LoadingText>
+            ) : (
+              <BotaoBusca>🔍</BotaoBusca>
+            )}
             
-            {filteredUsers.length > 0 && (
+            {showResults && searchText && (
               <ListaResultados>
-                {filteredUsers.map((user) => (
-                  <ItemResultado
-                    key={user._id}
-                    onClick={() => handleSelectUser(user._id)}
-                  >
-                    {user.name}
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <ItemResultado
+                      key={user._id}
+                      onClick={() => handleSelectUser(user._id)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img
+                          src={user.profileImage || DEFAULT_PROFILE_IMAGE}
+                          alt={user.name}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                          onError={(e) => {
+                            e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                          }}
+                        />
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{user.name}</div>
+                          <div style={{ fontSize: '12px', color: '#666' }}>{user.email}</div>
+                        </div>
+                      </div>
+                    </ItemResultado>
+                  ))
+                ) : (
+                  <ItemResultado style={{ 
+                    textAlign: 'center', 
+                    cursor: 'default',
+                    padding: '24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <span style={{ fontSize: '24px' }}>🔍</span>
+                    <div>
+                      <p style={{ margin: '0 0 4px 0', fontWeight: 500 }}>
+                        Nenhum usuário encontrado com "{searchText}"
+                      </p>
+                      <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                        Tente buscar por outro nome
+                      </p>
+                    </div>
                   </ItemResultado>
-                ))}
+                )}
               </ListaResultados>
             )}
           </BuscaWrapper>
@@ -1316,7 +1440,7 @@ export function Comunidade() {
 
           {/* Grid de Cards Mais Curtidos */}
           <CardsGrid>
-            {getMostLikedCards().map((card, index) => (
+            {getMostLikedCards().map((card) => (
               <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
                 <CardImage>
                   <img
@@ -1368,50 +1492,48 @@ export function Comunidade() {
 
           {/* Grid de Todos os Cards */}
           <CardsGrid>
-            {allCards
-              .slice(0, visibleCards)
-              .map((card, index) => (
-                <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
-                  <CardImage>
-                    <img
-                      src={card.image_url?.[0] ? 
-                        `http://localhost:3000${card.image_url[0]}` : 
-                        `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Sem imagem'}</text></svg>`)}`
-                      }
-                      alt={card.title}
-                      onError={(e) => {
-                        e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Erro ao carregar imagem'}</text></svg>`)}`;
-                      }}
-                    />
-                  </CardImage>
-                  <CardContent>
-                    <CardTitle>{card.title}</CardTitle>
-                    {card.user && (
-                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
-                    )}
-                    <IconsContainer>
-                      <IconWrapper>
-                        <Icon 
-                          src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
-                          alt="Curtir"
-                          onClick={(e: React.MouseEvent) => {
-                            e.stopPropagation();
-                            handleLike(card);
-                          }}
-                        />
-                        <span>{card.likes || 0}</span>
-                      </IconWrapper>
-                      <IconWrapper>
-                        <Icon 
-                          src={chatSvg}
-                          alt="Comentários"
-                        />
-                        <span>{card.comments?.length || 0}</span>
-                      </IconWrapper>
-                    </IconsContainer>
-                  </CardContent>
-                </Card>
-              ))}
+            {allCards.slice(0, visibleCards).map((card) => (
+              <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
+                <CardImage>
+                  <img
+                    src={card.image_url?.[0] ? 
+                      `http://localhost:3000${card.image_url[0]}` : 
+                      `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Sem imagem'}</text></svg>`)}`
+                    }
+                    alt={card.title}
+                    onError={(e) => {
+                      e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Erro ao carregar imagem'}</text></svg>`)}`;
+                    }}
+                  />
+                </CardImage>
+                <CardContent>
+                  <CardTitle>{card.title}</CardTitle>
+                  {card.user && (
+                    <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                  )}
+                  <IconsContainer>
+                    <IconWrapper>
+                      <Icon 
+                        src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
+                        alt="Curtir"
+                        onClick={(e: React.MouseEvent) => {
+                          e.stopPropagation();
+                          handleLike(card);
+                        }}
+                      />
+                      <span>{card.likes || 0}</span>
+                    </IconWrapper>
+                    <IconWrapper>
+                      <Icon 
+                        src={chatSvg}
+                        alt="Comentários"
+                      />
+                      <span>{card.comments?.length || 0}</span>
+                    </IconWrapper>
+                  </IconsContainer>
+                </CardContent>
+              </Card>
+            ))}
           </CardsGrid>
 
           {/* Botão Ver Mais */}
