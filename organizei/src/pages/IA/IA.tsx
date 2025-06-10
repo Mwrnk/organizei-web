@@ -11,21 +11,36 @@ const ChatContainer = styled.div`
   min-height: calc(100vh - 80px); /* Considerando o header */
   margin: 0;
   padding: 40px;
-  background-color: #fff;
   display: flex;
   flex-direction: column;
+  align-items: center;
 
   @media (max-width: 900px) {
     padding: 20px;
   }
 `;
 
+const ChatBox = styled.div`
+  width: 100%;
+  max-width: 1000px;
+  background-color: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  margin-top: 60px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 900px) {
+    padding: 24px;
+    margin-top: 40px;
+  }
+`;
+
 const ChatHeader = styled.div`
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
   h2 {
     font-size: 2.5rem;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
   p {
     font-size: 1.1rem;
@@ -47,7 +62,7 @@ const ChatMessages = styled.div`
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 1200px;
+  max-width: 900px;
 
   @media (max-width: 600px) {
     min-height: 320px;
@@ -345,54 +360,56 @@ export function IA() {
     <>
       <Header />
       <ChatContainer>
-        <ChatHeader>
-          <h2>ORGAN.IA</h2>
-          <p>Converse com nossa IA para ajudar na organização</p>
-        </ChatHeader>
+        <ChatBox>
+          <ChatHeader>
+            <h2>ORGAN.IA</h2>
+            <p>Converse com nossa IA para ajudar na organização</p>
+          </ChatHeader>
 
-        <ChatMessages>
-          {messages.map((message) => (
-            <MessageRow key={message.id} isUser={message.isUser}>
-              <Avatar isUser={message.isUser}>
-                {message.isUser ? (
-                  user?.profileImage ? (
-                    <img src={user.profileImage} alt="User" />
+          <ChatMessages>
+            {messages.map((message) => (
+              <MessageRow key={message.id} isUser={message.isUser}>
+                <Avatar isUser={message.isUser}>
+                  {message.isUser ? (
+                    user?.profileImage ? (
+                      <img src={user.profileImage} alt="User" />
+                    ) : (
+                      'M'
+                    )
                   ) : (
-                    'M'
-                  )
-                ) : (
-                  'IA'
-                )}
-              </Avatar>
-              <MessageBubble isUser={message.isUser}>
-                {message.isUser ? (
-                  message.text
-                ) : (
-                  <MarkdownMessage text={message.text} />
-                )}
-              </MessageBubble>
-            </MessageRow>
-          ))}
-          {loading && (
-            <MessageRow isUser={false}>
-              <Avatar isUser={false}>IA</Avatar>
-              <MessageBubble isUser={false}>Analisando...</MessageBubble>
-            </MessageRow>
-          )}
-        </ChatMessages>
+                    'IA'
+                  )}
+                </Avatar>
+                <MessageBubble isUser={message.isUser}>
+                  {message.isUser ? (
+                    message.text
+                  ) : (
+                    <MarkdownMessage text={message.text} />
+                  )}
+                </MessageBubble>
+              </MessageRow>
+            ))}
+            {loading && (
+              <MessageRow isUser={false}>
+                <Avatar isUser={false}>IA</Avatar>
+                <MessageBubble isUser={false}>Analisando...</MessageBubble>
+              </MessageRow>
+            )}
+          </ChatMessages>
 
-        <ChatForm onSubmit={handleSendMessage}>
-          <ChatInput
-            type="text"
-            placeholder="Digite sua mensagem..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            disabled={loading}
-          />
-          <SendButton type="submit" disabled={loading}>
-            Enviar
-          </SendButton>
-        </ChatForm>
+          <ChatForm onSubmit={handleSendMessage}>
+            <ChatInput
+              type="text"
+              placeholder="Digite sua mensagem..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              disabled={loading}
+            />
+            <SendButton type="submit" disabled={loading}>
+              Enviar
+            </SendButton>
+          </ChatForm>
+        </ChatBox>
       </ChatContainer>
     </>
   );
