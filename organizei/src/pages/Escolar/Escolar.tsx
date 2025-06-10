@@ -1914,10 +1914,10 @@ export function Escolar() {
                 maxWidth: '450px',
                 padding: '32px',
                 borderRadius: '20px',
-                background: '#000000',
-                color: 'white',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#ffffff',
+                color: '#000000',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                border: '1px solid #e0e0e0',
                 position: 'relative',
                 overflow: 'hidden'
               }}>
@@ -1928,7 +1928,7 @@ export function Escolar() {
                   right: '-50%',
                   width: '200%',
                   height: '200%',
-                  background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+                  background: 'radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%)',
                   pointerEvents: 'none'
                 }} />
                 
@@ -1945,10 +1945,7 @@ export function Escolar() {
                     margin: 0,
                     fontSize: '24px',
                     fontWeight: '700',
-                    background: 'linear-gradient(45deg, #fff, #f0f0f0)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
+                    color: '#000000',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px'
@@ -1958,12 +1955,12 @@ export function Escolar() {
                   <button
                     onClick={() => setShowModal(false)}
                     style={{
-                      background: 'rgba(255,255,255,0.2)',
+                      background: 'rgba(0,0,0,0.1)',
                       border: 'none',
                       borderRadius: '50%',
                       width: '40px',
                       height: '40px',
-                      color: 'white',
+                      color: '#000000',
                       cursor: 'pointer',
                       fontSize: '18px',
                       display: 'flex',
@@ -1971,8 +1968,8 @@ export function Escolar() {
                       justifyContent: 'center',
                       transition: 'all 0.3s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.1)'}
                   >
                     ✕
                   </button>
@@ -1985,15 +1982,15 @@ export function Escolar() {
                     fontSize: '16px',
                     fontWeight: '600',
                     marginBottom: '12px',
-                    color: 'rgba(255,255,255,0.9)'
+                    color: '#000000'
                   }}>
                     ✏️ Nome da lista
                   </label>
                   <div style={{
                     position: 'relative',
-                    background: 'rgba(255,255,255,0.1)',
+                    background: '#f5f5f5',
                     borderRadius: '12px',
-                    border: '2px solid rgba(255,255,255,0.2)',
+                    border: '2px solid #e0e0e0',
                     transition: 'all 0.3s ease'
                   }}>
                     <input
@@ -2006,17 +2003,17 @@ export function Escolar() {
                         background: 'transparent',
                         border: 'none',
                         outline: 'none',
-                        color: 'white',
+                        color: '#000000',
                         fontSize: '16px',
                         borderRadius: '12px'
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.5)';
-                        e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.15)';
+                        e.currentTarget.parentElement!.style.borderColor = '#4CAF50';
+                        e.currentTarget.parentElement!.style.background = '#f9f9f9';
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.parentElement!.style.borderColor = 'rgba(255,255,255,0.2)';
-                        e.currentTarget.parentElement!.style.background = 'rgba(255,255,255,0.1)';
+                        e.currentTarget.parentElement!.style.borderColor = '#e0e0e0';
+                        e.currentTarget.parentElement!.style.background = '#f5f5f5';
                       }}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter' && listName.trim()) {
@@ -2031,14 +2028,14 @@ export function Escolar() {
                       top: '50%',
                       transform: 'translateY(-50%)',
                       fontSize: '12px',
-                      color: 'rgba(255,255,255,0.6)'
+                      color: '#666666'
                     }}>
                       {listName.length}/100
                     </div>
                   </div>
                   <p style={{
                     fontSize: '12px',
-                    color: 'rgba(255,255,255,0.7)',
+                    color: '#666666',
                     margin: '8px 0 0 0',
                     fontStyle: 'italic'
                   }}>
@@ -2058,8 +2055,8 @@ export function Escolar() {
                     style={{
                       flex: 1,
                       padding: '14px 20px',
-                      background: 'rgba(255,255,255,0.2)',
-                      color: 'white',
+                      background: '#f5f5f5',
+                      color: '#000000',
                       border: 'none',
                       borderRadius: '12px',
                       fontSize: '14px',
@@ -2068,11 +2065,11 @@ export function Escolar() {
                       transition: 'all 0.3s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+                      e.currentTarget.style.background = '#e0e0e0';
                       e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                      e.currentTarget.style.background = '#f5f5f5';
                       e.currentTarget.style.transform = 'translateY(0)';
                     }}
                   >
@@ -2085,9 +2082,9 @@ export function Escolar() {
                       flex: 2,
                       padding: '14px 20px',
                       background: listName.trim() 
-                        ? 'linear-gradient(45deg, #4CAF50, #45a049)' 
-                        : 'rgba(255,255,255,0.2)',
-                      color: 'white',
+                        ? '#4CAF50'
+                        : '#f5f5f5',
+                      color: listName.trim() ? '#ffffff' : '#666666',
                       border: 'none',
                       borderRadius: '12px',
                       fontSize: '14px',
