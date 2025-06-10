@@ -15,6 +15,7 @@ import { LoadingScreen } from "./Components/LoadingScreen";
 import { PrivateRoute, PublicRoute, PremiumRoute } from "./Routes/Rotas";
 import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
 import { Games } from "./pages/Games/Games";
+import { UserDataProvider } from "./Contexts/UserDataContext";
 
 function AppContent() {
   const { isLoading } = useLoading();
@@ -70,7 +71,9 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <LoadingProvider>
-          <AppContent />
+          <UserDataProvider>
+            <AppContent />
+          </UserDataProvider>
         </LoadingProvider>
       </AuthProvider>
     </BrowserRouter>
