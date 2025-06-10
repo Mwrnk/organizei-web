@@ -6,6 +6,7 @@ import { usePageLoading } from "../../Utils/usePageLoading";
 import styled, { css } from "styled-components";
 import { LoadingScreen } from "../../Components/LoadingScreen";
 import { toast } from 'react-toastify';
+import { Usuario, UserRole } from "../../Types/User";
 
 // Tipos locais
 type Tag = {
@@ -256,6 +257,51 @@ const BackButton = styled.button`
 
   &:hover {
     color: #2d3748;
+  }
+`;
+
+const GameBackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #F7FAFC;
+  color: #2D3748;
+  border: 2px solid #E2E8F0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 20px auto;
+  max-width: fit-content;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    transform: translateY(-2px);
+    background: #EDF2F7;
+    border-color: #667EEA;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover svg {
+    transform: translateX(-4px);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 10px 20px;
+    width: 90%;
   }
 `;
 
@@ -611,7 +657,7 @@ const TagModalTitle = styled.h3`
 `;
 
 const TagModalInput = styled.input`
-  width: 100%;
+  width: 91%;
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 10px;
@@ -643,12 +689,14 @@ const TagModalButton = styled.button<{ variant?: "primary" | "secondary" }>`
   ${({ variant }) =>
     variant === "primary"
       ? `
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    // background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background-color: #007AFF
     color: white;
     
     &:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+      background-color: #003D80;
     }
   `
       : `
@@ -906,21 +954,22 @@ const GamesGrid = styled.div`
   margin-bottom: 40px;
 `;
 
-const GameCard = styled.div`
+const GameCard = styled.div<{ isLocked?: boolean }>`
   background: white;
   border-radius: 20px;
   padding: 40px 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border: 3px solid transparent;
-  cursor: pointer;
+  cursor: ${props => props.isLocked ? 'not-allowed' : 'pointer'};
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  opacity: ${props => props.isLocked ? 0.7 : 1};
 
   &:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    border-color: #667eea;
+    transform: ${props => props.isLocked ? 'none' : 'translateY(-10px)'};
+    box-shadow: ${props => props.isLocked ? '0 10px 30px rgba(0, 0, 0, 0.1)' : '0 20px 40px rgba(0, 0, 0, 0.15)'};
+    border-color: ${props => props.isLocked ? 'transparent' : '#667eea'};
   }
 
   &::before {
@@ -931,6 +980,7 @@ const GameCard = styled.div`
     right: 0;
     height: 6px;
     background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: ${props => props.isLocked ? 0.5 : 1};
   }
 `;
 
@@ -1609,9 +1659,84 @@ const StudyButton = styled.button`
   }
 `;
 
+const PremiumBadge = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2D3748;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+  z-index: 2;
+`;
+
+const LockedOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  ${GameCard}:hover & {
+    opacity: 1;
+  }
+`;
+
+const UpgradePremiumButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 16px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  }
+`;
+
 export function Games() {
   const { user } = useAuth();
   const token = localStorage.getItem("authenticacao");
+
+  // Log para debug do usuário e seu plano
+  useEffect(() => {
+    console.log('User data:', user);
+    console.log('User role:', user?.role);
+  }, [user]);
+
+  const isPremiumUser = () => {
+    // Verificação mais robusta do plano premium
+    if (!user) {
+      console.log('No user found');
+      return false;
+    }
+    
+    const hasPremium = user.role === UserRole.PREMIUM || user.role === UserRole.ADMIN;
+    console.log('Premium check result:', hasPremium);
+    return hasPremium;
+  };
 
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [cards, setCards] = useState<CardType[]>([]);
@@ -2131,6 +2256,9 @@ export function Games() {
   };
 
   const renderGameSelection = () => {
+    const isPremium = isPremiumUser();
+    console.log('Rendering game selection. Is premium?', isPremium);
+
     return (
       <>
         <Header />
@@ -2155,18 +2283,51 @@ export function Games() {
                 <GameCardFeature>
                   Teste seus conhecimentos
                 </GameCardFeature>
-                <PointsIndicator>
-                  <LightningIcon>⚡</LightningIcon>
-                  Ganhe pontos por acerto
-                </PointsIndicator>
+                
               </GameCard>
 
-              <GameCard onClick={() => {
-                setShowGameSelection(false);
-                setSelectedGame('quiz');
-              }}>
+              <GameCard 
+                isLocked={!isPremiumUser()}
+                onClick={() => {
+                  if (isPremiumUser()) {
+                    setShowGameSelection(false);
+                    setSelectedGame('quiz');
+                  } else {
+                    toast.warning("Este jogo é exclusivo para usuários premium!");
+                  }
+                }}
+              >
+                {!isPremiumUser() && (
+                  <LockedOverlay>
+                    <div style={{ fontSize: '24px', marginBottom: '12px' }}>🔒</div>
+                    <p style={{ 
+                      color: '#4A5568', 
+                      fontWeight: '600', 
+                      marginBottom: '8px'
+                    }}>
+                      Exclusivo Premium
+                    </p>
+                    <p style={{ 
+                      color: '#718096', 
+                      fontSize: '14px', 
+                      marginBottom: '16px'
+                    }}>
+                      Este jogo é exclusivo para usuários com plano premium.
+                    </p>
+                    <UpgradePremiumButton onClick={(e) => {
+                      e.stopPropagation();
+                      window.location.href = '/planos';
+                    }}>
+                      Assinar Premium
+                    </UpgradePremiumButton>
+                  </LockedOverlay>
+                )}
+                <PremiumBadge>
+                  <span>✨</span>
+                  PREMIUM
+                </PremiumBadge>
                 <GameIcon>💰</GameIcon>
-                <GameCardTitle>Jogo do milhão</GameCardTitle>
+                <GameCardTitle>Jogo do Milhão</GameCardTitle>
                 <GameCardDescription>
                   Inúmeras perguntas com temas diversos.
                 </GameCardDescription>
@@ -2242,17 +2403,45 @@ export function Games() {
   };
 
   const renderQuiz = () => {
+    const isPremium = isPremiumUser();
+    console.log('Rendering quiz. Is premium?', isPremium);
+
+    // Verificação de segurança: se não for premium, redireciona para seleção de jogos
+    if (!isPremium) {
+      console.log('Access denied: User is not premium');
+      setSelectedGame(null);
+      setShowGameSelection(true);
+      toast.error("Este jogo é exclusivo para usuários premium!");
+      return null;
+    }
+
     if (!quizSession && !isLoadingQuiz) {
       return (
         <>
           <Header />
           <Container>
-            <BackButton onClick={() => {
+            <GameBackButton onClick={() => {
               setSelectedGame(null);
               setShowGameSelection(true);
+              resetQuiz();
             }}>
-              ← Voltar
-            </BackButton>
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M19 12H5M5 12L12 19M5 12L12 5" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Voltar para seleção de jogos
+            </GameBackButton>
 
             <QuizSetupSection>
               <QuizSetupTitle>💰 Configurar Quiz</QuizSetupTitle>
@@ -2353,9 +2542,24 @@ export function Games() {
       <>
         <Header />
         <Container>
-          <BackButton onClick={resetQuiz}>
-            ← Voltar
-          </BackButton>
+          <GameBackButton onClick={resetQuiz}>
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M19 12H5M5 12L12 19M5 12L12 5" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            Voltar para seleção de jogos
+          </GameBackButton>
 
           <QuizContainer>
             {isLoadingQuiz ? (
@@ -2555,7 +2759,24 @@ export function Games() {
                 <ProgressFill progress={getProgressPercentage()} />
               </ProgressBar>
               <StepIndicator>Passo 2 de 5</StepIndicator>
-              <BackButton onClick={() => setCreationStep(0)}>← Voltar</BackButton>
+              <GameBackButton onClick={() => setCreationStep(0)}>
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    d="M19 12H5M5 12L12 19M5 12L12 5" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Voltar
+              </GameBackButton>
               <StepTitle>Como deseja criar?</StepTitle>
               <StepSubtitle>Escolha o método de criação dos flashcards</StepSubtitle>
               
@@ -2994,13 +3215,28 @@ export function Games() {
         <>
           <Header />
           <Container style={{ padding: '0 20px' }}>
-            <BackButton onClick={() => {
+            <GameBackButton onClick={() => {
               setShowGameSelection(true);
               setSelectedGame(null);
               resetPartialCreationFlow();
             }}>
-              ← Voltar para seleção de jogos
-            </BackButton>
+              <svg 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path 
+                  d="M19 12H5M5 12L12 19M5 12L12 5" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Voltar para seleção de jogos
+            </GameBackButton>
 
             {!studyMode ? (
               <>
@@ -3104,15 +3340,11 @@ export function Games() {
                       <EmptyDescription>
                         {activeTagFilters.length > 0 
                           ? 'Tente selecionar outras tags ou limpar os filtros.'
-                          : 'Crie seu primeiro flashcard usando o fluxo step-by-step acima.'}
+                          : 'Use o botão "Criar Flashcards" no topo da página para começar.'}
                       </EmptyDescription>
-                      {activeTagFilters.length > 0 ? (
+                      {activeTagFilters.length > 0 && (
                         <CreateFirstFlashcardButton onClick={clearTagFilters}>
                           Limpar Filtros
-                        </CreateFirstFlashcardButton>
-                      ) : (
-                        <CreateFirstFlashcardButton onClick={() => setCreationStep(0)}>
-                          🚀 Criar Primeiro Flashcard
                         </CreateFirstFlashcardButton>
                       )}
                     </EmptyFlashcardsState>
@@ -3180,9 +3412,24 @@ export function Games() {
             ) : (
               // Study Mode UI
               <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-                <BackButton onClick={exitStudyMode}>
-                  ← Voltar para lista
-                </BackButton>
+                <GameBackButton onClick={exitStudyMode}>
+                  <svg 
+                    width="24" 
+                    height="24" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path 
+                      d="M19 12H5M5 12L12 19M5 12L12 5" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  Voltar para lista
+                </GameBackButton>
                 
                 <div style={{ 
                   textAlign: 'center', 

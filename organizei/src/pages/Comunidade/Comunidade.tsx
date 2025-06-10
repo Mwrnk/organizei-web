@@ -42,6 +42,10 @@ const Subtitulo = styled.p`
 
 const DEFAULT_PROFILE_IMAGE = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
+const MOST_LIKED_CARDS_LIMIT = 8;
+const INITIAL_VISIBLE_CARDS = 12;
+const CARDS_PER_PAGE = 12;
+
 const BuscaWrapper = styled.div`
   position: relative;
   width: 100%;
@@ -182,11 +186,75 @@ const CardImage = styled.div`
   height: 160px;
   background: #f5f5f5;
   position: relative;
+  overflow: hidden;
   
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+`;
+
+const CardImageFallback = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  color: #666;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+
+  /* Container para o conteúdo */
+  > span {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    text-align: center;
+    margin: 0 auto;
+  }
+
+  /* Ícone de documento */
+  &::before {
+    content: "📄";
+    font-size: 32px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.1;
+    z-index: 1;
+  }
+
+  /* Efeito de hover */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.2) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  ${Card}:hover & {
+    &::after {
+      opacity: 1;
+    }
   }
 `;
 
@@ -330,20 +398,43 @@ const DividerLine = styled.div`
 const LoadMoreButton = styled.button`
   display: block;
   margin: 40px auto 0;
-  padding: 12px 32px;
-  border-radius: 8px;
+  padding: 16px 32px;
+  border-radius: 12px;
   border: none;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #1976d2;
+  color: white;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.02);
+    background-color: #1565c0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    width: 90%;
+    max-width: 300px;
+    padding: 14px 24px;
+    font-size: 14px;
+  }
+`;
+
+const LoadMoreContainer = styled.div<{ visible: boolean }>`
+  opacity: ${props => props.visible ? 1 : 0};
+  transform: translateY(${props => props.visible ? '0' : '20px'});
+  transition: all 0.3s ease;
+  margin: 40px 0;
+  height: ${props => props.visible ? 'auto' : '0'};
+  overflow: hidden;
 `;
 
 const ModalOverlay = styled.div`
@@ -636,7 +727,7 @@ export function Comunidade() {
   const [selectedListId, setSelectedListId] = useState<string>("");
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [likedCards, setLikedCards] = useState<Set<string>>(new Set());
-  const [visibleCards, setVisibleCards] = useState(10);
+  const [visibleCards, setVisibleCards] = useState(INITIAL_VISIBLE_CARDS);
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -651,6 +742,7 @@ export function Comunidade() {
   const [userLists, setUserLists] = useState<any[]>([]);
   const [selectedListForDownload, setSelectedListForDownload] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
   
 
   const { user } = useAuth();
@@ -835,8 +927,20 @@ export function Comunidade() {
   // Função para obter os cards mais curtidos
   const getMostLikedCards = () => {
     return [...allCards]
-      .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-      .slice(0, 6);
+      .sort((a, b) => {
+        // Primeiro, ordenar por número de likes
+        const likesComparison = (b.likes || 0) - (a.likes || 0);
+        
+        // Se tiverem o mesmo número de likes, ordenar por data de criação (mais recentes primeiro)
+        if (likesComparison === 0) {
+          const dateA = new Date(a.createdAt || 0);
+          const dateB = new Date(b.createdAt || 0);
+          return dateB.getTime() - dateA.getTime();
+        }
+        
+        return likesComparison;
+      })
+      .slice(0, MOST_LIKED_CARDS_LIMIT);
   };
 
   const handlePublicar = async (cardId: string) => {
@@ -968,7 +1072,7 @@ export function Comunidade() {
   };
 
   const loadMore = () => {
-    setVisibleCards(prev => prev + 10);
+    setVisibleCards(prev => prev + CARDS_PER_PAGE);
   };
 
   const loadPdf = async (cardId: string) => {
@@ -1305,6 +1409,16 @@ export function Comunidade() {
   const filteredCards = getFilteredCards();
   const hasNoResults = searchText.trim() !== "" && filteredCards.length === 0;
 
+  const handleImageError = (cardId: string) => {
+    setFailedImages(prev => new Set([...prev, cardId]));
+  };
+
+  // Função para verificar se há mais cards para carregar
+  const hasMoreCards = () => {
+    const filteredCards = getFilteredCards();
+    return visibleCards < filteredCards.length;
+  };
+
   return (
     <>
       <Header />
@@ -1444,16 +1558,17 @@ export function Comunidade() {
             {getMostLikedCards().map((card) => (
               <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
                 <CardImage>
-                  <img
-                    src={card.image_url?.[0] ? 
-                      `http://localhost:3000${card.image_url[0]}` : 
-                      `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'%3E${card.title || 'Sem imagem'}%3C/text%3E%3C/svg%3E`
-                    }
-                    alt={card.title}
-                    onError={(e) => {
-                      e.currentTarget.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'%3E%3Crect width='400' height='160' fill='%23f5f5f5'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'%3E${card.title || 'Erro ao carregar imagem'}%3C/text%3E%3C/svg%3E`;
-                    }}
-                  />
+                  {card.image_url && card.image_url.length > 0 && !failedImages.has(card.id || card._id) ? (
+                    <img
+                      src={`http://localhost:3000${card.image_url[0]}`}
+                      alt={card.title}
+                      onError={() => handleImageError(card.id || card._id)}
+                    />
+                  ) : (
+                    <CardImageFallback>
+                      <span>{card.title || 'Sem título'}</span>
+                    </CardImageFallback>
+                  )}
                 </CardImage>
                 <CardContent>
                   <CardTitle>{card.title}</CardTitle>
@@ -1493,19 +1608,20 @@ export function Comunidade() {
 
           {/* Grid de Todos os Cards */}
           <CardsGrid>
-            {allCards.slice(0, visibleCards).map((card) => (
+            {getFilteredCards().slice(0, visibleCards).map((card) => (
               <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
                 <CardImage>
-                  <img
-                    src={card.image_url?.[0] ? 
-                      `http://localhost:3000${card.image_url[0]}` : 
-                      `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Sem imagem'}</text></svg>`)}`
-                    }
-                    alt={card.title}
-                    onError={(e) => {
-                      e.currentTarget.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='160' viewBox='0 0 400 160'><rect width='400' height='160' fill='%23f5f5f5'/><text x='50%' y='50%' text-anchor='middle' dy='.3em' font-family='Arial' font-size='16' fill='%23999'>${card.title || 'Erro ao carregar imagem'}</text></svg>`)}`;
-                    }}
-                  />
+                  {card.image_url && card.image_url.length > 0 && !failedImages.has(card.id || card._id) ? (
+                    <img
+                      src={`http://localhost:3000${card.image_url[0]}`}
+                      alt={card.title}
+                      onError={() => handleImageError(card.id || card._id)}
+                    />
+                  ) : (
+                    <CardImageFallback>
+                      <span>{card.title || 'Sem título'}</span>
+                    </CardImageFallback>
+                  )}
                 </CardImage>
                 <CardContent>
                   <CardTitle>{card.title}</CardTitle>
@@ -1538,11 +1654,11 @@ export function Comunidade() {
           </CardsGrid>
 
           {/* Botão Ver Mais */}
-          {visibleCards < allCards.length && (
+          <LoadMoreContainer visible={hasMoreCards()}>
             <LoadMoreButton onClick={loadMore}>
-              Ver mais
+              Ver mais cards
             </LoadMoreButton>
-          )}
+          </LoadMoreContainer>
         </ContentWrapper>
       </Container>
 
