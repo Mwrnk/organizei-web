@@ -1,6 +1,5 @@
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
-import { useUserData } from "../../Contexts/UserDataContext";
 import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
@@ -219,13 +218,52 @@ type Plano = {
 
 export function Perfil() {
   const { user, isLoading, logout, setUser } = useAuth();
-  const { refreshUserData } = useUserData();
   const [planoAtual, setPlanoAtual] = useState<Plano | null>(null);
   const [image, setImage] = useState<string | null>(user?.profileImage || null);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
 
   usePageLoading(isDataLoading || isLoading);
+
+  // Atualiza os pontos do usuário periodicamente
+  useEffect(() => {
+    const fetchUserPoints = async () => {
+      if (!user?._id) return;
+      
+      const token = localStorage.getItem("authenticacao");
+      if (!token) return;
+
+      try {
+        const res = await axios.get(`http://localhost:3000/users/${user._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        // Atualiza o usuário se houver qualquer mudança nos dados
+        if (res.data.data && user) {
+          const newUserData = res.data.data;
+          if (
+            newUserData.orgPoints !== user?.orgPoints ||
+            newUserData.name !== user?.name ||
+            newUserData.email !== user?.email
+          ) {
+            setUser(newUserData);
+          }
+        }
+      } catch (err) {
+        console.error("Erro ao atualizar dados do usuário", err);
+      }
+    };
+
+    // Faz a primeira verificação imediatamente
+    fetchUserPoints();
+
+    // Depois verifica a cada 3 segundos
+    const interval = setInterval(fetchUserPoints, 3000);
+
+    return () => clearInterval(interval);
+  }, [user, setUser]);
 
   useEffect(() => {
     const fetchPlano = async () => {
@@ -270,31 +308,6 @@ export function Perfil() {
     fetchStats();
   }, [user?._id]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user?._id) return;
-
-      const token = localStorage.getItem("authenticacao");
-      if (!token) return;
-
-      try {
-        const res = await axios.get(`http://localhost:3000/users/${user._id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        // Update user data in context
-        if (res.data.data) {
-          setUser(res.data.data);
-        }
-      } catch (err) {
-        console.error("Erro ao atualizar dados do usuário", err);
-      }
-    };
-
-    fetchUserData();
-  }, [refreshUserData, user?._id]);
-
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -322,10 +335,6 @@ export function Perfil() {
     } catch (err) {
       console.error("Erro ao enviar imagem", err);
     }
-  };
-
-  const refreshUserData = () => {
-    refreshUserData();
   };
 
   if (isLoading) return <LoadingScreen isVisible={true} />;
