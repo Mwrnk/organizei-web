@@ -1,10 +1,10 @@
 #root {
-  max-width: 1280px;
-  background-color: #ffffff;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
   font-family: "Kodchasan", sans-serif;
   margin: 0;
+  padding: 0;
+  background-color: var(--background);
 }
 
 .logo {
@@ -37,6 +37,9 @@
 
 .card {
   padding: 2em;
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--shadow);
 }
 
 .read-the-docs {

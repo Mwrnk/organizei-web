@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loadUserPlan(id);
 
         toast.success("Login realizado com sucesso!");
-        navigate("/perfil");
+        navigate("/escolar");
       }
     } catch (error: any) {
       console.error(

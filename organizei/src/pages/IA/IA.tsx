@@ -7,42 +7,53 @@ import { useAuth } from "../../Contexts/AuthContexts";
 import { Usuario } from "../../Types/User";
 
 const ChatContainer = styled.div`
-  width: 80%;
-  max-width: 1500px;
-  margin: 40px auto;
-  padding: 40px 32px 32px 32px;
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
+  width: 100%;
+  min-height: calc(100vh - 80px); /* Considerando o header */
+  margin: 0;
+  padding: 40px;
   background-color: #fff;
   display: flex;
   flex-direction: column;
+
   @media (max-width: 900px) {
-    max-width: 98vw;
-    padding: 16px 2vw 20px 2vw;
+    padding: 20px;
   }
 `;
 
 const ChatHeader = styled.div`
   text-align: center;
   margin-bottom: 28px;
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  p {
+    font-size: 1.1rem;
+    color: #666;
+  }
 `;
 
 const ChatMessages = styled.div`
   flex: 1;
   min-height: 400px;
-  max-height: 40vh;
+  max-height: 60vh;
   overflow-y: auto;
-  padding: 18px 0;
+  padding: 24px;
   background-color: #f5f5f5;
   border-radius: 16px;
+  margin: 0 auto;
   margin-bottom: 28px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
+  max-width: 1200px;
+
   @media (max-width: 600px) {
     min-height: 320px;
-    max-height: 45vh;
+    max-height: 65vh;
     gap: 14px;
+    padding: 16px;
   }
 `;
 
@@ -127,6 +138,9 @@ const ChatForm = styled.form`
   display: flex;
   gap: 10px;
   margin-top: 8px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 const ChatInput = styled.input`

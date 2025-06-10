@@ -31,9 +31,9 @@ export const PublicRoute = () => {
     return <LoadingScreen isVisible={true} />;
   }
 
-  // Se estiver autenticado, redireciona para o perfil
+  // Se estiver autenticado, redireciona para a página escolar
   if (isAuthenticated) {
-    return <Navigate to="/perfil" replace />;
+    return <Navigate to="/escolar" replace />;
   }
 
   // Se não estiver autenticado, renderiza o componente filho

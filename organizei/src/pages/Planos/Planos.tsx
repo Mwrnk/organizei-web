@@ -11,10 +11,13 @@ import NegacaoPlano from "../../../assets/naoContemPlano.svg";
 
 // --- Styled Components ---
 const PlanosContainer = styled.div`
-  max-width: 1200px;
-  margin: 20px auto;
+  width: 100%;
+  min-height: calc(100vh - 80px); /* Considerando o header */
   padding: 20px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 const DivBotao = styled.div`
   display: flex;
@@ -59,7 +62,22 @@ const PlanosGrid = styled.div`
   gap: 25px;
   justify-content: center;
   align-items: flex-end;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+
+  @media (max-width: 1200px) {
+    gap: 20px;
+    padding: 10px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
 `;
 const PlanoCard = styled.div<{ highlighted?: boolean }>`
   width: 280px;
@@ -73,10 +91,30 @@ const PlanoCard = styled.div<{ highlighted?: boolean }>`
   align-items: center;
   min-height: 450px;
   position: relative;
-  transition: transform 0.3s;
+  transition: all 0.3s ease;
   justify-content: space-between;
+  
   ${(props) =>
-    props.highlighted && `margin-bottom: 20px; transform: translateY(-10px);`}
+    props.highlighted && `
+      margin-bottom: 20px; 
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    `}
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 320px;
+    ${(props) =>
+      props.highlighted && `
+        transform: scale(1.05);
+        margin: 20px 0;
+      `}
+  }
+
+  &:hover {
+    transform: ${(props) => props.highlighted ? 'translateY(-15px)' : 'translateY(-5px)'};
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
 `;
 const PlanoTitulo = styled.h2`
   margin-bottom: 15px;

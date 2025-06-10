@@ -1,54 +1,119 @@
 :root {
   /* Tema claro (padrão) */
-  --background-light: #ffffff;
+  --background-light: #F5F5F5;
   --text-light: #333333;
+  --text-secondary-light: #666666;
   --primary-light: #3498db;
-  --secondary-light: #f5f5f5;
+  --secondary-light: #ffffff;
   --border-light: #dddddd;
   --card-bg-light: #ffffff;
   --shadow-light: rgba(0, 0, 0, 0.1);
   --hover-light: #f0f0f0;
+  --input-bg-light: #ffffff;
+  --input-text-light: #333333;
+  --input-border-light: #dddddd;
+  --modal-bg-light: #ffffff;
+  --modal-text-light: #333333;
+  --icon-color-light: #333333;
+  --nav-bg-light: #ffffff;
+  --nav-text-light: #333333;
+  --button-bg-light: #3498db;
+  --button-text-light: #ffffff;
+  --dropdown-bg-light: #ffffff;
+  --dropdown-text-light: #333333;
+  --tooltip-bg-light: #333333;
+  --tooltip-text-light: #ffffff;
 
   /* Tema escuro */
-  --background-dark: #1a1a1a;
+  --background-dark: #121212;
   --text-dark: #ffffff;
+  --text-secondary-dark: #cccccc;
   --primary-dark: #4aa3df;
-  --secondary-dark: #2c2c2c;
-  --border-dark: #404040;
-  --card-bg-dark: #2c2c2c;
+  --secondary-dark: #1e1e1e;
+  --border-dark: #2d2d2d;
+  --card-bg-dark: #1e1e1e;
   --shadow-dark: rgba(0, 0, 0, 0.3);
-  --hover-dark: #363636;
+  --hover-dark: #2d2d2d;
+  --input-bg-dark: #1e1e1e;
+  --input-text-dark: #ffffff;
+  --input-border-dark: #2d2d2d;
+  --modal-bg-dark: #1e1e1e;
+  --modal-text-dark: #ffffff;
+  --icon-color-dark: #ffffff;
+  --nav-bg-dark: #1e1e1e;
+  --nav-text-dark: #ffffff;
+  --button-bg-dark: #4aa3df;
+  --button-text-dark: #ffffff;
+  --dropdown-bg-dark: #1e1e1e;
+  --dropdown-text-dark: #ffffff;
+  --tooltip-bg-dark: #ffffff;
+  --tooltip-text-dark: #121212;
 }
 
 /* Tema claro */
 body[data-theme="light"] {
   --background: var(--background-light);
   --text: var(--text-light);
+  --text-secondary: var(--text-secondary-light);
   --primary: var(--primary-light);
   --secondary: var(--secondary-light);
   --border: var(--border-light);
   --card-bg: var(--card-bg-light);
   --shadow: var(--shadow-light);
   --hover: var(--hover-light);
+  --input-bg: var(--input-bg-light);
+  --input-text: var(--input-text-light);
+  --input-border: var(--input-border-light);
+  --modal-bg: var(--modal-bg-light);
+  --modal-text: var(--modal-text-light);
+  --icon-color: var(--icon-color-light);
+  --nav-bg: var(--nav-bg-light);
+  --nav-text: var(--nav-text-light);
+  --button-bg: var(--button-bg-light);
+  --button-text: var(--button-text-light);
+  --dropdown-bg: var(--dropdown-bg-light);
+  --dropdown-text: var(--dropdown-text-light);
+  --tooltip-bg: var(--tooltip-bg-light);
+  --tooltip-text: var(--tooltip-text-light);
 }
 
 /* Tema escuro */
 body[data-theme="dark"] {
   --background: var(--background-dark);
   --text: var(--text-dark);
+  --text-secondary: var(--text-secondary-dark);
   --primary: var(--primary-dark);
   --secondary: var(--secondary-dark);
   --border: var(--border-dark);
   --card-bg: var(--card-bg-dark);
   --shadow: var(--shadow-dark);
   --hover: var(--hover-dark);
+  --input-bg: var(--input-bg-dark);
+  --input-text: var(--input-text-dark);
+  --input-border: var(--input-border-dark);
+  --modal-bg: var(--modal-bg-dark);
+  --modal-text: var(--modal-text-dark);
+  --icon-color: var(--icon-color-dark);
+  --nav-bg: var(--nav-bg-dark);
+  --nav-text: var(--nav-text-dark);
+  --button-bg: var(--button-bg-dark);
+  --button-text: var(--button-text-dark);
+  --dropdown-bg: var(--dropdown-bg-dark);
+  --dropdown-text: var(--dropdown-text-dark);
+  --tooltip-bg: var(--tooltip-bg-dark);
+  --tooltip-text: var(--tooltip-text-dark);
 }
 
 /* Estilos base */
 body {
   background-color: var(--background);
   color: var(--text);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: all 0.3s ease;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Estilos comuns */
@@ -56,19 +121,76 @@ body {
   background-color: var(--card-bg);
   border: 1px solid var(--border);
   box-shadow: 0 2px 8px var(--shadow);
-}
-
-input, textarea, select {
-  background-color: var(--card-bg);
   color: var(--text);
-  border-color: var(--border);
 }
 
+/* Inputs e campos de texto */
+input, 
+textarea, 
+select {
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+/* Botões */
 button {
-  background-color: var(--primary);
-  color: var(--text);
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--border);
 }
 
 button:hover {
   background-color: var(--hover);
+}
+
+/* Modais */
+.modal {
+  background-color: var(--modal-bg);
+  color: var(--modal-text);
+}
+
+/* Dropdowns */
+.dropdown {
+  background-color: var(--dropdown-bg);
+  color: var(--dropdown-text);
+}
+
+/* Ícones SVG */
+svg {
+  fill: var(--icon-color);
+}
+
+/* Links */
+a {
+  color: var(--primary);
+}
+
+/* Tooltips */
+.tooltip {
+  background-color: var(--tooltip-bg);
+  color: var(--tooltip-text);
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hover);
 } 
