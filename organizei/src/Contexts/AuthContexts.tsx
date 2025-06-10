@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 import axios from "axios";
-import { Usuario } from "../Types/User";
+import { Usuario, UserRole } from "../Types/User";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -36,8 +36,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await axios.get(
         `http://localhost:3000/users/${userId}/plan`
       );
-      setCurrentPlan(response.data.data?.name?.toLowerCase() || null);
+      const planName = response.data.data?.name?.toLowerCase() || null;
+      setCurrentPlan(planName);
+      
+      if (planName && user) {
+        const newRole = planName === 'premium' ? UserRole.PREMIUM : 
+                       planName === 'enterprise' ? UserRole.PREMIUM : 
+                       UserRole.FREE;
+        setUser(prevUser => prevUser ? { ...prevUser, role: newRole, plan: planName } : null);
+      }
     } catch (err) {
+      console.error('Erro ao carregar plano:', err);
       setCurrentPlan(null);
     }
   };
@@ -89,8 +98,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userResponse = await axios.get(
           `http://localhost:3000/users/${id}`
         );
-        setUser(userResponse.data.data);
-        await loadUserPlan(id);
+        const userData = userResponse.data.data;
+        
+        const planResponse = await axios.get(
+          `http://localhost:3000/users/${id}/plan`
+        );
+        const planName = planResponse.data.data?.name?.toLowerCase() || null;
+        
+        const newRole = planName === 'premium' ? UserRole.PREMIUM : 
+                       planName === 'enterprise' ? UserRole.PREMIUM : 
+                       UserRole.FREE;
+        
+        setUser({ ...userData, role: newRole, plan: planName });
+        setCurrentPlan(planName);
 
         toast.success("Login realizado com sucesso!");
         navigate("/escolar");
