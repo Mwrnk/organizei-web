@@ -456,80 +456,111 @@ export function Escolar() {
     }
 
     try {
-      const res = await axios.post("http://localhost:3000/cards", {
-        title: cardTitle,
-        listId: selectedListId,
-      });
+      // First create the card
+      const token = localStorage.getItem("authenticacao");
+      const cardResponse = await axios.post(
+        "http://localhost:3000/cards",
+        {
+          title: cardTitle,
+          listId: selectedListId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      const newCardId = res.data.data.id;
-      toast.success("✨ Card criado com sucesso!");
-
+      // Get the new card ID from the response
+      const newCardId = cardResponse.data.data.id;
+      
+      // If we have an image selected, upload it
       if (image) {
-        const formData = new FormData();
-        formData.append("files", image);
+        try {
+          const formData = new FormData();
+          formData.append("files", image);
 
-        await axios.post(
-          `http://localhost:3000/cards/${newCardId}/files`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-
-        toast.success("🖼️ Imagem adicionada ao card!");
-      }
-
-      // Recarregar os dados da lista
-      try {
-        const cardsRes = await axios.get(
-          `http://localhost:3000/lists/${selectedListId}/cards`
-        );
-        
-        const cardsWithDetails = await Promise.all(
-          cardsRes.data.data.map(async (card: any) => {
-            try {
-              const cardDetailRes = await axios.get(
-                `http://localhost:3000/cards/${card.id}`
-              );
-              const cardDetail = cardDetailRes.data.data;
-              
-              return {
-                id: card.id,
-                title: card.title,
-                userId: card.userId,
-                createdAt: card.createdAt,
-                pdfs: cardDetail.pdfs || [],
-                image_url: cardDetail.image_url || [],
-                is_published: cardDetail.is_published || false,
-                priority: cardDetail.priority || "Baixa",
-              };
-            } catch (err) {
-              return {
-                id: card.id,
-                title: card.title,
-                userId: card.userId,
-                createdAt: card.createdAt,
-                pdfs: [],
-                image_url: [],
-                is_published: false,
-                priority: "Baixa",
-              };
+          await axios.post(
+            `http://localhost:3000/cards/${newCardId}/files`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+              },
             }
-          })
-        );
+          );
 
-        setCards((prev) => ({
-          ...prev,
-          [selectedListId]: cardsWithDetails,
-        }));
-      } catch (err) {
-        console.error("Erro ao recarregar cards:", err);
-        toast.error("Erro ao atualizar a lista de cards.");
+          toast.success("🖼️ Imagem adicionada ao card!");
+        } catch (imageError) {
+          console.error("Erro ao enviar imagem:", imageError);
+          toast.error("Não foi possível adicionar a imagem ao card.");
+        }
       }
 
+      // Reload the cards for this list to get the updated data
+      const cardsRes = await axios.get(
+        `http://localhost:3000/lists/${selectedListId}/cards`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      
+      // Get detailed information for each card
+      const cardsWithDetails = await Promise.all(
+        cardsRes.data.data.map(async (card: any) => {
+          try {
+            const cardDetailRes = await axios.get(
+              `http://localhost:3000/cards/${card.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            const cardDetail = cardDetailRes.data.data;
+            
+            return {
+              id: card.id,
+              title: card.title,
+              userId: card.userId,
+              createdAt: card.createdAt,
+              pdfs: cardDetail.pdfs || [],
+              image_url: cardDetail.image_url || [],
+              is_published: cardDetail.is_published || false,
+              priority: cardDetail.priority || "Baixa",
+            };
+          } catch (err) {
+            return {
+              id: card.id,
+              title: card.title,
+              userId: card.userId,
+              createdAt: card.createdAt,
+              pdfs: [],
+              image_url: [],
+              is_published: false,
+              priority: "Baixa",
+            };
+          }
+        })
+      );
+
+      // Update the cards state with the new data
+      setCards((prev) => ({
+        ...prev,
+        [selectedListId]: cardsWithDetails,
+      }));
+
+      // Reset form and close modal
       setShowCardModal(false);
       setCardTitle("");
       setImage(null);
+      toast.success("✨ Card criado com sucesso!");
+
     } catch (err) {
-      console.error("Erro ao criar card ou enviar imagem:", err);
+      console.error("Erro ao criar card:", err);
       toast.error("Erro ao criar card. Tente novamente.");
     }
   };
