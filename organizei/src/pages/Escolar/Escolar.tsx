@@ -456,8 +456,13 @@ export function Escolar() {
     }
 
     try {
-      // First create the card
       const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        toast.error("Sessão expirada. Por favor, faça login novamente.");
+        return;
+      }
+
+      // Primeiro criar o card
       const cardResponse = await axios.post(
         "http://localhost:3000/cards",
         {
@@ -471,16 +476,18 @@ export function Escolar() {
         }
       );
 
-      // Get the new card ID from the response
+      // Pegar o ID do novo card
       const newCardId = cardResponse.data.data.id;
-      
-      // If we have an image selected, upload it
+
+      // Se tiver imagem selecionada, fazer o upload
       if (image) {
         try {
+          // Criar FormData e adicionar a imagem
           const formData = new FormData();
-          formData.append("files", image);
+          formData.append("files", image, image.name); // Importante: incluir o nome do arquivo
 
-          await axios.post(
+          // Fazer o upload da imagem
+          const uploadResponse = await axios.post(
             `http://localhost:3000/cards/${newCardId}/files`,
             formData,
             {
@@ -491,14 +498,17 @@ export function Escolar() {
             }
           );
 
+          console.log("Upload response:", uploadResponse.data);
           toast.success("🖼️ Imagem adicionada ao card!");
-        } catch (imageError) {
-          console.error("Erro ao enviar imagem:", imageError);
-          toast.error("Não foi possível adicionar a imagem ao card.");
+        } catch (imageError: any) {
+          console.error("Erro detalhado ao enviar imagem:", imageError);
+          console.log("Response data:", imageError.response?.data);
+          console.log("Response status:", imageError.response?.status);
+          toast.error(imageError.response?.data?.message || "Não foi possível adicionar a imagem ao card.");
         }
       }
 
-      // Reload the cards for this list to get the updated data
+      // Recarregar os dados da lista para obter o card atualizado
       const cardsRes = await axios.get(
         `http://localhost:3000/lists/${selectedListId}/cards`,
         {
@@ -508,7 +518,7 @@ export function Escolar() {
         }
       );
       
-      // Get detailed information for each card
+      // Buscar detalhes de cada card
       const cardsWithDetails = await Promise.all(
         cardsRes.data.data.map(async (card: any) => {
           try {
@@ -547,21 +557,23 @@ export function Escolar() {
         })
       );
 
-      // Update the cards state with the new data
+      // Atualizar o estado dos cards
       setCards((prev) => ({
         ...prev,
         [selectedListId]: cardsWithDetails,
       }));
 
-      // Reset form and close modal
+      // Resetar o formulário e fechar o modal
       setShowCardModal(false);
       setCardTitle("");
       setImage(null);
       toast.success("✨ Card criado com sucesso!");
 
-    } catch (err) {
-      console.error("Erro ao criar card:", err);
-      toast.error("Erro ao criar card. Tente novamente.");
+    } catch (err: any) {
+      console.error("Erro detalhado ao criar card:", err);
+      console.log("Response data:", err.response?.data);
+      console.log("Response status:", err.response?.status);
+      toast.error(err.response?.data?.message || "Erro ao criar card. Tente novamente.");
     }
   };
 
