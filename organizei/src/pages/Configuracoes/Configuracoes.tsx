@@ -347,7 +347,24 @@ export function Configuracoes() {
           </form>
         </Card>
 
-        
+        {/* === BLOCO TUTORIAL === */}
+        <Card>
+          <CardHeader>
+            <h3>Tutorial</h3>
+          </CardHeader>
+          <p style={{ marginBottom: '20px' }}>
+            Gerencie a exibição do tutorial da página Escolar.
+          </p>
+          <Button
+            onClick={() => {
+              localStorage.removeItem('tutorialDisabled');
+              toast.success('Tutorial reabilitado com sucesso!');
+            }}
+            style={{ backgroundColor: '#4CAF50' }}
+          >
+            Reabilitar Tutorial
+          </Button>
+        </Card>
 
         {/* === BLOCO ALTERAR SENHA === */}
         <Card>

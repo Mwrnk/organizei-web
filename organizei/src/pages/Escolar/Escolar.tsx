@@ -96,9 +96,9 @@ export function Escolar() {
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    // Verifica se é a primeira visita do usuário
-    const tutorialVisto = localStorage.getItem('tutorialEscolarVisto');
-    if (!tutorialVisto) {
+    // Verifica se o tutorial está desabilitado
+    const tutorialDisabled = localStorage.getItem('tutorialDisabled');
+    if (!tutorialDisabled) {
       setShowTutorial(true);
     }
   }, []);

@@ -12,7 +12,8 @@ import {
   ProgressDots,
   ProgressDot,
   IconText,
-  StepNumber
+  StepNumber,
+  CheckboxContainer
 } from './styles';
 
 interface TutorialModalProps {
@@ -22,10 +23,12 @@ interface TutorialModalProps {
 
 export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setCurrentStep(0);
+      setDontShowAgain(false);
     }
   }, [isOpen]);
 
@@ -48,7 +51,9 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
   };
 
   const handleComplete = () => {
-    localStorage.setItem('tutorialEscolarVisto', 'true');
+    if (dontShowAgain) {
+      localStorage.setItem('tutorialDisabled', 'true');
+    }
     onClose();
   };
 
@@ -111,9 +116,20 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
           )}
 
           {isLastStep ? (
-            <Button variant="primary" onClick={handleComplete}>
-              Concluir ✨
-            </Button>
+            <>
+              <CheckboxContainer>
+                <input
+                  type="checkbox"
+                  id="dontShowAgain"
+                  checked={dontShowAgain}
+                  onChange={(e) => setDontShowAgain(e.target.checked)}
+                />
+                <label htmlFor="dontShowAgain">Não mostrar novamente</label>
+              </CheckboxContainer>
+              <Button variant="primary" onClick={handleComplete}>
+                Concluir ✨
+              </Button>
+            </>
           ) : (
             <Button variant="primary" onClick={handleNext}>
               Próximo →

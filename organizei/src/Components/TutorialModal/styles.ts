@@ -166,4 +166,23 @@ export const IconText = styled.span`
     background: #e0e0e0;
     transform: translateY(-1px);
   }
+`;
+
+export const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 16px;
+  
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  
+  label {
+    font-size: 14px;
+    color: #666666;
+    cursor: pointer;
+  }
 `; 
