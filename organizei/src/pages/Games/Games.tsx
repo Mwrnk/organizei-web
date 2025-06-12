@@ -1717,25 +1717,33 @@ const UpgradePremiumButton = styled.button`
 `;
 
 export function Games() {
-  const { user } = useAuth();
+  const { user, currentPlan } = useAuth();
   const token = localStorage.getItem("authenticacao");
+  const [isPremium, setIsPremium] = useState(false);
+
+  // Update premium status when user or plan changes
+  useEffect(() => {
+    if (user) {
+      const hasPremium = user.role === UserRole.PREMIUM || 
+                        user.role === UserRole.ADMIN || 
+                        currentPlan === 'premium' || 
+                        currentPlan === 'enterprise';
+      setIsPremium(hasPremium);
+      console.log('Premium status updated:', hasPremium, 'User role:', user.role, 'Current plan:', currentPlan);
+    } else {
+      setIsPremium(false);
+    }
+  }, [user, currentPlan]);
 
   // Log para debug do usuário e seu plano
   useEffect(() => {
     console.log('User data:', user);
     console.log('User role:', user?.role);
-  }, [user]);
+    console.log('Current plan:', currentPlan);
+  }, [user, currentPlan]);
 
   const isPremiumUser = () => {
-    // Verificação mais robusta do plano premium
-    if (!user) {
-      console.log('No user found');
-      return false;
-    }
-    
-    const hasPremium = user.role === UserRole.PREMIUM || user.role === UserRole.ADMIN;
-    console.log('Premium check result:', hasPremium);
-    return hasPremium;
+    return isPremium;
   };
 
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
