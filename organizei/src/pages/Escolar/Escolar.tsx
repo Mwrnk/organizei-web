@@ -754,39 +754,56 @@ export function Escolar() {
 
   const handleExibirDetalhes = async (cardId: string, listId: string) => {
     const card = cards[listId]?.find((c) => c.id === cardId);
-    if (card) {
-      setSelectedListId(listId);
-      setTituloEditavel(card.title);
+    if (!card) return;
 
-      try {
-        const res = await axios.get(`http://localhost:3000/cards/${card.id}`);
-        const cardData = res.data.data;
+    // Primeiro setamos os dados que já temos para feedback visual imediato
+    setSelectedListId(listId);
+    setTituloEditavel(card.title);
+    setPrioridadeSelecionada(card.priority || "Baixa");
+    setDescricaoEditavel(card.content || "");
+    setCardSelecionado(card);
 
-        // Atualiza o card com os dados completos, incluindo PDFs
+    try {
+      // Fazemos a requisição em background para atualizar dados adicionais se necessário
+      const token = localStorage.getItem("authenticacao");
+      const res = await axios.get(
+        `http://localhost:3000/cards/${card.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const cardData = res.data.data;
+
+      // Só atualizamos o estado se houver dados diferentes dos que já temos
+      if (cardData) {
         const updatedCard = {
           ...card,
-          pdfs: cardData.pdfs || [],
-          image_url: cardData.image_url || [],
-          content: cardData.content || "",
-          priority: cardData.priority || "Baixa",
-          is_published: cardData.is_published,
+          pdfs: cardData.pdfs || card.pdfs || [],
+          image_url: cardData.image_url || card.image_url || [],
+          content: cardData.content || card.content || "",
+          priority: cardData.priority || card.priority || "Baixa",
+          is_published: cardData.is_published ?? card.is_published ?? false,
         };
 
-        // Define a prioridade selecionada e descrição
-        setPrioridadeSelecionada(updatedCard.priority);
-        setDescricaoEditavel(updatedCard.content);
-        setCardSelecionado(updatedCard);
-
-        // Atualiza o card na lista de cards
-        setCards((prev) => ({
-          ...prev,
-          [listId]: prev[listId].map((c) =>
-            c.id === cardId ? updatedCard : c
-          ),
-        }));
-      } catch (err) {
-        console.error("Erro ao buscar detalhes do card:", err);
+        // Atualizamos os estados apenas se houver mudanças
+        if (JSON.stringify(updatedCard) !== JSON.stringify(card)) {
+          setCardSelecionado(updatedCard);
+          setPrioridadeSelecionada(updatedCard.priority);
+          setDescricaoEditavel(updatedCard.content);
+          
+          setCards((prev) => ({
+            ...prev,
+            [listId]: prev[listId].map((c) =>
+              c.id === cardId ? updatedCard : c
+            ),
+          }));
+        }
       }
+    } catch (err) {
+      console.error("Erro ao buscar detalhes adicionais do card:", err);
+      // Não mostramos erro ao usuário pois já temos dados básicos exibidos
     }
   };
 
