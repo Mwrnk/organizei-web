@@ -127,7 +127,7 @@ export function TutorialModal({ isOpen, onClose }: TutorialModalProps) {
                 <label htmlFor="dontShowAgain">Não mostrar novamente</label>
               </CheckboxContainer>
               <Button variant="primary" onClick={handleComplete}>
-                Concluir ✨
+                Concluir 
               </Button>
             </>
           ) : (

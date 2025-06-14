@@ -730,6 +730,7 @@ interface CardType {
   likes: number;
   comments: any[];
   user?: {
+    _id: string;
     name: string;
     email: string;
     profileImage?: string;
@@ -1046,6 +1047,12 @@ export function Comunidade() {
       return;
     }
 
+    // Verificar se o usuário está tentando curtir seu próprio card
+    if (card.user?._id === user._id) {
+      toast.error("Você não pode curtir seu próprio card!");
+      return;
+    }
+
     const isAlreadyLiked = isCardLiked(cardId);
 
     try {
@@ -1113,10 +1120,14 @@ export function Comunidade() {
         return newSet;
       });
 
-      if (err.response?.status === 400) {
+      // Exibe mensagem de erro específica
+      if (err.response?.status === 403) {
+        toast.error("Você não pode curtir seu próprio card!", {
+          position: "bottom-right",
+          autoClose: 3000,
+        });
+      } else if (err.response?.status === 400) {
         toast.error(err.response.data?.message || "Não foi possível processar sua ação.");
-      } else if (err.response?.status === 403) {
-        toast.error("Você não pode curtir seu próprio card.");
       } else {
         toast.error("Erro ao processar sua ação. Tente novamente.");
       }

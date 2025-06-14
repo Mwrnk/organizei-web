@@ -8,6 +8,7 @@
   import { UserRole } from "../../Types/User";
   import VistoPlano from "../../../assets/contemPlanos.svg";
   import NegacaoPlano from "../../../assets/naoContemPlano.svg";
+  import BuscaIcon from "../../../assets/busca.svg";
 
   // --- Styled Components ---
   const PlanosContainer = styled.div`
@@ -25,13 +26,18 @@
     align-items: center;
     width: 150px;
     height: 40px;
-   font-weight: 600;
+    font-weight: 600;
     background-color: white;
     padding: 5px;
     margin: 0 auto 20px auto;
     border-radius: 12px;
-   font-size:18px;
+    font-size: 18px;
     border: 2px solid #000000;
+    gap: 8px;
+    img {
+      width: 20px;
+      height: 20px;
+    }
   `;
   
   const TituloPagina = styled.h1`
@@ -298,7 +304,8 @@
           </TituloPagina>
 
           <DivBotao>
-              Planos Mensais
+            <img src={BuscaIcon} alt="Buscar" />
+            Planos Mensais
           </DivBotao>
 
           <PlanosGrid>
