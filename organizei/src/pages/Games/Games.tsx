@@ -2327,7 +2327,6 @@ export function Games() {
                   </LockedOverlay>
                 )}
                 <PremiumBadge>
-                  <span>✨</span>
                   PREMIUM
                 </PremiumBadge>
                

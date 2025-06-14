@@ -17,6 +17,7 @@ import { PerfilBusca } from "./pages/PerfilUsersBusca/PerfilBusca";
 import { Games } from "./pages/Games/Games";
 import { ThemeProvider } from './Contexts/ThemeContext';
 import './styles/themes.css';
+import { SobreNos } from "./pages/Sobre Nos/SobreNos";
 
 function AppContent() {
   const { isLoading } = useLoading();
@@ -34,6 +35,7 @@ function AppContent() {
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/sobre-nos" element={<SobreNos />} />
           <Route path="/planos" element={<Planos />} />
           <Route path="/escolar" element={<Escolar />} />
           <Route path="/games" element={<Games />} />

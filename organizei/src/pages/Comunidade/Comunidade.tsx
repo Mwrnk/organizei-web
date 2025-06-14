@@ -10,6 +10,7 @@ import { Usuario } from "../../Types/User";
 import curtidaSvg from "../../../assets/curtida.svg";
 import coracaoCurtidoSvg from "../../../assets/coracaocurtido.svg";
 import chatSvg from "../../../assets/chat.svg";
+import buscaSvg from "../../../assets/busca.svg";
 import { CardData } from "../../Types/Card";
 
 const Container = styled.div`
@@ -82,6 +83,11 @@ const BotaoBusca = styled.button`
   align-items: center;
   justify-content: center;
   transition: transform 0.2s ease;
+
+  img {
+    width: 24px;
+    height: 24px;
+  }
 
   &:hover {
     transform: translateY(-50%) scale(1.1);
@@ -1535,7 +1541,9 @@ export function Comunidade() {
                   Buscando...
                 </LoadingText>
               ) : (
-                <BotaoBusca>🔍</BotaoBusca>
+                <BotaoBusca>
+                  <img src={buscaSvg} alt="Buscar" />
+                </BotaoBusca>
               )}
               
               {showResults && searchText && (

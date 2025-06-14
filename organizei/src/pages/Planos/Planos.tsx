@@ -304,7 +304,6 @@
           </TituloPagina>
 
           <DivBotao>
-            <img src={BuscaIcon} alt="Buscar" />
             Planos Mensais
           </DivBotao>
 

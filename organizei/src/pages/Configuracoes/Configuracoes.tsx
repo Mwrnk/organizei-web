@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useTheme } from '../../Contexts/ThemeContext';
 import styles from './Configuracoes.module.css';
+import { useNavigate } from "react-router-dom";
 
 const ConfiguracoesContainer = styled.div`
   max-width: 800px;
@@ -44,7 +45,7 @@ const Label = styled.label`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 95%;
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -55,55 +56,8 @@ const Input = styled.input`
   }
 `;
 
-const Checkbox = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  input {
-    margin-right: 10px;
-  }
-`;
 
-const ToggleSwitch = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 24px;
-  margin-right: 10px;
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  span {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.4s;
-    border-radius: 24px;
-  }
-  span:before {
-    position: absolute;
-    content: "";
-    height: 16px;
-    width: 16px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
-  }
-  input:checked + span {
-    background-color: #3498db;
-  }
-  input:checked + span:before {
-    transform: translateX(26px);
-  }
-`;
+
 
 const Button = styled.button`
   background-color: #3498db;
@@ -144,6 +98,7 @@ const formatDateInput = (date: string) => {
 };
 
 export function Configuracoes() {
+  const navigate = useNavigate();
   const { user, logout, setUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState(user?.name || "");
@@ -152,14 +107,7 @@ export function Configuracoes() {
 
   usePageLoading(isLoading);
 
-  const [notificacoesEmail, setNotificacoesEmail] = useState(true);
-  const [notificacoesPush, setNotificacoesPush] = useState(true);
-  const [notificacoesLembretes, setNotificacoesLembretes] = useState(true);
-  const [notificacoesAtualizacoes, setNotificacoesAtualizacoes] =
-    useState(false);
 
-  const [temaEscuro, setTemaEscuro] = useState(false);
-  const [tamanhoFonte, setTamanhoFonte] = useState("medio");
 
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
@@ -201,27 +149,7 @@ export function Configuracoes() {
     }
   };
 
-  const handleSalvarNotificacoes = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simular delay de salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success("Preferências de notificações salvas!");
-    setIsLoading(false);
-  };
-
-  const handleSalvarAparencia = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simular delay de salvamento
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success("Preferências de aparência salvas!");
-    setIsLoading(false);
-  };
+  
 
   const handleAlterarSenha = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,19 +186,7 @@ export function Configuracoes() {
       <ConfiguracoesContainer>
         <SettingsTitle>Configurações</SettingsTitle>
 
-        <div className={styles.section}>
-          <h2>Tema</h2>
-          <div className={styles.themeToggle}>
-            <label>
-              <span>Tema {theme === 'light' ? 'Claro' : 'Escuro'}</span>
-              <input
-                type="checkbox"
-                checked={theme === 'dark'}
-                onChange={toggleTheme}
-              />
-            </label>
-          </div>
-        </div>
+       
 
         {/* === BLOCO PERFIL === */}
         <Card>
@@ -303,50 +219,8 @@ export function Configuracoes() {
           </form>
         </Card>
 
-        {/* === BLOCO NOTIFICAÇÕES === */}
-        <Card>
-          <CardHeader>
-            <h3>Notificações</h3>
-          </CardHeader>
-          <form onSubmit={handleSalvarNotificacoes}>
-            {[
-              {
-                label: "Receber notificações por email",
-                state: notificacoesEmail,
-                setter: setNotificacoesEmail,
-              },
-              {
-                label: "Receber notificações push",
-                state: notificacoesPush,
-                setter: setNotificacoesPush,
-              },
-              {
-                label: "Lembretes de tarefas próximas",
-                state: notificacoesLembretes,
-                setter: setNotificacoesLembretes,
-              },
-              {
-                label: "Atualizações e novidades",
-                state: notificacoesAtualizacoes,
-                setter: setNotificacoesAtualizacoes,
-              },
-            ].map((item, idx) => (
-              <Checkbox key={idx}>
-                <ToggleSwitch>
-                  <input
-                    type="checkbox"
-                    checked={item.state}
-                    onChange={() => item.setter(!item.state)}
-                  />
-                  <span></span>
-                </ToggleSwitch>
-                <Label>{item.label}</Label>
-              </Checkbox>
-            ))}
-            <Button type="submit">Salvar preferências</Button>
-          </form>
-        </Card>
-
+      
+        
         {/* === BLOCO TUTORIAL === */}
         <Card>
           <CardHeader>
@@ -407,6 +281,35 @@ export function Configuracoes() {
             </Button>
           </form>
         </Card>
+         {/* === BLOCO SOBRE NÓS === */}
+         <Card>
+          <CardHeader>
+            <h3>Sobre Nós</h3>
+          </CardHeader>
+          <p style={{ marginBottom: '20px' }}>
+            Conheça mais sobre nossa história, missão e valores.
+          </p>
+          <Button
+            onClick={() => navigate("/sobre-nos")}
+            style={{ backgroundColor: '#2196f3' }}
+          >
+            Acessar Sobre Nós
+          </Button>
+        </Card>
+
+        <div className={styles.section}>
+          <h2>Tema</h2>
+          <div className={styles.themeToggle}>
+            <label>
+              <span>Tema {theme === 'light' ? 'Claro' : 'Escuro'}</span>
+              <input
+                type="checkbox"
+                checked={theme === 'dark'}
+                onChange={toggleTheme}
+              />
+            </label>
+          </div>
+        </div>
 
         {/* === BLOCO EXCLUIR CONTA === */}
         <Card>
