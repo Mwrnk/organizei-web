@@ -75,6 +75,7 @@ import nuvemBaixar from "../../../assets/nuvemBaixar.svg";
 import baixarBranco from "../../../assets/baixarBranco.svg";
 import coracaocurtido from "../../../assets/coracaocurtido.svg";
 import { TutorialModal } from '../../Components/TutorialModal/TutorialModal';
+import tutorialsvg from "../../../assets/tutorial.svg";
 
 
 interface UserStats {
@@ -1185,7 +1186,7 @@ export function Escolar() {
             style={{ marginTop: 'auto', marginBottom: '16px' }}
           >
             <img 
-              src={pontosIcon}
+              src={tutorialsvg}
               alt="Tutorial"
               className="icon"
               style={{ width: '20px', height: '20px' }}

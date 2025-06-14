@@ -14,7 +14,7 @@ export const tutorialSteps: TutorialStep[] = [
   },
   {
     title: "Criar nova lista",
-    description: "Clique em '+ Nova Lista' no topo da tela para começar sua organização.",
+    description: "Clique em '+ Criar nova lista' no topo da tela para começar sua organização.",
     icon: adicionarCard
   },
   {

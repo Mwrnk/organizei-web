@@ -984,11 +984,7 @@ const GameCard = styled.div<{ isLocked?: boolean }>`
   }
 `;
 
-const GameIcon = styled.div`
-  font-size: 80px;
-  margin-bottom: 20px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-`;
+
 
 const GameCardTitle = styled.h3`
   font-size: 28px;
@@ -2275,7 +2271,7 @@ export function Games() {
             <GameTitle>O que vai jogar hoje?</GameTitle>
             <GameSubtitle>
               <LightningIcon>⚡</LightningIcon>
-              10pontos
+              Ganhe pontos no jogo do milhão!
             </GameSubtitle>
             
             <GamesGrid>
@@ -2283,7 +2279,7 @@ export function Games() {
                 setShowGameSelection(false);
                 setSelectedGame('flashcards');
               }}>
-                <GameIcon>🎴</GameIcon>
+               
                 <GameCardTitle>Flash Cards</GameCardTitle>
                 <GameCardDescription>
                   Perguntas geradas por IA com o tema da matéria escolhida...
@@ -2334,7 +2330,7 @@ export function Games() {
                   <span>✨</span>
                   PREMIUM
                 </PremiumBadge>
-                <GameIcon>💰</GameIcon>
+               
                 <GameCardTitle>Jogo do Milhão</GameCardTitle>
                 <GameCardDescription>
                   Inúmeras perguntas com temas diversos.
@@ -2452,7 +2448,7 @@ export function Games() {
             </GameBackButton>
 
             <QuizSetupSection>
-              <QuizSetupTitle>💰 Configurar Quiz</QuizSetupTitle>
+              <QuizSetupTitle>Configurar Quiz</QuizSetupTitle>
               <QuizSetupSubtitle>
                 Escolha a quantidade de perguntas e selecione um card para começar sua jornada rumo ao milhão!
               </QuizSetupSubtitle>
@@ -2460,7 +2456,7 @@ export function Games() {
               <QuizSetupForm>
                 <FormSection>
                   <FormLabel htmlFor="questionAmount">
-                    🎯 Quantidade de Perguntas
+                   Quantidade de Perguntas
                   </FormLabel>
                   <QuestionAmountSelect
                     id="questionAmount"
@@ -2475,10 +2471,10 @@ export function Games() {
 
                 <FormSection>
                   <FormLabel>
-                    🔍 Selecionar Card
+                   Selecionar Card
                   </FormLabel>
                   <SearchInput
-                    placeholder="🔍 Pesquisar cards..."
+                    placeholder="Pesquisar cards..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -2529,9 +2525,9 @@ export function Games() {
                               key={card._id}
                               onClick={() => startQuiz(card._id)}
                             >
-                              <CardOptionTitle>🎴 {card.title}</CardOptionTitle>
+                              <CardOptionTitle> {card.title}</CardOptionTitle>
                               <CardOptionSubtitle>
-                                💎 Iniciar quiz com {questionAmount} pergunta{questionAmount > 1 ? 's' : ''} • Ganhe pontos por cada acerto!
+                                 Iniciar quiz com <strong>{questionAmount} pergunta{questionAmount > 1 ? 's' : ''} </strong>• Ganhe pontos por cada acerto!
                               </CardOptionSubtitle>
                             </CardOption>
                           ))
@@ -2749,7 +2745,7 @@ export function Games() {
                 </EmptyState>
               ) : (
                 <StepButton onClick={() => setCreationStep(1)}>
-                  🚀 Criar Flashcards
+                  Criar Flashcards
                 </StepButton>
               )}
             </CreationContent>
@@ -2760,7 +2756,7 @@ export function Games() {
         return (
           <CreationFlowContainer>
             <FlashcardPreview>
-              <PreviewCard>🤔</PreviewCard>
+              <PreviewCard>?</PreviewCard>
             </FlashcardPreview>
             <CreationContent>
               <ProgressBar>
@@ -2804,7 +2800,7 @@ export function Games() {
                     gap: '15px',
                   }}
                 >
-                  <div style={{ fontSize: '40px' }}>🤖</div>
+                  <div style={{ fontSize: '30px',color: '#000000' }}>IA</div>
                   <h3 style={{ fontSize: '20px', margin: 0 }}>Criar com IA</h3>
                   <p style={{ fontSize: '14px', color: '#666', margin: 0, textAlign: 'center' }}>
                     Deixe a IA gerar perguntas e respostas automaticamente baseadas no seu card
@@ -2826,7 +2822,7 @@ export function Games() {
                     gap: '15px',
                   }}
                 >
-                  <div style={{ fontSize: '40px' }}>✍️</div>
+                  <div style={{ fontSize: '40px',color: '#000000' }}>Manual</div>
                   <h3 style={{ fontSize: '20px', margin: 0 }}>Criar Manualmente</h3>
                   <p style={{ fontSize: '14px', color: '#666', margin: 0, textAlign: 'center' }}>
                     Crie suas próprias perguntas e respostas personalizadas
@@ -3278,7 +3274,7 @@ export function Games() {
                 <AllFlashcardsSection>
                   <SectionHeader>
                     <SectionTitle>
-                      📚 Seus Flashcards
+                       Seus Flashcards
                       <FlashcardCount>
                         {activeTagFilters.length > 0 
                           ? `${filteredFlashcards.length} filtrados` 
