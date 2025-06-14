@@ -1,6 +1,6 @@
 import { Header } from "../../Components/Header";
 import styled from "styled-components";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Contexts/AuthContexts";
@@ -192,6 +192,11 @@ const CardImage = styled.div`
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    &.loaded {
+      opacity: 1;
+    }
   }
 `;
 
@@ -356,19 +361,19 @@ const IconsContainer = styled.div`
   margin-top: 12px;
 `;
 
-const IconWrapper = styled.div<{ inModal?: boolean }>`
+const IconWrapper = styled.div<{ inModal?: boolean; isLiked?: boolean }>`
   display: flex;
   align-items: center;
   gap: 8px;
   color: #000000;
 `;
 
-const Icon = styled.img<{ inModal?: boolean }>`
+const Icon = styled.img<{ inModal?: boolean; isLiked?: boolean }>`
   width: 24px;
   height: 24px;
   cursor: pointer;
   transition: all 0.2s ease;
-  filter: brightness(0);
+  filter: ${props => props.isLiked ? 'none' : 'brightness(0)'};
 
   &:hover {
     transform: scale(1.1);
@@ -689,14 +694,22 @@ const NoResultsMessage = styled.div`
   }
 `;
 
-const LoadingSpinner = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 2px solid #f3f3f3;
-  border-top: 2px solid #1976d2;
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 24px;
+`;
+
+const LoadingSpinnerLarge = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1976d2;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-right: 8px;
 
   @keyframes spin {
     0% { transform: rotate(0deg); }
@@ -704,31 +717,56 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-const LoadingText = styled.span`
+const LoadingText = styled.p`
   color: #666;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  font-size: 16px;
+  margin: 0;
 `;
 
+interface CardType {
+  id?: string;
+  _id?: string;
+  title: string;
+  likes: number;
+  comments: any[];
+  user?: {
+    name: string;
+    email: string;
+    profileImage?: string;
+  };
+  image_url?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  pdfs?: {
+    filename: string;
+    mimetype: string;
+    uploaded_at: string;
+    size_kb: number;
+  }[];
+}
+
+// Função auxiliar para garantir ID válido
+const getCardId = (card: CardType): string => {
+  return card.id || card._id || '';
+};
+
 export function Comunidade() {
-  const [allCards, setAllCards] = useState<any[]>([]);
+  const [allCards, setAllCards] = useState<CardType[]>([]);
   const [myCards, setMyCards] = useState<CardData[]>([]);
   const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState<Usuario[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<Usuario[]>([]);
   const [selectedListId, setSelectedListId] = useState<string>("");
   const [isDataLoading, setIsDataLoading] = useState(true);
-  const [likedCards, setLikedCards] = useState<Set<string>>(new Set());
+  
+  // Inicializar likedCards com dados do localStorage
+  const [likedCards, setLikedCards] = useState<Set<string>>(() => {
+    const savedLikes = localStorage.getItem('likedCards');
+    return savedLikes ? new Set(JSON.parse(savedLikes)) : new Set();
+  });
+
   const [visibleCards, setVisibleCards] = useState(INITIAL_VISIBLE_CARDS);
-  const [selectedCard, setSelectedCard] = useState<any>(null);
+  const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -826,59 +864,45 @@ export function Comunidade() {
     setIsDataLoading(true);
     try {
       const token = localStorage.getItem("authenticacao");
-      const res = await axios.get("http://localhost:3000/comunidade/cards");
+      
+      // Buscar todos os cards em uma única chamada
+      const res = await axios.get("http://localhost:3000/comunidade/cards", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
       const cardsData = res.data?.data || [];
       
+      // Fazer todas as chamadas em paralelo para melhor performance
       const cardsWithDetails = await Promise.all(
         cardsData.map(async (card: any) => {
-          try {
-            const cardId = card.id || card._id;
+          const cardId = card.id || card._id;
+          
+          // Buscar comentários e detalhes do card em paralelo
+          const [commentsRes] = await Promise.all([
+            axios.get(
+              `http://localhost:3000/comments/${cardId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` }
+              }
+            )
+          ]);
 
-            // Buscar detalhes do card incluindo comentários
-            const [cardDetailRes, commentsRes] = await Promise.all([
-              axios.get(
-                `http://localhost:3000/cards/${cardId}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` }
-                }
-              ),
-              axios.get(
-                `http://localhost:3000/comments/${cardId}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` }
-                }
-              )
-            ]);
-
-            const cardDetail = cardDetailRes.data.data;
-            const comments = commentsRes.data.data || [];
-            
-            return {
-              ...card,
-              id: cardId,
-              _id: cardId,
-              image_url: cardDetail.image_url || [],
-              pdfs: cardDetail.pdfs || [],
-              user: cardDetail.user || card.user,
-              createdAt: cardDetail.createdAt || card.createdAt || new Date().toISOString(),
-              updatedAt: cardDetail.updatedAt || card.updatedAt || new Date().toISOString(),
-              likes: cardDetail.likes || card.likes || 0,
-              downloads: cardDetail.downloads || card.downloads || 0,
-              comments: comments,
-              is_published: cardDetail.is_published !== undefined ? cardDetail.is_published : card.is_published
-            };
-          } catch (err) {
-            console.error("Erro ao buscar detalhes do card:", err);
-            return {
-              ...card,
-              id: card.id || card._id,
-              _id: card.id || card._id,
-              createdAt: card.createdAt || new Date().toISOString(),
-              updatedAt: card.updatedAt || new Date().toISOString(),
-              likes: card.likes || 0,
-              comments: []
-            };
-          }
+          const comments = commentsRes.data.data || [];
+          
+          return {
+            ...card,
+            id: cardId,
+            _id: cardId,
+            image_url: card.image_url || [],
+            pdfs: card.pdfs || [],
+            user: card.user,
+            createdAt: card.createdAt || new Date().toISOString(),
+            updatedAt: card.updatedAt || new Date().toISOString(),
+            likes: card.likes || 0,
+            downloads: card.downloads || 0,
+            comments: comments,
+            is_published: card.is_published !== undefined ? card.is_published : true
+          };
         })
       );
 
@@ -924,95 +948,88 @@ export function Comunidade() {
     fetchMyCards();
   }, []);
 
-  // Função para obter os cards mais curtidos
-  const getMostLikedCards = () => {
+  // Memoize os cards mais curtidos
+  const mostLikedCards = useMemo(() => {
     return [...allCards]
       .sort((a, b) => {
-        // Primeiro, ordenar por número de likes
         const likesComparison = (b.likes || 0) - (a.likes || 0);
-        
-        // Se tiverem o mesmo número de likes, ordenar por data de criação (mais recentes primeiro)
         if (likesComparison === 0) {
           const dateA = new Date(a.createdAt || 0);
           const dateB = new Date(b.createdAt || 0);
           return dateB.getTime() - dateA.getTime();
         }
-        
         return likesComparison;
       })
       .slice(0, MOST_LIKED_CARDS_LIMIT);
-  };
+  }, [allCards]);
 
-  const handlePublicar = async (cardId: string) => {
-    if (!cardId) {
-      toast.error("Selecione um card para publicar");
-      return;
+  // Memoize os cards filtrados
+  const filteredCards = useMemo(() => {
+    if (!searchText.trim()) {
+      return allCards;
     }
+    return allCards.filter(card => 
+      card.title?.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [allCards, searchText]);
 
-    // Encontra o card selecionado para garantir que temos o ID correto
-    const selectedCard = myCards.find(card => card.id === cardId);
-    if (!selectedCard) {
-      toast.error("Card não encontrado na lista local");
-      return;
-    }
+  const hasNoResults = useMemo(() => {
+    return searchText.trim() !== "" && filteredCards.length === 0;
+  }, [searchText, filteredCards]);
 
-    try {
-      const token = localStorage.getItem("authenticacao");
-      if (!token) {
-        toast.error("Você precisa estar logado para publicar");
-        return;
-      }
+  // Memoize os cards curtidos e persista no localStorage
+  const likedCardsMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    likedCards.forEach(cardId => {
+      map.set(cardId, true);
+    });
+    return map;
+  }, [likedCards]);
 
-      // Usa a rota correta /publish/:id
-      const response = await axios.post(
-        `http://localhost:3000/comunidade/publish/${selectedCard.id}`
-,
-        {},
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
+  // Função memoizada para verificar se um card foi curtido
+  const isCardLiked = useMemo(() => {
+    return (cardId: string) => likedCardsMap.has(cardId);
+  }, [likedCardsMap]);
+
+  // Carregar likes do usuário ao iniciar
+  useEffect(() => {
+    const loadUserLikes = async () => {
+      // Se não houver usuário logado, mantém apenas os likes do localStorage
+      if (!user?._id) return;
+
+      try {
+        const token = localStorage.getItem("authenticacao");
+        if (!token) return;
+
+        const response = await axios.get(
+          `http://localhost:3000/cards/user/${user._id}/likes`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (response.data?.data) {
+          const likedCardIds = response.data.data.map((card: any) => card._id);
+          setLikedCards(new Set(likedCardIds));
+          localStorage.setItem('likedCards', JSON.stringify(likedCardIds));
         }
-      );
-
-      if (response.data) {
-        toast.success("Card publicado com sucesso!");
-        
-        // Recarrega os dados
-        await Promise.all([
-          fetchMyCards(),    // Recarrega os cards do usuário
-          fetchAllCards()    // Recarrega os cards da comunidade
-        ]);
-        
-        // Limpa a seleção
-        setSelectedListId("");
-      }
-    } catch (err: any) {
-      console.error("Erro ao publicar card:", err);
-      
-      // Tratamento específico de erros da API
-      if (err.response) {
-        const errorMessage = err.response.data?.message || "Erro ao publicar card";
-        
-        if (err.response.status === 404) {
-          toast.error("Card não encontrado. Verifique se o card ainda existe.");
-          // Recarrega os cards para garantir que a lista está atualizada
-          fetchMyCards();
-        } else {
-          toast.error(errorMessage);
+      } catch (err) {
+        console.error("Erro ao carregar likes do usuário:", err);
+        // Em caso de erro, mantém os likes do localStorage
+        const savedLikes = localStorage.getItem('likedCards');
+        if (savedLikes) {
+          setLikedCards(new Set(JSON.parse(savedLikes)));
         }
-      } else if (err.request) {
-        toast.error("Erro de conexão. Verifique sua internet.");
-      } else {
-        toast.error("Erro ao publicar card. Tente novamente.");
       }
-    }
-  };
+    };
 
-  const handleLike = async (card: any) => {
+    loadUserLikes();
+  }, [user?._id]);
+
+  // Atualizar o handleLike para manter a persistência
+  const handleLike = async (card: CardType) => {
     const token = localStorage.getItem("authenticacao");
-    const cardId = card.id || card._id;
+    const cardId = getCardId(card);
 
     if (!cardId) {
       toast.error("ID do card não encontrado.");
@@ -1024,25 +1041,15 @@ export function Comunidade() {
       return;
     }
 
-    const isAlreadyLiked = likedCards.has(cardId);
+    if (!user?._id) {
+      toast.error("Usuário não identificado.");
+      return;
+    }
+
+    const isAlreadyLiked = isCardLiked(cardId);
 
     try {
-      const res = await axios.post(
-        `http://localhost:3000/cards/${cardId}/like`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const updatedLikes = res.data?.data?.likes;
-      
-      // Atualiza os likes em ambas as listas
-      setAllCards((prev) =>
-        prev.map((c) =>
-          (c.id || c._id) === cardId ? { ...c, likes: updatedLikes } : c
-        )
-      );
-
-      // Atualiza o estado de cards curtidos
+      // Atualiza o estado localmente primeiro para feedback imediato
       setLikedCards(prev => {
         const newSet = new Set(prev);
         if (isAlreadyLiked) {
@@ -1050,25 +1057,70 @@ export function Comunidade() {
         } else {
           newSet.add(cardId);
         }
+        // Atualiza localStorage imediatamente
+        localStorage.setItem('likedCards', JSON.stringify(Array.from(newSet)));
         return newSet;
       });
 
-      // Mostra a notificação após a atualização bem-sucedida
-      toast.success(isAlreadyLiked ? "Curtida removida! 💔" : "Curtido com sucesso! ❤️");
+      // Atualiza no servidor
+      const endpoint = `http://localhost:3000/cards/${cardId}/${isAlreadyLiked ? 'unlike' : 'like'}`;
+      const res = await axios.post(
+        endpoint,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      if (res.data?.status === 'success') {
+        const updatedLikes = res.data.data.likes;
+        
+        setAllCards(prev =>
+          prev.map(c =>
+            getCardId(c) === cardId ? { ...c, likes: updatedLikes } : c
+          )
+        );
+
+        if (selectedCard && getCardId(selectedCard) === cardId) {
+          setSelectedCard(prev => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              likes: updatedLikes
+            };
+          });
+        }
+
+        toast.success(isAlreadyLiked ? "Curtida removida! 💔" : "Curtido com sucesso! ❤️", {
+          position: "bottom-right",
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
     } catch (err: any) {
-      if (err.response?.status === 400 || err.response?.status === 403) {
-        toast.error(err.response?.data?.message || "Não foi possível curtir.");
+      console.error("Erro ao processar like/unlike:", err);
+      
+      // Reverte o estado local em caso de erro
+      setLikedCards(prev => {
+        const newSet = new Set(prev);
+        if (isAlreadyLiked) {
+          newSet.add(cardId);
+        } else {
+          newSet.delete(cardId);
+        }
+        localStorage.setItem('likedCards', JSON.stringify(Array.from(newSet)));
+        return newSet;
+      });
+
+      if (err.response?.status === 400) {
+        toast.error(err.response.data?.message || "Não foi possível processar sua ação.");
+      } else if (err.response?.status === 403) {
+        toast.error("Você não pode curtir seu próprio card.");
       } else {
-        console.error("Erro ao curtir o card", err);
-        toast.error("Erro ao curtir. Tente novamente.");
+        toast.error("Erro ao processar sua ação. Tente novamente.");
       }
     }
-  };
-
-  // Função para verificar se um card foi curtido
-  const isCardLiked = (cardId: string) => {
-    return likedCards.has(cardId);
   };
 
   const loadMore = () => {
@@ -1150,76 +1202,45 @@ export function Comunidade() {
     }
   }, [selectedCard, showDetailsModal]);
 
-  const handleCardClick = async (card: any) => {
+  const handleCardClick = async (card: CardType) => {
     try {
-      console.log(card);
+      // Primeiro mostra o modal com os dados que já temos
+      setSelectedCard(card);
       setShowDetailsModal(true);
 
-      // Carrega os detalhes adicionais em background
+      // Então carrega os detalhes adicionais em background
       const token = localStorage.getItem("authenticacao");
       const cardId = card.id || card._id;
       
-      const commentsRes = await axios.get(
+      // Carrega comentários e PDFs em paralelo
+      const [commentsRes, pdfsRes] = await Promise.all([
+        axios.get(
           `http://localhost:3000/comments/${cardId}`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
-      );
-
-      const comments = commentsRes.data.data || [];
-
-      const pdfsRes = await axios.get(
-         `http://localhost:3000/cards/${cardId }/pdfs`,
+        ),
+        axios.get(
+          `http://localhost:3000/cards/${cardId}/pdfs`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
-      );
+        )
+      ]);
 
-      console.log(pdfsRes.data.pdfsFromCard);
-
-      const pdfs = pdfsRes.data.pdfsFromCard.pdfs || [];
-
-      console.log(pdfs);
-
-      // Buscar detalhes dos usuários que fizeram comentários
-      // const commentsWithUserDetails = await Promise.all(
-      //   comments.map(async (comment: any) => {
-      //     try {
-      //       const commentUserId = comment.userId?._id || comment.userId;
-      //       if (!commentUserId) {
-      //         throw new Error("ID do usuário não encontrado no comentário");
-      //       }
-
-      //       const commentUserRes = await axios.get(
-      //         `http://localhost:3000/users/${commentUserId}`
-      //       );
-      //       return {
-      //         ...comment,
-      //         user: commentUserRes.data.data
-      //       };
-      //     } catch (err) {
-      //       console.error("Erro ao buscar detalhes do usuário do comentário:", err);
-      //       return {
-      //         ...comment,
-      //         user: {
-      //           name: "Usuário não encontrado",
-      //           email: "",
-      //           profileImage: null
-      //         }
-      //       };
-      //     }
-      //   })
-      // );
+      const comments = commentsRes.data.data || [];
+      const pdfs = pdfsRes.data.pdfsFromCard?.pdfs || [];
 
       // Atualiza o card com os detalhes completos
-      setSelectedCard({
-        ...card,
-        comments: comments,
-        pdfs: pdfs,
-        likes: card.likes || 0
+      setSelectedCard(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          comments,
+          pdfs,
+          likes: prev.likes || 0
+        };
       });
-
-      console.log(selectedCard);
 
     } catch (err) {
       console.error("Erro ao buscar detalhes do card:", err);
@@ -1396,270 +1417,341 @@ export function Comunidade() {
     }
   }, [showDownloadModal]);
 
-  // Função para filtrar cards com base no texto de busca
-  const getFilteredCards = () => {
-    if (!searchText.trim()) {
-      return allCards;
-    }
-    return allCards.filter(card => 
-      card.title?.toLowerCase().includes(searchText.toLowerCase())
-    );
-  };
-
-  const filteredCards = getFilteredCards();
-  const hasNoResults = searchText.trim() !== "" && filteredCards.length === 0;
-
-  const handleImageError = (cardId: string) => {
-    setFailedImages(prev => new Set([...prev, cardId]));
-  };
-
   // Função para verificar se há mais cards para carregar
   const hasMoreCards = () => {
-    const filteredCards = getFilteredCards();
     return visibleCards < filteredCards.length;
+  };
+
+  const handlePublicar = async (cardId: string) => {
+    if (!cardId) {
+      toast.error("Selecione um card para publicar");
+      return;
+    }
+
+    // Encontra o card selecionado para garantir que temos o ID correto
+    const selectedCard = myCards.find(card => card.id === cardId);
+    if (!selectedCard) {
+      toast.error("Card não encontrado na lista local");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("authenticacao");
+      if (!token) {
+        toast.error("Você precisa estar logado para publicar");
+        return;
+      }
+
+      // Usa a rota correta /publish/:id
+      const response = await axios.post(
+        `http://localhost:3000/comunidade/publish/${selectedCard.id}`,
+        {},
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          } 
+        }
+      );
+
+      if (response.data) {
+        toast.success("Card publicado com sucesso!");
+        
+        // Recarrega os dados
+        await Promise.all([
+          fetchMyCards(),    // Recarrega os cards do usuário
+          fetchAllCards()    // Recarrega os cards da comunidade
+        ]);
+        
+        // Limpa a seleção
+        setSelectedListId("");
+      }
+    } catch (err: any) {
+      console.error("Erro ao publicar card:", err);
+      
+      // Tratamento específico de erros da API
+      if (err.response) {
+        const errorMessage = err.response.data?.message || "Erro ao publicar card";
+        
+        if (err.response.status === 404) {
+          toast.error("Card não encontrado. Verifique se o card ainda existe.");
+          // Recarrega os cards para garantir que a lista está atualizada
+          fetchMyCards();
+        } else {
+          toast.error(errorMessage);
+        }
+      } else if (err.request) {
+        toast.error("Erro de conexão. Verifique sua internet.");
+      } else {
+        toast.error("Erro ao publicar card. Tente novamente.");
+      }
+    }
+  };
+
+  const handleImageError = (cardId: string) => {
+    setFailedImages((prev: Set<string>) => new Set([...prev, cardId]));
   };
 
   return (
     <>
       <Header />
       <Container>
-        <ContentWrapper>
-          <Titulo>#comunidade</Titulo>
-          <Subtitulo>Encontre outros usuários e veja seus cards publicados</Subtitulo>
+        {isDataLoading ? (
+          <LoadingContainer>
+            <LoadingSpinnerLarge />
+            <LoadingText>Carregando conteúdo...</LoadingText>
+          </LoadingContainer>
+        ) : (
+          <ContentWrapper>
+            <Titulo>#comunidade</Titulo>
+            <Subtitulo>Encontre outros usuários e veja seus cards publicados</Subtitulo>
 
-          <BuscaWrapper ref={searchRef}>
-            <InputBusca
-              type="text"
-              placeholder="Buscar usuários por nome..."
-              value={searchText}
-              onChange={handleUserSearch}
-              onFocus={() => {
-                if (searchText && filteredUsers.length > 0) {
-                  setShowResults(true);
-                }
-              }}
-            />
-            {isSearching ? (
-              <LoadingText>
-                <LoadingSpinner />
-                Buscando...
-              </LoadingText>
-            ) : (
-              <BotaoBusca>🔍</BotaoBusca>
-            )}
-            
-            {showResults && searchText && (
-              <ListaResultados>
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <ItemResultado
-                      key={user._id}
-                      onClick={() => handleSelectUser(user._id)}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img
-                          src={user.profileImage || DEFAULT_PROFILE_IMAGE}
-                          alt={user.name}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            objectFit: 'cover'
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
-                          }}
-                        />
-                        <div>
-                          <div style={{ fontWeight: 500 }}>{user.name}</div>
-                          <div style={{ fontSize: '12px', color: '#666' }}>{user.email}</div>
+            <BuscaWrapper ref={searchRef}>
+              <InputBusca
+                type="text"
+                placeholder="Buscar usuários por nome..."
+                value={searchText}
+                onChange={handleUserSearch}
+                onFocus={() => {
+                  if (searchText && filteredUsers.length > 0) {
+                    setShowResults(true);
+                  }
+                }}
+              />
+              {isSearching ? (
+                <LoadingText>
+                  <LoadingSpinnerLarge />
+                  Buscando...
+                </LoadingText>
+              ) : (
+                <BotaoBusca>🔍</BotaoBusca>
+              )}
+              
+              {showResults && searchText && (
+                <ListaResultados>
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user) => (
+                      <ItemResultado
+                        key={user._id}
+                        onClick={() => handleSelectUser(user._id)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img
+                            src={user.profileImage || DEFAULT_PROFILE_IMAGE}
+                            alt={user.name}
+                            style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              objectFit: 'cover'
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                            }}
+                          />
+                          <div>
+                            <div style={{ fontWeight: 500 }}>{user.name}</div>
+                            <div style={{ fontSize: '12px', color: '#666' }}>{user.email}</div>
+                          </div>
                         </div>
+                      </ItemResultado>
+                    ))
+                  ) : (
+                    <ItemResultado style={{ 
+                      textAlign: 'center', 
+                      cursor: 'default',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '24px' }}>🔍</span>
+                      <div>
+                        <p style={{ margin: '0 0 4px 0', fontWeight: 500 }}>
+                          Nenhum usuário encontrado com "{searchText}"
+                        </p>
+                        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
+                          Tente buscar por outro nome
+                        </p>
                       </div>
                     </ItemResultado>
-                  ))
-                ) : (
-                  <ItemResultado style={{ 
-                    textAlign: 'center', 
-                    cursor: 'default',
-                    padding: '24px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span style={{ fontSize: '24px' }}>🔍</span>
-                    <div>
-                      <p style={{ margin: '0 0 4px 0', fontWeight: 500 }}>
-                        Nenhum usuário encontrado com "{searchText}"
-                      </p>
-                      <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>
-                        Tente buscar por outro nome
-                      </p>
-                    </div>
-                  </ItemResultado>
-                )}
-              </ListaResultados>
+                  )}
+                </ListaResultados>
+              )}
+            </BuscaWrapper>
+
+            {/* Divisor com #publique */}
+            <SectionDivider>
+              <HashTag>#publique</HashTag>
+              <DividerLine />
+            </SectionDivider>
+
+            {/* Seção de Publicação */}
+            {user && (
+              <PublishSection>
+                <PublishHeader>
+                  <PublishTitle>
+                    Publique os seus{'\n'}
+                    cards mais fácil!
+                  </PublishTitle>
+                  <PublishSubtitle>
+                    Espalhe o seu método de estudar para ajudar mais pessoas com um só clique.
+                  </PublishSubtitle>
+                </PublishHeader>
+                
+                <PublishForm>
+                  <Select
+                    value={selectedListId}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      const selectedId = e.target.value;
+                      setSelectedListId(selectedId);
+                    }}
+                  >
+                    <option value="">Selecionar o card</option>
+                    {myCards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.title}
+                      </option>
+                    ))}
+                  </Select>
+
+                  <PublishButton
+                    onClick={() => handlePublicar(selectedListId)}
+                    disabled={!selectedListId}
+                  >
+                    Publicar
+                  </PublishButton>
+                </PublishForm>
+              </PublishSection>
             )}
-          </BuscaWrapper>
 
-          {/* Divisor com #publique */}
-          <SectionDivider>
-            <HashTag>#publique</HashTag>
-            <DividerLine />
-          </SectionDivider>
+            {/* Divisor com #curtidos */}
+            <SectionDivider>
+              <HashTag>#curtidos</HashTag>
+              <DividerLine />
+            </SectionDivider>
 
-          {/* Seção de Publicação */}
-          {user && (
-            <PublishSection>
-              <PublishHeader>
-                <PublishTitle>
-                  Publique os seus{'\n'}
-                  cards mais fácil!
-                </PublishTitle>
-                <PublishSubtitle>
-                  Espalhe o seu método de estudar para ajudar mais pessoas com um só clique.
-                </PublishSubtitle>
-              </PublishHeader>
-              
-              <PublishForm>
-                <Select
-                  value={selectedListId}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                    const selectedId = e.target.value;
-                    setSelectedListId(selectedId);
-                  }}
-                >
-                  <option value="">Selecionar o card</option>
-                  {myCards.map((card) => (
-                    <option key={card.id} value={card.id}>
-                      {card.title}
-                    </option>
-                  ))}
-                </Select>
-
-                <PublishButton
-                  onClick={() => handlePublicar(selectedListId)}
-                  disabled={!selectedListId}
-                >
-                  Publicar
-                </PublishButton>
-              </PublishForm>
-            </PublishSection>
-          )}
-
-          {/* Divisor com #curtidos */}
-          <SectionDivider>
-            <HashTag>#curtidos</HashTag>
-            <DividerLine />
-          </SectionDivider>
-
-          {/* Grid de Cards Mais Curtidos */}
-          <CardsGrid>
-            {getMostLikedCards().map((card) => (
-              <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
-                <CardImage>
-                  {card.image_url && card.image_url.length > 0 && !failedImages.has(card.id || card._id) ? (
-                    <img
-                      src={`http://localhost:3000${card.image_url[0]}`}
-                      alt={card.title}
-                      onError={() => handleImageError(card.id || card._id)}
-                    />
-                  ) : (
-                    <CardImageFallback>
-                      <span>{card.title || 'Sem título'}</span>
-                    </CardImageFallback>
-                  )}
-                </CardImage>
-                <CardContent>
-                  <CardTitle>{card.title}</CardTitle>
-                  {card.user && (
-                    <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
-                  )}
-                  <IconsContainer>
-                    <IconWrapper>
-                      <Icon 
-                        src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
-                        alt="Curtir"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          handleLike(card);
+            {/* Grid de Cards Mais Curtidos */}
+            <CardsGrid>
+              {mostLikedCards.map((card: CardType) => (
+                <Card key={getCardId(card)} onClick={() => handleCardClick(card)}>
+                  <CardImage>
+                    {card.image_url && card.image_url.length > 0 && !failedImages.has(getCardId(card)) ? (
+                      <img
+                        src={`http://localhost:3000${card.image_url[0]}`}
+                        alt={card.title}
+                        loading="lazy"
+                        onError={() => handleImageError(getCardId(card))}
+                        onLoad={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.classList.add('loaded');
                         }}
                       />
-                      <span>{card.likes || 0}</span>
-                    </IconWrapper>
-                    <IconWrapper>
-                      <Icon 
-                        src={chatSvg}
-                        alt="Comentários"
-                      />
-                      <span>{card.comments?.length || 0}</span>
-                    </IconWrapper>
-                  </IconsContainer>
-                </CardContent>
-              </Card>
-            ))}
-          </CardsGrid>
+                    ) : (
+                      <CardImageFallback>
+                        <span>{card.title || 'Sem título'}</span>
+                      </CardImageFallback>
+                    )}
+                  </CardImage>
+                  <CardContent>
+                    <CardTitle>{card.title}</CardTitle>
+                    {card.user && (
+                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                    )}
+                    <IconsContainer>
+                      <IconWrapper>
+                        <Icon 
+                          src={isCardLiked(getCardId(card)) ? coracaoCurtidoSvg : curtidaSvg}
+                          alt="Curtir"
+                          isLiked={isCardLiked(getCardId(card))}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleLike(card);
+                          }}
+                        />
+                        <span>{card.likes || 0}</span>
+                      </IconWrapper>
+                      <IconWrapper>
+                        <Icon 
+                          src={chatSvg}
+                          alt="Comentários"
+                        />
+                        <span>{card.comments?.length || 0}</span>
+                      </IconWrapper>
+                    </IconsContainer>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardsGrid>
 
-          {/* Divisor com #todos */}
-          <SectionDivider>
-            <HashTag>#todos</HashTag>
-            <DividerLine />
-          </SectionDivider>
+            {/* Divisor com #todos */}
+            <SectionDivider>
+              <HashTag>#todos</HashTag>
+              <DividerLine />
+            </SectionDivider>
 
-          {/* Grid de Todos os Cards */}
-          <CardsGrid>
-            {getFilteredCards().slice(0, visibleCards).map((card) => (
-              <Card key={card.id || card._id} onClick={() => handleCardClick(card)}>
-                <CardImage>
-                  {card.image_url && card.image_url.length > 0 && !failedImages.has(card.id || card._id) ? (
-                    <img
-                      src={`http://localhost:3000${card.image_url[0]}`}
-                      alt={card.title}
-                      onError={() => handleImageError(card.id || card._id)}
-                    />
-                  ) : (
-                    <CardImageFallback>
-                      <span>{card.title || 'Sem título'}</span>
-                    </CardImageFallback>
-                  )}
-                </CardImage>
-                <CardContent>
-                  <CardTitle>{card.title}</CardTitle>
-                  {card.user && (
-                    <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
-                  )}
-                  <IconsContainer>
-                    <IconWrapper>
-                      <Icon 
-                        src={isCardLiked(card.id || card._id) ? coracaoCurtidoSvg : curtidaSvg}
-                        alt="Curtir"
-                        onClick={(e: React.MouseEvent) => {
-                          e.stopPropagation();
-                          handleLike(card);
+            {/* Grid de Todos os Cards */}
+            <CardsGrid>
+              {filteredCards.slice(0, visibleCards).map((card: CardType) => (
+                <Card key={getCardId(card)} onClick={() => handleCardClick(card)}>
+                  <CardImage>
+                    {card.image_url && card.image_url.length > 0 && !failedImages.has(getCardId(card)) ? (
+                      <img
+                        src={`http://localhost:3000${card.image_url[0]}`}
+                        alt={card.title}
+                        loading="lazy"
+                        onError={() => handleImageError(getCardId(card))}
+                        onLoad={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.classList.add('loaded');
                         }}
                       />
-                      <span>{card.likes || 0}</span>
-                    </IconWrapper>
-                    <IconWrapper>
-                      <Icon 
-                        src={chatSvg}
-                        alt="Comentários"
-                      />
-                      <span>{card.comments?.length || 0}</span>
-                    </IconWrapper>
-                  </IconsContainer>
-                </CardContent>
-              </Card>
-            ))}
-          </CardsGrid>
+                    ) : (
+                      <CardImageFallback>
+                        <span>{card.title || 'Sem título'}</span>
+                      </CardImageFallback>
+                    )}
+                  </CardImage>
+                  <CardContent>
+                    <CardTitle>{card.title}</CardTitle>
+                    {card.user && (
+                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                    )}
+                    <IconsContainer>
+                      <IconWrapper>
+                        <Icon 
+                          src={isCardLiked(getCardId(card)) ? coracaoCurtidoSvg : curtidaSvg}
+                          alt="Curtir"
+                          isLiked={isCardLiked(getCardId(card))}
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            handleLike(card);
+                          }}
+                        />
+                        <span>{card.likes || 0}</span>
+                      </IconWrapper>
+                      <IconWrapper>
+                        <Icon 
+                          src={chatSvg}
+                          alt="Comentários"
+                        />
+                        <span>{card.comments?.length || 0}</span>
+                      </IconWrapper>
+                    </IconsContainer>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardsGrid>
 
-          {/* Botão Ver Mais */}
-          <LoadMoreContainer visible={hasMoreCards()}>
-            <LoadMoreButton onClick={loadMore}>
-              Ver mais cards
-            </LoadMoreButton>
-          </LoadMoreContainer>
-        </ContentWrapper>
+            {/* Botão Ver Mais */}
+            <LoadMoreContainer visible={hasMoreCards()}>
+              <LoadMoreButton onClick={loadMore}>
+                Ver mais cards
+              </LoadMoreButton>
+            </LoadMoreContainer>
+          </ContentWrapper>
+        )}
       </Container>
 
       {/* Modal de Detalhes */}
@@ -1701,9 +1793,10 @@ export function Comunidade() {
                 }}>
                   <IconWrapper inModal>
                     <Icon 
-                      src={isCardLiked(selectedCard.id || selectedCard._id) ? coracaoCurtidoSvg : curtidaSvg}
+                      src={isCardLiked(getCardId(selectedCard)) ? coracaoCurtidoSvg : curtidaSvg}
                       alt="Curtir"
                       inModal
+                      isLiked={isCardLiked(getCardId(selectedCard))}
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         handleLike(selectedCard);
@@ -1893,7 +1986,12 @@ export function Comunidade() {
                           Tente novamente ou entre em contato com o autor do card.
                         </p>
                         <button
-                          onClick={() => loadPdf(selectedCard.id)}
+                          onClick={() => {
+                            const cardId = selectedCard ? getCardId(selectedCard) : '';
+                            if (cardId) {
+                              loadPdf(cardId);
+                            }
+                          }}
                           style={{
                             padding: "8px 16px",
                             background: "#1976d2",
