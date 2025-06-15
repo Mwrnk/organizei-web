@@ -485,11 +485,11 @@ export function Escolar() {
         try {
           // Criar FormData e adicionar a imagem
           const formData = new FormData();
-          formData.append("files", image, image.name); // Importante: incluir o nome do arquivo
+          formData.append("image", image, image.name); // Corrigido de "files" para "image"
 
           // Fazer o upload da imagem
           const uploadResponse = await axios.post(
-            `http://localhost:3000/cards/${newCardId}/files`,
+            `http://localhost:3000/cards/${newCardId}/image`, // Corrigido o endpoint para /image
             formData,
             {
               headers: {
@@ -618,8 +618,8 @@ export function Escolar() {
 
       if (image || pdf) {
         const formData = new FormData();
-        if (image) formData.append("files", image);
-        if (pdf) formData.append("files", pdf);
+        if (image) formData.append("image", image);
+        if (pdf) formData.append("pdfs", pdf);
 
         await axios.post(
           `http://localhost:3000/cards/${cardSelecionado.id}/files`,
@@ -676,7 +676,7 @@ export function Escolar() {
 
       if (pdf) {
         const formData = new FormData();
-        formData.append("files", pdf);
+        formData.append("pdfs", pdf);
 
         await axios.post(
           `http://localhost:3000/cards/${cardSelecionado.id}/files`,
