@@ -42,6 +42,7 @@ const ChatHeader = styled.div`
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin-left: 100px;
 
   img {
     width: 40px;
