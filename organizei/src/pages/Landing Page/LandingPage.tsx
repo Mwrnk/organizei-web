@@ -10,11 +10,13 @@ import backgroundCards from '../../../assets/backgroundCards.png';
 import chatIA from '../../../assets/chatIA.png';
 import baralhoImg from '../../../assets/BaralhoAlinhado.png';
 import backgroundPontos from '../../../assets/backgroundPontos.png';
+import backgroundCelular from '../../../assets/backgroundCelular.png';
+import jogosFoto from '../../../assets/jogosFoto.png';
 
 const Container = styled.div`
   
   margin: 0 ;
-  padding: 20px;
+//   padding: 20px;
   background-color: #E9E8E8
 `;
 
@@ -22,7 +24,7 @@ const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px;
+  padding: 20px 40px;
 `;
 
 const LeftGroup = styled.div`
@@ -85,6 +87,18 @@ const Button = styled.button`
   &:hover {
     background-color: #0066ff;
     transform: translateY(-2px);
+  }
+`;
+
+const ButtonWhite = styled.button`
+  background-color: #fff;
+  color: #000;
+  margin: 0 auto;
+  font-size: 18px;
+  padding: 15px 30px;
+  &:hover {
+    background-color: #0066ff;
+    color: #ffffff;
   }
 `;
 
@@ -175,6 +189,11 @@ const SectionTitle = styled.p`
   }
 `;
 
+const SectionTitleWhite = styled(SectionTitle)`
+  color: white;
+  margin-bottom: 20px;
+`;
+
 const AISection = styled.section`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -214,7 +233,6 @@ const GamesSection = styled.section`
   padding-top:0px;
   margin-top: 100px;
   padding-bottom: -100px;
-  margin-left: -30px;
   background-color: #ffffff;
 
 `;
@@ -284,8 +302,8 @@ const PointsSection = styled.section`
   background-position: center;
   background-repeat: no-repeat;
   color: white;
-  padding: 500px 0;
-  width: 100vw;
+  padding: 650px 0 0 0;
+  width: 110vw;
   margin-left: -50px;
   text-align: center;
   border-radius: 30px;
@@ -293,25 +311,37 @@ const PointsSection = styled.section`
   position: relative;
   overflow: hidden;
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
-    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+    height: 100px;
+    background: linear-gradient(to bottom, transparent, #E9E8E8);
     pointer-events: none;
   }
 `;
 
 const CTASection = styled.section`
+  position: relative;
   text-align: center;
-  padding: 100px 0;
+  padding: 140px 0px;
   background-color: #111;
+  background-image: url(${backgroundCelular});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   color: white;
-  border-radius: 30px;
-  margin-bottom: 40px;
+  margin: 0;
+  margin-top: -223px;
+  width: 100vw;
+
+`;
+
+const CTAContainer = styled.div`
+  max-width: 100%;
+  margin: 0;
 `;
 
 const CardStackImg = styled.img`
@@ -358,6 +388,52 @@ const ChatIAImg = styled.img`
   max-width: 650px;
   border-radius: 20px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+`;
+
+const CTADescription = styled.p`
+  font-size: 20px;
+  margin-bottom: 30px;
+  color: #ffffff;
+  span {
+    font-weight: 800;
+    color: #ffffff;
+  }
+`;
+const Jogos = styled.img`
+  width: 70%;
+  max-width: 370px;
+ position: absolute;
+ top: -30px;
+ right: 42%;
+
+
+ 
+`;
+const DivTextoPontos = styled.div`
+  position: absolute;
+  top: 42%;
+  right: 31%;
+  bottom: 0px;
+
+`;
+const TitlePontos = styled.p`
+  font-size: 36px;
+  margin-bottom: 15px;
+  text-align: center; 
+`;
+const SubTituloPontos = styled.p`
+  font-size: 22px;
+  margin-bottom: 40px;
+  text-align: center; 
+`;
+const Footer = styled.footer`
+  background-color: #000000;
+  color: #ffffff;
+  padding: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
 export function LandingPage() {
@@ -452,28 +528,33 @@ export function LandingPage() {
       </GamesSection>
 
       <PointsSection>
-        {/* <SectionTitle style={{ color: 'white', marginBottom: '20px' }}>
-          Sistema de pontuações ativo
-        </SectionTitle>
-        <p style={{ fontSize: '20px', opacity: 0.9 }}>
-          Ganhe pontos publicando na comunidade ou jogando os minigames
-        </p> */}
+        <Jogos src={jogosFoto} alt="Jogos" />
+        <DivTextoPontos>
+        <TitlePontos>Sistema de pontuações ativo</TitlePontos>
+        <SubTituloPontos>Ganhe pontos publicando na comunidade ou jogando os minigames</SubTituloPontos>
+        </DivTextoPontos>
       </PointsSection>
 
       <CTASection>
-        <SectionTitle style={{ color: 'white', marginBottom: '20px' }}>
-          Estude de forma inteligente
-        </SectionTitle>
-        <p style={{ fontSize: '20px', opacity: 0.8, marginBottom: '30px' }}>
-          Utilize o Organizei hoje mesmo
-        </p>
-        <Button 
-          onClick={() => navigate("/login")}
-          style={{ margin: '0 auto', fontSize: '18px', padding: '15px 30px' }}
-        >
-          Iniciar o app ↗
-        </Button>
+        <CTAContainer>
+          <SectionTitleWhite>
+            Estude de forma inteligente
+          </SectionTitleWhite>
+          <CTADescription>
+            Utilize o <span>Organiz.ei</span> hoje mesmo
+          </CTADescription>
+          <Button 
+            onClick={() => navigate("/login")}
+            as={ButtonWhite}
+          >
+            Iniciar o app ↗
+          </Button>
+        </CTAContainer>
       </CTASection>
+      <Footer>
+        <p>Organiz.ei</p>
+        <p>Todos os direitos reservados</p>
+      </Footer>
     </Container>
   );
 }
