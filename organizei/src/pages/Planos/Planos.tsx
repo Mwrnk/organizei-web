@@ -24,20 +24,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 150px;
-    height: 40px;
-    font-weight: 600;
-    background-color: white;
+    width: 200px;
+    font-weight: 800;
     padding: 5px;
     margin: 0 auto 20px auto;
     border-radius: 12px;
-    font-size: 18px;
-    border: 2px solid #000000;
+    font-size: 22px;
     gap: 8px;
-    img {
-      width: 20px;
-      height: 20px;
-    }
+   
   `;
   
   const TituloPagina = styled.h1`
