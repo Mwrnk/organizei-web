@@ -7,6 +7,7 @@ import config from "../../../assets/Settings.svg";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { LoadingScreen } from "../../Components/LoadingScreen";
+import { toast } from "react-toastify";
 
 const Container = styled.div`
   max-width: 1000px;
@@ -293,9 +294,19 @@ export function Perfil() {
         }
       );
 
-      setImage(response.data.data.profileImage); // Atualiza preview com base no retorno da API
+      const newImageUrl = response.data.data.profileImage;
+      setImage(newImageUrl);
+      
+      // Atualiza o estado global do usuário
+      if (user) {
+        setUser({
+          ...user,
+          profileImage: newImageUrl
+        });
+      }
     } catch (err) {
       console.error("Erro ao enviar imagem", err);
+      toast.error("Erro ao atualizar imagem de perfil");
     }
   };
 

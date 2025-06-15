@@ -142,7 +142,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const updateUser = (newData: Partial<Usuario>) => {
-    setUser((prevUser) => (prevUser ? { ...prevUser, ...newData } : prevUser));
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...newData };
+      
+      // Atualiza o localStorage se necessário
+      if (newData.email) {
+        localStorage.setItem("email", newData.email);
+      }
+      
+      return updatedUser;
+    });
   };
 
   return (
