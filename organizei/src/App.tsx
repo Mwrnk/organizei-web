@@ -18,16 +18,20 @@ import { Games } from "./pages/Games/Games";
 import { ThemeProvider } from './Contexts/ThemeContext';
 import './styles/themes.css';
 import { SobreNos } from "./pages/Sobre Nos/SobreNos";
+import { LandingPage } from "./pages/Landing Page/LandingPage";
+import { GlobalStyles } from "./styles/GlobalStyles";
 
 function AppContent() {
   const { isLoading } = useLoading();
 
   return (
     <>
+      <GlobalStyles />
       <Routes>
         {/* Rotas públicas */}
         <Route element={<PublicRoute />}>
-          <Route path="/" element={<Login />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
         </Route>
 
         {/* Rotas protegidas para usuários autenticados */}
