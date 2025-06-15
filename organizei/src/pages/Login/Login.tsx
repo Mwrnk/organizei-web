@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
   Teste,
@@ -17,12 +17,47 @@ import { toast } from "react-toastify";
 import seta from "../../../assets/setaEsquerda.svg";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
+import styled from "styled-components";
+
+const NicknameInput = styled(InputLogin)<{ status?: 'checking' | 'available' | 'unavailable' }>`
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: ${({ status }) => 
+      status === 'checking' ? '#FFA500' :
+      status === 'available' ? '#4CAF50' :
+      status === 'unavailable' ? '#F44336' :
+      'transparent'
+    };
+  }
+`;
+
+const NicknameStatus = styled.div<{ status?: 'checking' | 'available' | 'unavailable' }>`
+  font-size: 12px;
+  margin-top: 4px;
+  color: ${({ status }) => 
+    status === 'checking' ? '#FFA500' :
+    status === 'available' ? '#4CAF50' :
+    status === 'unavailable' ? '#F44336' :
+    'transparent'
+  };
+`;
 
 export function Login() {
   const [login, setLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [nicknameStatus, setNicknameStatus] = useState<'checking' | 'available' | 'unavailable' | undefined>(undefined);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
 
   const [etapa, setEtapa] = useState(1);
   const [coduser, setCoduser] = useState("");
@@ -32,6 +67,44 @@ export function Login() {
   const { login: authLogin } = useAuth();
   
   usePageLoading(isLoading);
+
+  // Debounced nickname check
+  const checkNickname = useCallback(async (nickname: string) => {
+    if (!nickname || nickname.length < 3) {
+      setNicknameStatus(undefined);
+      return;
+    }
+
+    setIsCheckingNickname(true);
+    setNicknameStatus('checking');
+
+    try {
+      const response = await axios.get(`http://localhost:3000/users/check-nickname?coduser=${encodeURIComponent(nickname)}`);
+      // The backend sends { available: boolean, message: string }
+      setNicknameStatus(response.data.available ? 'available' : 'unavailable');
+    } catch (error: any) {
+      // If there's an error, we'll show the error message from the backend if available
+      const errorMessage = error.response?.data?.message || 'Erro ao verificar nickname';
+      setNicknameStatus('unavailable');
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } finally {
+      setIsCheckingNickname(false);
+    }
+  }, []);
+
+  // Debounce effect for nickname checking
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (coduser) {
+        checkNickname(coduser);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [coduser, checkNickname]);
 
   const onClickBotaoLogin = () => setLogin(true);
   const onClickBotaoRegistrar = () => {
@@ -53,6 +126,15 @@ export function Login() {
 
   const registrar = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (nicknameStatus === 'unavailable') {
+      toast.error('Este nickname já está em uso. Por favor, escolha outro.', {
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await axios.post("http://localhost:3000/signup", {
@@ -188,20 +270,42 @@ export function Login() {
                   ? registrar
                   : (e) => {
                       e.preventDefault();
-                      proximaEtapa();
+                      if (nicknameStatus === 'available') {
+                        proximaEtapa();
+                      } else {
+                        toast.error('Por favor, escolha um nickname disponível antes de continuar.', {
+                          position: "top-right",
+                          autoClose: 5000,
+                        });
+                      }
                     }
               }
             >
               {etapa === 1 && (
                 <>
-                  <InputLogin
+                  <NicknameInput
                     type="text"
                     placeholder="Nickname"
                     value={coduser}
                     onChange={(e) => setCoduser(e.target.value)}
                     required
+                    status={nicknameStatus}
                   />
-                  <BotaoEntrar type="submit">Próximo</BotaoEntrar>
+                  <NicknameStatus status={nicknameStatus}>
+                    {nicknameStatus === 'checking' && 'Verificando disponibilidade...'}
+                    {nicknameStatus === 'available' && 'Nickname disponível!'}
+                    {nicknameStatus === 'unavailable' && 'Este nickname já está em uso'}
+                  </NicknameStatus>
+                  <BotaoEntrar 
+                    type="submit"
+                    disabled={nicknameStatus !== 'available'}
+                    style={{ 
+                      opacity: nicknameStatus === 'available' ? 1 : 0.7,
+                      cursor: nicknameStatus === 'available' ? 'pointer' : 'not-allowed'
+                    }}
+                  >
+                    Próximo
+                  </BotaoEntrar>
                 </>
               )}
 
