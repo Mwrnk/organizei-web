@@ -735,7 +735,7 @@ interface CardType {
   title: string;
   likes: number;
   comments: any[];
-  user?: {
+  userId?: {
     _id: string;
     name: string;
     email: string;
@@ -750,6 +750,7 @@ interface CardType {
     uploaded_at: string;
     size_kb: number;
   }[];
+  likedByUser?: boolean;
 }
 
 // Função auxiliar para garantir ID válido
@@ -902,13 +903,14 @@ export function Comunidade() {
             _id: cardId,
             image_url: card.image_url || [],
             pdfs: card.pdfs || [],
-            user: card.user,
+            userId: card.userId,
             createdAt: card.createdAt || new Date().toISOString(),
             updatedAt: card.updatedAt || new Date().toISOString(),
             likes: card.likes || 0,
             downloads: card.downloads || 0,
             comments: comments,
-            is_published: card.is_published !== undefined ? card.is_published : true
+            is_published: card.is_published !== undefined ? card.is_published : true,
+            likedByUser: card.likedByUser || false
           };
         })
       );
@@ -1005,20 +1007,21 @@ export function Comunidade() {
       if (!user?._id) return;
 
       try {
-        const token = localStorage.getItem("authenticacao");
-        if (!token) return;
+        // Usar os dados dos cards que já temos
+        const likedCardIds = allCards
+          .filter(card => card.likedByUser && (card.id || card._id))
+          .map(card => card.id || card._id)
+          .filter((id): id is string => id !== undefined);
 
-        const response = await axios.get(
-          `http://localhost:3000/cards/user/${user._id}/likes`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        if (response.data?.data) {
-          const likedCardIds = response.data.data.map((card: any) => card._id);
+        if (likedCardIds.length > 0) {
           setLikedCards(new Set(likedCardIds));
           localStorage.setItem('likedCards', JSON.stringify(likedCardIds));
+        } else {
+          // Se não houver likes nos cards, tenta usar o localStorage
+          const savedLikes = localStorage.getItem('likedCards');
+          if (savedLikes) {
+            setLikedCards(new Set(JSON.parse(savedLikes)));
+          }
         }
       } catch (err) {
         console.error("Erro ao carregar likes do usuário:", err);
@@ -1031,7 +1034,7 @@ export function Comunidade() {
     };
 
     loadUserLikes();
-  }, [user?._id]);
+  }, [user?._id, allCards]);
 
   // Atualizar o handleLike para manter a persistência
   const handleLike = async (card: CardType) => {
@@ -1054,7 +1057,7 @@ export function Comunidade() {
     }
 
     // Verificar se o usuário está tentando curtir seu próprio card
-    if (card.user?._id === user._id) {
+    if (card.userId?._id === user._id) {
       toast.error("Você não pode curtir seu próprio card!");
       return;
     }
@@ -1675,8 +1678,8 @@ export function Comunidade() {
                   </CardImage>
                   <CardContent>
                     <CardTitle>{card.title}</CardTitle>
-                    {card.user && (
-                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                    {card.userId && (
+                      <CardCreator>{card.userId.name || 'Desconhecido'}</CardCreator>
                     )}
                     <IconsContainer>
                       <IconWrapper>
@@ -1734,8 +1737,8 @@ export function Comunidade() {
                   </CardImage>
                   <CardContent>
                     <CardTitle>{card.title}</CardTitle>
-                    {card.user && (
-                      <CardCreator>{card.user.name || 'Desconhecido'}</CardCreator>
+                    {card.userId && (
+                      <CardCreator>{card.userId.name || 'Desconhecido'}</CardCreator>
                     )}
                     <IconsContainer>
                       <IconWrapper>
@@ -1781,7 +1784,7 @@ export function Comunidade() {
             <Sidebar>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <img
-                  src={selectedCard.user?.profileImage || DEFAULT_PROFILE_IMAGE}
+                  src={selectedCard.userId?.profileImage || DEFAULT_PROFILE_IMAGE}
                   alt="Foto de perfil"
                   style={{
                     width: 40,
@@ -1794,7 +1797,7 @@ export function Comunidade() {
                   }}
                 />
                 <div>
-                  <p style={{ margin: 0, fontWeight: "bold" }}>{selectedCard.user?.name || "Usuário"}</p>
+                  <p style={{ margin: 0, fontWeight: "bold" }}>{selectedCard.userId?.name || "Usuário"}</p>
                   <p style={{ margin: 0, fontSize: "12px", color: "#999" }}>
                     Autor do card
                   </p>
