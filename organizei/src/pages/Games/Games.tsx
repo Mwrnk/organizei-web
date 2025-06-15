@@ -3,10 +3,10 @@ import axios from "axios";
 import { Header } from "../../Components/Header";
 import { useAuth } from "../../Contexts/AuthContexts";
 import { usePageLoading } from "../../Utils/usePageLoading";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { LoadingScreen } from "../../Components/LoadingScreen";
 import { toast } from 'react-toastify';
-import { Usuario, UserRole } from "../../Types/User";
+import {  UserRole } from "../../Types/User";
 
 // Tipos locais
 type Tag = {
@@ -76,6 +76,7 @@ const FlashcardFace = styled.div`
   padding: 20px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
   border: 2px solid #e0e0e0;
+  overflow: hidden;
 `;
 
 const FlashcardFront = styled(FlashcardFace)`
@@ -89,12 +90,28 @@ const FlashcardBack = styled(FlashcardFace)`
   transform: rotateY(180deg);
 `;
 
-const FlashText = styled.p`
+const FlashText = styled.div`
   font-size: 18px;
   margin: 0;
   text-align: center;
   line-height: 1.4;
   font-weight: 500;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 10px;
+  width: 100%;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+  }
 `;
 
 const FlashcardStepTitle = styled.h3`
@@ -1657,7 +1674,7 @@ const StudyButton = styled.button`
 
 const PremiumBadge = styled.div`
   position: absolute;
-  top: 20px;
+  top: 10px;
   right: 20px;
   background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
   padding: 6px 12px;

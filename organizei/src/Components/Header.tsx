@@ -20,7 +20,7 @@ export function Header() {
   return (
     <HeaderContainer>
       <div className="logo">
-        <Link to="/escolar" style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to="/escolar" style={{ textDecoration: "none", color: "inherit" ,fontSize: "22px"}}>
           Organiz.ei
         </Link>
       </div>
