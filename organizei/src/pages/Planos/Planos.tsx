@@ -8,7 +8,6 @@
   import { UserRole } from "../../Types/User";
   import VistoPlano from "../../../assets/contemPlanos.svg";
   import NegacaoPlano from "../../../assets/naoContemPlano.svg";
-  import BuscaIcon from "../../../assets/busca.svg";
 
   // --- Styled Components ---
   const PlanosContainer = styled.div`

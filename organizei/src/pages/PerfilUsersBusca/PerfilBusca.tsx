@@ -13,18 +13,13 @@ const Container = styled.div`
   padding: 20px;
 `;
 
-const Banner = styled.div`
-  width: 100%;
-  height: 200px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  position: relative;
-`;
-
 const PerfilBox = styled.div`
   display: flex;
   align-items: center;
-  margin-top: -50px;
+  margin-top: 50px;
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px 0px;  
 `;
 
 const Avatar = styled.div`
@@ -189,7 +184,6 @@ export function PerfilBusca() {
     <>
       <Header />
       <Container>
-        <Banner />
         <PerfilBox>
           <Avatar>
             {usuario.profileImage ? (
