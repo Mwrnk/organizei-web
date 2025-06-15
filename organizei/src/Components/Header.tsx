@@ -7,15 +7,11 @@ import {
   ProfileImage,
   ProfilePlaceholder
 } from "../Style/StyledHeader";
-import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContexts";
-
-import IconNotifacoes from "../../assets/Bell.svg";
 import Iconconfig from "../../assets/Settings.svg";
 import IconIa from "../../assets/bot.svg";
 
 export function Header() {
-  const location = useLocation();
   const { currentPlan, isLoading, user } = useAuth();
 
   if (isLoading) return null;
@@ -54,12 +50,6 @@ export function Header() {
           <StyledLink to={canUseAI ? "/ia" : "#"}>
             <li className={!canUseAI ? "disabled" : ""}>
               <img src={IconIa} alt="IA" />
-            </li>
-          </StyledLink>
-          
-          <StyledLink to="/notificacoes">
-            <li>
-              <img src={IconNotifacoes} alt="Notificações" />
             </li>
           </StyledLink>
           
