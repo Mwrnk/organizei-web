@@ -1078,6 +1078,30 @@ export function Comunidade() {
         return newSet;
       });
 
+      // Atualiza o estado dos cards também
+      setAllCards(prev => prev.map(c => {
+        if (getCardId(c) === cardId) {
+          return {
+            ...c,
+            likes: isAlreadyLiked ? (c.likes || 0) - 1 : (c.likes || 0) + 1,
+            likedByUser: !isAlreadyLiked
+          };
+        }
+        return c;
+      }));
+
+      // Atualiza o card selecionado se estiver aberto
+      if (selectedCard && getCardId(selectedCard) === cardId) {
+        setSelectedCard(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            likes: isAlreadyLiked ? (prev.likes || 0) - 1 : (prev.likes || 0) + 1,
+            likedByUser: !isAlreadyLiked
+          };
+        });
+      }
+
       // Atualiza no servidor
       const endpoint = `http://localhost:3000/cards/${cardId}/${isAlreadyLiked ? 'unlike' : 'like'}`;
       const res = await axios.post(
@@ -1089,6 +1113,7 @@ export function Comunidade() {
       if (res.data?.status === 'success') {
         const updatedLikes = res.data.data.likes;
         
+        // Atualiza novamente com o valor correto do servidor
         setAllCards(prev =>
           prev.map(c =>
             getCardId(c) === cardId ? { ...c, likes: updatedLikes } : c
@@ -1128,6 +1153,30 @@ export function Comunidade() {
         localStorage.setItem('likedCards', JSON.stringify(Array.from(newSet)));
         return newSet;
       });
+
+      // Reverte o estado dos cards
+      setAllCards(prev => prev.map(c => {
+        if (getCardId(c) === cardId) {
+          return {
+            ...c,
+            likes: isAlreadyLiked ? (c.likes || 0) + 1 : (c.likes || 0) - 1,
+            likedByUser: isAlreadyLiked
+          };
+        }
+        return c;
+      }));
+
+      // Reverte o card selecionado se estiver aberto
+      if (selectedCard && getCardId(selectedCard) === cardId) {
+        setSelectedCard(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            likes: isAlreadyLiked ? (prev.likes || 0) + 1 : (prev.likes || 0) - 1,
+            likedByUser: isAlreadyLiked
+          };
+        });
+      }
 
       // Exibe mensagem de erro específica
       if (err.response?.status === 403) {
