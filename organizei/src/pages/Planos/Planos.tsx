@@ -197,7 +197,7 @@
 
   export function Planos() {
 
-    const { user, updateUser, loadUserPlan } = useAuth();
+    const { user, updateUser, loadUserPlan, currentPlan } = useAuth();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [planoAtualUsuario, setPlanoAtualUsuario] = useState<Plan | null>(null);
     const [isOn, setIsOn] = useState(false);
@@ -257,13 +257,16 @@
 
     useEffect(() => {
       const interval = setInterval(() => {
-        setIsOn((prev) => !prev);
+        if (currentPlan !== 'premium') {
+          setIsOn((prev) => !prev);
+        }
       }, 1000);
       return () => clearInterval(interval);
-    }, []);
+    }, [currentPlan]);
 
-
-
+    useEffect(() => {
+      setIsOn(currentPlan === 'premium');
+    }, [currentPlan]);
 
     const handleAssinar = async (planoName: string) => {
       const plan = plans.find((p) => p.name.toLowerCase() === planoName);
@@ -291,10 +294,10 @@
         <PlanosContainer>
           <TituloPagina>
             Vire um usuário
-            <ToggleContainer isOn={isOn}>
-              <ToggleCircle isOn={isOn} />
+            <ToggleContainer isOn={currentPlan === 'premium' || isOn}>
+              <ToggleCircle isOn={currentPlan === 'premium' || isOn} />
             </ToggleContainer>
-            <span style={{ color: isOn ? "green" : "#333" }}>premium</span>
+            <span style={{ color: currentPlan === 'premium' || isOn ? "green" : "#333" }}>premium</span>
           </TituloPagina>
 
           <DivBotao>
