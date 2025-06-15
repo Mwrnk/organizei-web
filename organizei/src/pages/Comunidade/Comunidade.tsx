@@ -155,7 +155,7 @@ const PublishForm = styled.div`
   border-radius: 12px;
   padding: 50px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  height: 100px;
+  height: 200px;
   display: flex;
   flex-direction: column;
   
