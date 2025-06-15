@@ -2035,7 +2035,7 @@ export function Escolar() {
                     alignItems: 'center',
                     gap: '8px'
                   }}>
-                    📋 Nova Lista
+                     Nova Lista
                   </h3>
                   <button
                     onClick={() => setShowModal(false)}
@@ -2069,7 +2069,7 @@ export function Escolar() {
                     marginBottom: '12px',
                     color: '#000000'
                   }}>
-                    ✏️ Nome da lista
+                     Nome da lista
                   </label>
                   <div style={{
                     position: 'relative',
@@ -2193,7 +2193,7 @@ export function Escolar() {
                       }
                     }}
                   >
-                    {listName.trim() ? '🚀 Criar Lista' : '⚠️ Digite um nome'}
+                    {listName.trim() ? ' Criar Lista' : ' Digite um nome'}
                   </button>
                 </div>
               </ModalContent>

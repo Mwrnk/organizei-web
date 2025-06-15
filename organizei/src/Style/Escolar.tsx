@@ -131,6 +131,7 @@ export const Card = styled.div`
   transition: all 0.3s ease;
   width: 100%;
   box-sizing: border-box;
+  user-select: none;
 
   &:hover {
     transform: translateY(-2px);
@@ -144,7 +145,6 @@ export const Card = styled.div`
     pointer-events: auto;
     transform: none;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-    /* Manter tamanho original */
     min-height: 80px;
     padding: 12px;
     width: 100%;
@@ -155,7 +155,6 @@ export const Card = styled.div`
       border: 2px dashed red;
       transform: none;
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-      /* Manter tamanho no hover */
       min-height: 80px;
       padding: 12px;
       width: 100%;
@@ -179,7 +178,6 @@ export const Card = styled.div`
     border: 2px dashed red;
     transform: none;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-    /* Manter tamanho */
     min-height: 80px;
     padding: 12px;
     width: 100%;
@@ -211,6 +209,7 @@ export const Card = styled.div`
     width: 100%;
     box-sizing: border-box;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
   }
 
   /* Ícone de exclusão */

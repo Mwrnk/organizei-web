@@ -513,7 +513,7 @@ const SidebarCard = styled.div`
 `;
 
 const CommentSection = styled.div`
-  margin-top: 32px;
+  margin-top: 0px;
   background: rgba(0, 0, 0, 0.05);
   border-radius: 12px;
   padding: 20px;
@@ -580,7 +580,7 @@ const CommentInput = styled.div`
   display: flex;
   gap: 12px;
   background: rgba(0, 0, 0, 0.03);
-  padding: 16px;
+  padding: 0px;
   border-radius: 8px;
   position: sticky;
   bottom: 0;
