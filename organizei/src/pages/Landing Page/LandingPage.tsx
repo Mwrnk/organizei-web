@@ -3,7 +3,6 @@ import styled from "styled-components";
 import botIcon from '../../../assets/bot.svg';
 import controleIcon from '../../../assets/Controle.svg';
 import pontosIcon from '../../../assets/pontos.svg';
-import bellIcon from '../../../assets/Bell.svg';
 import cardsEmpilhadosImg from '../../../assets/CardsEmpilhados.png';
 import setaAbaixo from '../../../assets/setaParaBaixo.svg';
 import backgroundCards from '../../../assets/backgroundCards.png';
@@ -12,12 +11,12 @@ import baralhoImg from '../../../assets/BaralhoAlinhado.png';
 import backgroundPontos from '../../../assets/backgroundPontos.png';
 import backgroundCelular from '../../../assets/backgroundCelular.png';
 import jogosFoto from '../../../assets/jogosFoto.png';
+import { useState, useEffect } from "react";
 
 const Container = styled.div`
   
   margin: 0 ;
-//   padding: 20px;
-  background-color: #E9E8E8
+  background-color: #EFEFEF;
 `;
 
 const Header = styled.header`
@@ -436,8 +435,65 @@ const Footer = styled.footer`
   align-items: center;
 `;
 
+const ScrollToTopButton = styled.button<{ visible: boolean }>`
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #000000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: ${props => props.visible ? 1 : 0};
+  visibility: ${props => props.visible ? 'visible' : 'hidden'};
+  transition: all 0.3s ease;
+  transform: rotate(180deg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background-color: #0066ff;
+    transform: rotate(180deg) translateY(-5px);
+  }
+
+  img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+  }
+`;
+
 export function LandingPage() {
   const navigate = useNavigate();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setShowScrollTop(scrollPosition > 300); // Mostra o botão após rolar 300px
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <Container>
@@ -445,9 +501,15 @@ export function LandingPage() {
         <LeftGroup>
           <Logo>Organiz.ei /</Logo>
           <Nav>
-            <NavLink><Icon src={botIcon} alt="IA" /> IA</NavLink>
-            <NavLink><Icon src={controleIcon} alt="Games" /> Games</NavLink>
-            <NavLink><Icon src={pontosIcon} alt="Pontos" /> Pontos</NavLink>
+            <NavLink onClick={() => scrollToSection('ai-section')}>
+              <Icon src={botIcon} alt="IA" /> IA
+            </NavLink>
+            <NavLink onClick={() => scrollToSection('games-section')}>
+              <Icon src={controleIcon} alt="Games" /> Games
+            </NavLink>
+            <NavLink onClick={() => scrollToSection('points-section')}>
+              <Icon src={pontosIcon} alt="Pontos" /> Pontos
+            </NavLink>
           </Nav>
         </LeftGroup>
         <Button onClick={() => navigate("/login")}>Iniciar app ↗</Button>
@@ -464,15 +526,12 @@ export function LandingPage() {
           </Title>
           <Features>
             <Feature>
-              <Icon src={bellIcon} alt="Ícone" />
               Fácil Acesso
             </Feature>
             <Feature>
-              <Icon src={bellIcon} alt="Ícone" />
               Comunidade
             </Feature>
             <Feature>
-              <Icon src={bellIcon} alt="Ícone" />
               Integrado a IA
             </Feature>
           </Features>
@@ -498,7 +557,7 @@ export function LandingPage() {
         
       </CardsSection>
 
-      <AISection>
+      <AISection id="ai-section">
         <AIContent>
           <AITitle>
           Conheça a nossa o <strong>Organiz.ai</strong>
@@ -511,7 +570,7 @@ export function LandingPage() {
         <ChatIAImg src={chatIA} alt="Chat IA" />
       </AISection>
 
-      <GamesSection>
+      <GamesSection id="games-section">
         <DivDadosGames>
         <GamesTitle>
           <span>Minigames</span> para
@@ -527,7 +586,7 @@ export function LandingPage() {
         <BaralhoImg src={baralhoImg} alt="Baralho" />
       </GamesSection>
 
-      <PointsSection>
+      <PointsSection id="points-section">
         <Jogos src={jogosFoto} alt="Jogos" />
         <DivTextoPontos>
         <TitlePontos>Sistema de pontuações ativo</TitlePontos>
@@ -551,6 +610,15 @@ export function LandingPage() {
           </Button>
         </CTAContainer>
       </CTASection>
+
+      <ScrollToTopButton 
+        visible={showScrollTop} 
+        onClick={scrollToTop}
+        aria-label="Voltar ao topo"
+      >
+        <img src={setaAbaixo} alt="Voltar ao topo" />
+      </ScrollToTopButton>
+
       <Footer>
         <p>Organiz.ei</p>
         <p>Todos os direitos reservados</p>
