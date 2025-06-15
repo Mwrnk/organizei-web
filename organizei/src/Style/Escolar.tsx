@@ -121,7 +121,7 @@ export const Card = styled.div`
   background-color: white;
   border-radius: 16px;
   padding: 12px;
-  min-height: 80px;
+  min-height: 130px;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   cursor: pointer;
@@ -145,7 +145,7 @@ export const Card = styled.div`
     pointer-events: auto;
     transform: none;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-    min-height: 80px;
+    min-height: 130px;
     padding: 12px;
     width: 100%;
 
@@ -155,7 +155,7 @@ export const Card = styled.div`
       border: 2px dashed red;
       transform: none;
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-      min-height: 80px;
+      min-height: 130px;
       padding: 12px;
       width: 100%;
     }
