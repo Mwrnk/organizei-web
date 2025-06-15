@@ -2166,7 +2166,8 @@ export function Comunidade() {
                   border: "none",
                   borderRadius: "6px",
                   background: "#f5f5f5",
-                  cursor: "pointer"
+                  cursor: "pointer",
+                  color: "#000000"
                 }}
               >
                 Cancelar

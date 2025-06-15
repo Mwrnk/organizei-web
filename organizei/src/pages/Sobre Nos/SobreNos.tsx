@@ -14,7 +14,7 @@ import matheusRibasImg from "../../../assets/integrantes/Matheus Ribas.jpg";
 
 const Container = styled.div`
   max-width: 1400px;
-  margin: 20px auto;
+  margin: 0px auto;
   padding: 20px;
 `;
 
@@ -98,8 +98,8 @@ const CardIntegrante = styled.div<{ elevated?: boolean }>`
 `;
 
 const ImagemIntegrante = styled.img`
-  width: 230px;
-  height: 230px;
+  width: 220px;
+  height: 220px;
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 20px;
