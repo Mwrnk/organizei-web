@@ -1,6 +1,17 @@
 import { Header } from "../../Components/Header";
 import styled from "styled-components";
 
+// Import team member images
+import mateusWerneckImg from "../../../assets/integrantes/Mateus Werneck.jpg";
+import marazoImg from "../../../assets/integrantes/Marazo.png";
+import gabrielImg from "../../../assets/integrantes/Gabriel Cunha.png";
+import mateusImg from "../../../assets/integrantes/Mateus Silva.png";
+import micaelImg from "../../../assets/integrantes/Micael.png";
+import tiagoImg from "../../../assets/integrantes/Tiago.png";
+import brenoImg from "../../../assets/integrantes/Breno.jpg";
+import matheusRibasImg from "../../../assets/integrantes/Matheus Ribas.jpg";
+
+
 const Container = styled.div`
   max-width: 1400px;
   margin: 20px auto;
@@ -86,10 +97,10 @@ const CardIntegrante = styled.div<{ elevated?: boolean }>`
   padding: 10px;
 `;
 
-const ImagemIntegrante = styled.div`
+const ImagemIntegrante = styled.img`
   width: 230px;
   height: 230px;
-  background-color: #DFDFDF;
+  object-fit: cover;
   border-radius: 12px;
   margin-bottom: 20px;
 `;
@@ -111,14 +122,14 @@ const FuncaoIntegrante = styled.p`
 
 export function SobreNos() {
   const integrantes = [
-    { nome: "Gabriel Cunha", funcao: "UX/UI Designer" },
-    { nome: "Gabriel Cunha", funcao: "Front End Dev Web" },
-    { nome: "Gabriel Cunha", funcao: "Back End Dev" },
-    { nome: "Gabriel Cunha", funcao: "UX/UI Designer" },
-    { nome: "Gabriel Cunha", funcao: "UX/UI Designer" },
-    { nome: "Gabriel Cunha", funcao: "Front End Dev Web" },
-    { nome: "Gabriel Cunha", funcao: "Back End Dev" },
-    { nome: "Gabriel Cunha", funcao: "UX/UI Designer" },
+    { nome: "Matheus Ribas", funcao: "Front-End Web", foto: matheusRibasImg },
+    { nome: "Marazo", funcao: "Back-End Dev", foto: marazoImg },
+    { nome: "Gabriel Cunha", funcao: "Designer UX/UI", foto: gabrielImg },
+    { nome: "Mateus Silva", funcao: "Back-End Dev", foto: mateusImg },
+    { nome: "Micael", funcao: "Back-End Dev", foto: micaelImg },
+    { nome: "Tiago", funcao: "Back-End Dev", foto: tiagoImg },
+    { nome: "Breno", funcao: "Front-End Mobile", foto: brenoImg },
+    { nome: "Mateus Werneck", funcao: "Front-End Mobile", foto: mateusWerneckImg },
   ];
 
   return (
@@ -161,7 +172,11 @@ export function SobreNos() {
         <CarrosselContainer>
           {integrantes.map((integrante, index) => (
             <CardIntegrante key={index} elevated={index % 2 === 1}>
-              <ImagemIntegrante />
+              {integrante.foto ? (
+                <ImagemIntegrante src={integrante.foto} alt={integrante.nome} />
+              ) : (
+                <ImagemIntegrante as="div" />
+              )}
               <NomeIntegrante>{integrante.nome}</NomeIntegrante>
               <FuncaoIntegrante>{integrante.funcao}</FuncaoIntegrante>
             </CardIntegrante>
