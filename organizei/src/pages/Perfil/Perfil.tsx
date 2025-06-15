@@ -80,9 +80,7 @@ const Avatar = styled.div`
   cursor: pointer;
 `;
 
-const UserInfo = styled.div`
-  margin-left: 20px;
-`;
+
 
 const InfoSection = styled.div`
   margin-top: 16px;
@@ -143,12 +141,15 @@ const Titulo_config = styled.div`
 `;
 
 const IconConfig = styled.img`
-  width: 20px;
-  border: 2px solid #ccc;
-  padding: 10px;
-  border-radius: 15px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
   &:hover {
-    background-color: #bbb;
+    background-color: #f0f0f0;
   }
 `;
 
@@ -168,48 +169,9 @@ const PontosBox = styled(InfoBox)`
   }
 `;
 
-const EstatisticasSection = styled.div`
-  margin-top: 32px;
-  background: #f7f7fb;
-  border-radius: 12px;
-  padding: 24px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-`;
 
-const EstatisticasTitle = styled.h3`
-  font-size: 20px;
-  margin-bottom: 18px;
-  color: #333;
-`;
 
-const EstatisticasGrid = styled.div`
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-`;
 
-const EstatisticaBox = styled.div`
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-  padding: 18px 28px;
-  min-width: 180px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const EstatisticaValor = styled.div`
-  font-size: 28px;
-  font-weight: bold;
-  color: #667eea;
-  margin-bottom: 6px;
-`;
-
-const EstatisticaLabel = styled.div`
-  font-size: 15px;
-  color: #666;
-`;
 
 type Plano = {
   name: string;
