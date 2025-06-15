@@ -4,7 +4,7 @@ import { usePageLoading } from "../../Utils/usePageLoading";
 import styled from "styled-components";
 import axios from "axios";
 import { useAuth } from "../../Contexts/AuthContexts";
-import { Usuario } from "../../Types/User";
+import IconIA from "../../../assets/bot.svg";
 
 const ChatContainer = styled.div`
   width: 100%;
@@ -38,13 +38,26 @@ const ChatBox = styled.div`
 const ChatHeader = styled.div`
   text-align: center;
   margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  img {
+    width: 40px;
+    height: 40px;
+    margin-top: -30px;
+    margin-right: -140px;
+  }
+
   h2 {
     font-size: 2.5rem;
-    margin-bottom: 12px;
+    margin: 0;
   }
   p {
     font-size: 1.1rem;
     color: #666;
+    margin-top: 12px;
   }
 `;
 
@@ -307,7 +320,7 @@ export function IA() {
       // Mensagem de boas-vindas da IA
       const welcomeMessage: Message = {
         id: Date.now(),
-        text: "Olá! Eu sou a ORGAN.IA, sua assistente de organização. Como posso ajudá-lo hoje?",
+        text: "Olá! Eu sou a Organ.ai, sua assistente de organização. Como posso ajudá-lo hoje?",
         isUser: false,
       };
       
@@ -362,8 +375,11 @@ export function IA() {
       <ChatContainer>
         <ChatBox>
           <ChatHeader>
-            <h2>ORGAN.IA</h2>
-            <p>Converse com nossa IA para ajudar na organização</p>
+            <img src={IconIA} alt="Organ.ai" />
+            <div>
+              <h2>Organ.ai</h2>
+              <p>Converse com nossa IA para ajudar na organização</p>
+            </div>
           </ChatHeader>
 
           <ChatMessages>
