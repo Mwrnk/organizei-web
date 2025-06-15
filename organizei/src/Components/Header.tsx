@@ -2,6 +2,10 @@ import {
   NavMenu,
   HeaderContainer,
   SecondaryNavMenu,
+  StyledLink,
+  LogoLink,
+  ProfileImage,
+  ProfilePlaceholder
 } from "../Style/StyledHeader";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../Contexts/AuthContexts";
@@ -20,122 +24,65 @@ export function Header() {
   return (
     <HeaderContainer>
       <div className="logo">
-        <Link to="/escolar" style={{ textDecoration: "none", color: "inherit" ,fontSize: "22px"}}>
+        <LogoLink to="/escolar">
           Organiz.ei
-        </Link>
+        </LogoLink>
       </div>
 
       <NavMenu>
         <ul>
-          <Link
-            to="/escolar"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname.includes("/escolar") ? "active" : ""}>
-              Escolar
-            </li>
-          </Link>
+          <StyledLink to="/escolar">
+            <li>Escolar</li>
+          </StyledLink>
           
-          <Link
-            to="/games"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname.includes("/games") ? "active" : ""}>
-              Games
-            </li>
-          </Link>
+          <StyledLink to="/games">
+            <li>Games</li>
+          </StyledLink>
           
-          <Link
-            to="/comunidade"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname.includes("/comunidade") ? "active" : ""}>
-              Comunidade
-            </li>
-          </Link>
+          <StyledLink to="/comunidade">
+            <li>Comunidade</li>
+          </StyledLink>
           
-          <Link
-            to="/planos"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname.includes("/planos") ? "active" : ""}>
-              Planos
-            </li>
-          </Link>
+          <StyledLink to="/planos">
+            <li>Planos</li>
+          </StyledLink>
         </ul>
       </NavMenu>
 
       <SecondaryNavMenu>
         <ul>
-          {canUseAI && (
-            <Link
-              to="/ia"
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
-            >
-              <li className={location.pathname === "/ia" ? "active" : ""}>
-                <img src={IconIa} />
-              </li>
-            </Link>
-          )}
-          
-          <Link
-            to="/notificacoes"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname === "/notificacoes" ? "active" : ""}>
-              <img src={IconNotifacoes} />
+          <StyledLink to={canUseAI ? "/ia" : "#"}>
+            <li className={!canUseAI ? "disabled" : ""}>
+              <img src={IconIa} alt="IA" />
             </li>
-          </Link>
+          </StyledLink>
           
-          <Link
-            to="/configuracoes"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname === "/configuracoes" ? "active" : ""}>
-              <img src={Iconconfig} />
+          <StyledLink to="/notificacoes">
+            <li>
+              <img src={IconNotifacoes} alt="Notificações" />
             </li>
-          </Link>
+          </StyledLink>
           
-          <Link
-            to="/perfil"
-            style={{ textDecoration: "none", color: "inherit", display: "block" }}
-          >
-            <li className={location.pathname === "/perfil" ? "active" : ""}>
+          <StyledLink to="/configuracoes">
+            <li>
+              <img src={Iconconfig} alt="Configurações" />
+            </li>
+          </StyledLink>
+          
+          <StyledLink to="/perfil">
+            <li className="avatar-li">
               {user?.profileImage ? (
-                <img
+                <ProfileImage
                   src={user.profileImage}
                   alt="Perfil"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: 'none',
-                    boxShadow: 'none',
-                    background: 'none',
-                    transition: 'border 0.2s',
-                  }}
                 />
               ) : (
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    background: '#eee',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 700,
-                    color: '#888',
-                    fontSize: 16,
-                  }}
-                >
+                <ProfilePlaceholder>
                   {user?.name ? user.name[0].toUpperCase() : 'P'}
-                </div>
+                </ProfilePlaceholder>
               )}
             </li>
-          </Link>
+          </StyledLink>
         </ul>
       </SecondaryNavMenu>
     </HeaderContainer>

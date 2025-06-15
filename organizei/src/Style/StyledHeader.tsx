@@ -1,4 +1,41 @@
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+
+export const StyledLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  display: block;
+`;
+
+export const LogoLink = styled(Link)`
+  text-decoration: none;
+  color: inherit;
+  font-size: 22px;
+`;
+
+export const ProfileImage = styled.img`
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: none;
+  box-shadow: none;
+  background: none;
+  transition: border 0.2s;
+`;
+
+export const ProfilePlaceholder = styled.div`
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #888;
+  font-size: 16px;
+`;
 
 export const NavMenu = styled.nav`
   display: flex;
@@ -62,10 +99,30 @@ export const SecondaryNavMenu = styled.div`
     justify-content: center;
     border-radius: 20px;
     background: #E9E8E8;
-    transition: background 0.3s;
+    transition: all 0.3s;
     cursor: pointer;
     padding: 0;
     border: none;
+
+    &.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      position: relative;
+
+      &:hover::after {
+        content: "Requer Premium";
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+    }
   }
 
   li:hover {
