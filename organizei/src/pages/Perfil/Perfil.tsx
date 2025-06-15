@@ -354,7 +354,7 @@ export function Perfil() {
 
           <InfoGrid>
             <InfoBox>
-              <Label>Código</Label>
+              <Label>Nickname</Label>
               <Value>{user.coduser}</Value>
             </InfoBox>
             <InfoBox>
