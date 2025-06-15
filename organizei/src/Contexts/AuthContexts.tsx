@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     delete axios.defaults.headers.common["Authorization"];
     setUser(null);
     setCurrentPlan(null);
-    navigate("/");
+    navigate("/login");
     toast.info("Você saiu do sistema");
   };
 
