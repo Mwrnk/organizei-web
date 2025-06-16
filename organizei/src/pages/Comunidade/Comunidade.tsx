@@ -472,6 +472,7 @@ const DetalhesContainer = styled.div`
   padding: 32px;
   color: #000000;
   position: relative;
+  overflow: hidden;
 `;
 
 const Sidebar = styled.div`
@@ -485,8 +486,11 @@ const Sidebar = styled.div`
 
 const ContentArea = styled.div`
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   h2 {
     margin: 0 0 24px 0;
@@ -727,6 +731,27 @@ const LoadingText = styled.p`
   color: #666;
   font-size: 16px;
   margin: 0;
+`;
+
+const PdfContainer = styled.div`
+  width: 100%;
+  height: 500px;
+  background: #eaeaea;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+`;
+
+const PdfIframe = styled.iframe`
+  width: 100%;
+  height: 100%;
+  border: none;
+  overflow: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 `;
 
 interface CardType {
@@ -2009,13 +2034,7 @@ export function Comunidade() {
 
               {/* Visualização do PDF */}
               {selectedCard.pdfs && selectedCard.pdfs.length > 0 ? (
-                <div style={{
-                  width: "100%",
-                  height: "500px",
-                  background: "#eaeaea",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                }}>
+                <PdfContainer>
                   {pdfLoading ? (
                     <div style={{
                       width: "100%",
@@ -2091,12 +2110,9 @@ export function Comunidade() {
                       </div>
                     </div>
                   ) : pdfUrl ? (
-                    <iframe
+                    <PdfIframe
                       src={pdfUrl}
                       title={selectedCard.pdfs[0].filename}
-                      width="100%"
-                      height="100%"
-                      style={{ border: "none" }}
                     />
                   ) : (
                     <div style={{
@@ -2130,25 +2146,25 @@ export function Comunidade() {
                       </button>
                     </div>
                   )}
-                </div>
+                </PdfContainer>
               ) : (
-                <div style={{
-                  width: "100%",
-                  height: "500px",
-                  background: "#eaeaea",
-                  borderRadius: "20px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: "column",
-                  gap: "16px",
-                  color: "#666"
-                }}>
-                  <p>📄 Nenhum PDF disponível para este card</p>
-                  <p style={{ fontSize: "14px", color: "#999" }}>
-                    O autor não anexou nenhum arquivo PDF a este card.
-                  </p>
-                </div>
+                <PdfContainer>
+                  <div style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    gap: "16px",
+                    color: "#666"
+                  }}>
+                    <p>📄 Nenhum PDF disponível para este card</p>
+                    <p style={{ fontSize: "14px", color: "#999" }}>
+                      O autor não anexou nenhum arquivo PDF a este card.
+                    </p>
+                  </div>
+                </PdfContainer>
               )}
             </ContentArea>
           </DetalhesContainer>
