@@ -1210,14 +1210,13 @@ export function Comunidade() {
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            Accept: 'application/pdf'
           },
           responseType: 'blob'
         }
       );
 
-      console.log(response);
-
-      // Verifica se a resposta é um JSON de erro (o backend retorna um objeto quando há erro)
+      // Verifica se a resposta é um JSON de erro
       const fileType = response.headers['content-type'];
       if (fileType === 'application/json') {
         const reader = new FileReader();
@@ -1229,7 +1228,16 @@ export function Comunidade() {
         return;
       }
 
+      // Verifica se o conteúdo é realmente um PDF
+      if (!fileType || !fileType.includes('application/pdf')) {
+        throw new Error("Formato de arquivo inválido");
+      }
+
       const blob = new Blob([response.data], { type: 'application/pdf' });
+      if (blob.size === 0) {
+        throw new Error("PDF vazio ou corrompido");
+      }
+
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
     } catch (error: any) {
@@ -1237,7 +1245,6 @@ export function Comunidade() {
       let errorMessage = "Erro ao carregar o PDF";
       
       if (error.response) {
-        // Erro da API
         if (error.response.status === 404) {
           errorMessage = "PDF não encontrado. O arquivo pode ter sido removido ou não está mais disponível.";
         } else if (error.response.status === 401) {
@@ -2019,7 +2026,7 @@ export function Comunidade() {
                       flexDirection: "column",
                       gap: "16px"
                     }}>
-                      <div className="loading-spinner" style={{
+                      <div style={{
                         width: "40px",
                         height: "40px",
                         border: "4px solid #f3f3f3",
@@ -2091,7 +2098,38 @@ export function Comunidade() {
                       height="100%"
                       style={{ border: "none" }}
                     />
-                  ) : null}
+                  ) : (
+                    <div style={{
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexDirection: "column",
+                      gap: "16px",
+                      color: "#666"
+                    }}>
+                      <p>Não foi possível carregar o PDF</p>
+                      <button
+                        onClick={() => {
+                          const cardId = selectedCard ? getCardId(selectedCard) : '';
+                          if (cardId) {
+                            loadPdf(cardId);
+                          }
+                        }}
+                        style={{
+                          padding: "8px 16px",
+                          background: "#1976d2",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Tentar novamente
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div style={{
