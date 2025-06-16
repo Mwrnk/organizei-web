@@ -2,7 +2,7 @@
 # 🎯 Organizei
 
 <div align="center">
-  <img src="assets/logo.png" alt="Organizei Logo" width="200"/>
+ <h1>Organiz.ei</h1>
   
   [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
