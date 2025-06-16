@@ -1,133 +1,113 @@
 
-# Organize.ei
+# 🎯 Organizei
 
-## 📚 Introdução
+<div align="center">
+  <img src="assets/logo.png" alt="Organizei Logo" width="200"/>
+  
+  [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+  [![Vite](https://img.shields.io/badge/Vite-6.2-purple?style=for-the-badge&logo=vite)](https://vitejs.dev/)
+</div>
 
-Bem-vindo ao Organizei, somos um projeto desenvolvido para buscar ajudar estudantes a se organizarem de forma que seus estudos possam ser otimizados. Nossa API ainda está em construção, mas por aqui você já consegue visualizar algumas coisas como tela de login mobile e web.
+## 📱 Sobre o Projeto
 
-O projeto contará com as entidades **Usuário**, **Quadro**, **Lista**, **Card**, **tipoCard**, e **plano**.
+Organizei é uma plataforma inovadora de organização e produtividade que combina elementos de gamificação com ferramentas práticas para ajudar usuários a gerenciar suas tarefas e projetos de forma mais eficiente e divertida.
 
-### Tecnologias Utilizadas
+### ✨ Principais Recursos
 
-- **Backend:**
-  - Node.js com **Express**
-  - **bcrypt / bcryptjs** 
-  - **dotenv** 
-  - **jsonwebtoken** 
-  - **knex** 
-  - **mongoose** 
-  - **uuid** 
-  - **zod**
+- **🎮 Sistema de Gamificação**: Ganhe pontos e recompensas ao completar tarefas
+- **📚 Módulos Especializados**:
+  - Escolar: Organize estudos e trabalhos acadêmicos
+  - Profissional: Gerencie projetos e tarefas do trabalho
+  - IA: Assistente inteligente para otimizar sua produtividade
+- **👥 Comunidade**: Conecte-se com outros usuários e compartilhe conquistas
+- **🎯 Sistema de Pontos**: Motivação através de recompensas e rankings
+- **🔔 Notificações**: Mantenha-se atualizado com suas tarefas e interações
+- **⚙️ Personalização**: Configure sua experiência de acordo com suas necessidades
 
-- **Frontend Web:**
-  - **React 19**
-  - **Styled Components**
+## 🛠️ Tecnologias Utilizadas
 
-- **Mobile (React Native com Expo):**
-  - **Expo**
-  - **React Navigation**
-  - **Axios**
-  - **AsyncStorage**
-  - **Reanimated, Safe Area Context, NetInfo, etc.**
+- **Frontend**: React 19 com TypeScript
+- **Estilização**: Styled Components
+- **Navegação**: React Router DOM
+- **Interatividade**: Hello Pangea DnD (Drag and Drop)
+- **Notificações**: React Toastify
+- **Requisições**: Axios
+- **Build**: Vite
 
----
+## 🚀 Começando
 
-## ⚙️ Instalação
+### Pré-requisitos
 
-### Requisitos
+- Node.js (versão LTS)
+- npm ou yarn
 
-Para rodar a API localmente, você precisa dos seguintes pré-requisitos:
+### Instalação
 
-- **Node.js**: versão 16.x ou superior
-- **npm** ou **yarn**: para gerenciar pacotes
-- **MongoDB**: local ou em nuvem (MongoDB Atlas)
-
----
-
-## 🚀 Executando o Projeto
-
-1. Clone o repositório:
-
+1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/organizei-api.git
-cd organizei-api
+git clone https://github.com/seu-usuario/organizei.git
 ```
 
-2. Instale as dependências:
-
+2. Instale as dependências
 ```bash
+cd organizei
 npm install
-# ou
-yarn
 ```
 
-3. Configure o arquivo `.env`:
-
-```env
-PORT=3000
-DATABASE_URL="sua_conexao_postgresql"
-JWT_SECRET="sua_chave_secreta"
-MONGO_URI="sua_string_mongodb"
-```
-
-4. Rode as migrations (se estiver usando Knex com banco relacional):
-
-```bash
-npx knex migrate:latest
-```
-
-5. Inicie o servidor:
-
+3. Inicie o servidor de desenvolvimento
 ```bash
 npm run dev
-# ou
-yarn dev
 ```
 
----
+## 📁 Estrutura do Projeto
 
-## 🧩 Estrutura do Projeto
-
-```bash
-organizei-api/
-├── controllers/
-├── middlewares/
-├── models/
-├── routes/
-├── services/
-├── utils/
-├── index.js
-└── .env
+```
+src/
+├── Components/     # Componentes reutilizáveis (Header, Sidebar, etc.)
+├── Pages/         # Páginas da aplicação
+│   ├── Escolar/   # Módulo escolar
+│   ├── Profissional/ # Módulo profissional
+│   ├── IA/        # Integração com IA
+│   ├── Comunidade/ # Interação social
+│   └── ...
+├── Contexts/      # Gerenciamento de estado
+├── Services/      # Integrações com APIs
+└── Utils/         # Funções auxiliares
 ```
 
+## 🎮 Funcionalidades
+
+### Sistema de Pontos
+- Ganhe pontos ao completar tarefas
+- Compete com outros usuários
+- Desbloqueie conquistas
+
+### Módulos Especializados
+- **Escolar**: Organize materiais, trabalhos e provas
+- **Profissional**: Gerencie projetos e deadlines
+- **IA**: Receba sugestões personalizadas
+
+### Comunidade
+- Perfil personalizado
+- Ranking de usuários
+- Compartilhamento de conquistas
+
+## 🤝 Contribuindo
+
+1. Faça um Fork do projeto
+2. Crie uma Branch para sua Feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a Branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
 ---
 
-## 🛠️ Funcionalidades (em desenvolvimento)
+<div align="center">
+  Desenvolvido com amor pela equipe Organizei
+</div>
 
-- [x] Autenticação JWT
-- [x] Criptografia de senhas
-- [ ] Integração completa com MongoDB
-- [ ] CRUD de Quadros, Listas e Cards
-- [ ] Plano Premium (futuramente)
-- [ ] Testes automatizados
-
----
-
-## 👤 Equipe
-
-- Matheus Ribas - [@usuario1](https://github.com/usuario1)
-- Mateus Silva Ramos - [@usuario2](https://github.com/usuario2)
-
----
-
-## 📄 Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
----
-
-## 💡 Observações Finais
-
-Ainda estamos trabalhando na documentação oficial da API (Swagger ou Postman). Em breve você poderá visualizar todos os endpoints e realizar testes diretamente por lá.
-
-Enquanto isso, agradecemos por estar acompanhando o desenvolvimento do **Organizei**! 🎓📅✨
